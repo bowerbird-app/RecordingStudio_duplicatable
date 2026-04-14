@@ -138,6 +138,22 @@ module GemTemplate
 
         assert_equal ["Detail 1", "Detail 2"], result.errors
       end
+
+      def test_around_service_hook_wraps_perform
+        wrapped = false
+        GemTemplate.configuration.hooks.around_service do |_service, blk|
+          wrapped = true
+          blk.call
+        end
+
+        result = TestService.call(should_succeed: true, value: "around")
+
+        assert wrapped
+        assert result.success?
+        assert_equal "around", result.value
+      ensure
+        GemTemplate.configuration.hooks.clear!
+      end
     end
   end
 end

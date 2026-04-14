@@ -66,6 +66,46 @@
       <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
         <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
+            title: "Duplicatable capability",
+            subtitle: "Workspace has the :duplicatable capability enabled via GemTemplate::Capabilities::Duplicatable.with(...).",
+            variant: :h3,
+            class: "mb-0 pb-0"
+          ) %>
+        <% end %>
+
+        <% card.body do %>
+          <dl class="space-y-3 text-sm">
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">Capability</dt>
+              <dd class="font-mono text-xs">:duplicatable</dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">Recordable type</dt>
+              <dd class="font-mono text-xs">Workspace</dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">prefix</dt>
+              <dd class="font-mono text-xs"><%= @duplicatable_options[:prefix].inspect %></dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">suffix</dt>
+              <dd class="font-mono text-xs"><%= @duplicatable_options[:suffix].inspect %></dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">include_children</dt>
+              <dd class="font-mono text-xs"><%= @duplicatable_options[:include_children].inspect %></dd>
+            </div>
+            <div>
+              <dt class="text-[var(--surface-muted-content-color)]">exclude_children</dt>
+              <dd class="font-mono text-xs"><%= @duplicatable_options[:exclude_children].inspect %></dd>
+            </div>
+          </dl>
+        <% end %>
+      <% end %>
+
+      <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+        <% card.header do %>
+          <%= render FlatPack::PageTitle::Component.new(
             title: "Useful routes",
             subtitle: "Quick links for checking the mounted engine and local app shell.",
             variant: :h3,

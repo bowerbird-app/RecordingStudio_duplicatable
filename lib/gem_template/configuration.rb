@@ -5,6 +5,7 @@ require_relative "hooks"
 module GemTemplate
   class Configuration
     attr_accessor :api_key, :enable_feature_x, :timeout
+    attr_accessor :duplication_prefix, :duplication_suffix, :duplication_rename_attribute
     attr_reader :hooks
 
     def initialize
@@ -12,6 +13,11 @@ module GemTemplate
       @enable_feature_x = false
       @timeout = 5
       @hooks = Hooks.new
+
+      # Duplicatable capability defaults
+      @duplication_prefix           = nil
+      @duplication_suffix           = " (Copy)"
+      @duplication_rename_attribute = nil # nil = auto-detect :name then :title
     end
 
     def to_h
@@ -19,6 +25,9 @@ module GemTemplate
         api_key: api_key,
         enable_feature_x: enable_feature_x,
         timeout: timeout,
+        duplication_prefix: duplication_prefix,
+        duplication_suffix: duplication_suffix,
+        duplication_rename_attribute: duplication_rename_attribute,
         hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
       }
     end

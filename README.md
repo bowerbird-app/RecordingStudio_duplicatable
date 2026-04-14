@@ -83,6 +83,7 @@ This template uses the current RecordingStudio approach: built-in capabilities a
 
 - `movable`
 - `copyable`
+- `duplicatable` ← provided by this engine (see below)
 
 Device session persistence is separate from capabilities. It is enabled only when you include `RecordingStudio::Concerns::DeviceSessionConcern` in your controller layer.
 
@@ -98,6 +99,130 @@ class ApplicationController < ActionController::Base
   include RecordingStudio::Concerns::DeviceSessionConcern
 end
 ```
+
+---
+
+## RecordingStudio Duplicatable Capability
+
+`GemTemplate::Capabilities::Duplicatable` adds in-place duplication to any RecordingStudio recordable model. When a recording is duplicated, its underlying recordable is copied, optionally renamed, and a new `"duplicated"` recording event is created under the same parent.
+
+### What It Does
+
+- Duplicates the recording's recordable object in-place under the same parent recording
+- Optionally prepends/appends a prefix/suffix to the duplicate's `name` or `title` attribute
+- Optionally copies child recordings of selected (or all except excluded) types
+- Fires `GemTemplate::Hooks.run(:after_duplicate, new_recording)` so host apps can react
+- Raises `RecordingStudio::AccessDenied` if the actor lacks `:edit` access
+- Raises `RecordingStudio::CapabilityDisabled` if the type hasn't enabled the capability
+- All work is wrapped in a database transaction with row-level locking
+
+### How to Install
+
+**1. Add the gem** (it's already in the engine if you're using this template):
+
+```ruby
+# Gemfile (host app)
+gem "gem_template", github: "your-org/gem_template"
+```
+
+**2. Include the capability on your model:**
+
+```ruby
+# Direct include — uses global GemTemplate.configuration defaults
+class Page < ApplicationRecord
+  include GemTemplate::Capabilities::Duplicatable
+end
+
+# Factory method — sets per-type options that override global config
+class Page < ApplicationRecord
+  include GemTemplate::Capabilities::Duplicatable.with(
+    prefix:           nil,
+    suffix:           " (Copy)",
+    include_children: nil,       # nil = don't copy children
+    exclude_children: nil
+  )
+end
+```
+
+### Configuration Options
+
+Global defaults can be set in an initializer:
+
+```ruby
+GemTemplate.configure do |config|
+  config.duplication_prefix           = nil        # default: nil
+  config.duplication_suffix           = " (Copy)"  # default: " (Copy)"
+  config.duplication_rename_attribute = nil        # nil = auto-detect :name then :title
+end
+```
+
+Per-type options (set via `.with(...)`) override global config.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `prefix` | `String, nil` | `nil` | Prepended to the duplicate's name/title |
+| `suffix` | `String, nil` | `" (Copy)"` | Appended to the duplicate's name/title |
+| `include_children` | `Array<String,Class>, nil` | `nil` | Only copy children of these types |
+| `exclude_children` | `Array<String,Class>, nil` | `nil` | Copy all children except these types |
+| `duplication_rename_attribute` | `Symbol, nil` | `nil` | Override attribute detection (`:name`/`:title`) |
+
+### Usage Examples
+
+**Direct method call on a recording:**
+
+```ruby
+new_recording = recording.duplicate_in_place!(
+  actor: current_user
+)
+```
+
+**With rename and child options:**
+
+```ruby
+new_recording = recording.duplicate_in_place!(
+  actor:            current_user,
+  prefix:           "[COPY] ",
+  suffix:           nil,
+  include_children: ["Section", "Attachment"]
+)
+```
+
+**Via DuplicationService (recommended for controllers):**
+
+```ruby
+result = GemTemplate::Services::DuplicationService.call(
+  recording: recording,
+  actor:     current_user
+)
+
+result.on_success { |new_rec| redirect_to new_rec }
+result.on_failure { |msg|     render_error(msg) }
+```
+
+**With a post-duplication callback:**
+
+```ruby
+result = GemTemplate::Services::DuplicationService.call(
+  recording:      recording,
+  actor:          current_user,
+  after_duplicate: ->(new_rec) { SearchIndex.enqueue(new_rec) }
+)
+```
+
+### Post-Duplication Hooks
+
+Register an `:after_duplicate` hook in an initializer to react to every duplication:
+
+```ruby
+GemTemplate.configure do |config|
+  config.hooks.on(:after_duplicate) do |new_recording|
+    Rails.logger.info "Duplicated recording #{new_recording.id}"
+    # Notify, reindex, sync external services, etc.
+  end
+end
+```
+
+---
 
 ### FlatPack UI Components
 

@@ -282,4 +282,46 @@ class HooksTest < Minitest::Test
   ensure
     GemTemplate.configuration.hooks.clear!
   end
+
+  def test_execute_hook_falls_back_to_to_proc
+    result = nil
+    # A handler that responds to to_proc but not call
+    handler = Object.new
+    handler.define_singleton_method(:respond_to?) do |method, include_private = false|
+      method.to_sym == :to_proc ? true : super(method, include_private)
+    end
+    handler.define_singleton_method(:to_proc) { -> { result = :called_via_to_proc } }
+    @hooks.before_initialize(handler)
+    @hooks.run(:before_initialize)
+    assert_equal :called_via_to_proc, result
+  end
+
+  def test_log_hook_error_writes_to_rails_logger_when_defined
+    @hooks.raise_on_error = false
+    logger_errors = []
+    fake_logger = Object.new
+    fake_logger.define_singleton_method(:error) { |msg| logger_errors << msg }
+
+    # Stub Rails.logger instead of replacing the constant
+    Rails.stub(:logger, fake_logger) do
+      @hooks.on(:error_event) { raise "intentional" }
+      @hooks.run(:error_event)
+    end
+
+    assert logger_errors.any? { |m| m.include?("intentional") }
+  end
+
+  def test_class_run_around_delegates_to_configuration_hooks
+    called = false
+    GemTemplate.configuration.hooks.on(:around_event) do |_ctx, blk|
+      called = true
+      blk.call
+    end
+
+    GemTemplate::Hooks.run_around(:around_event, self) { :inner }
+
+    assert called
+  ensure
+    GemTemplate.configuration.hooks.clear!
+  end
 end

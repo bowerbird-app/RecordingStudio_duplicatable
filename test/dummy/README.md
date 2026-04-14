@@ -9,6 +9,7 @@ This Rails app exists to validate the Recording Studio addon template in a real 
 - Root workspace and root recording setup
 - FlatPack layout integration and Tailwind source scanning
 - Mounted `RecordingStudio::Engine` route behavior inside a host app
+- `GemTemplate::Capabilities::Duplicatable` wired on `Workspace` — visible on the home page
 
 ## Quick Start
 
@@ -25,7 +26,7 @@ Then open the app and sign in with:
 
 ## Useful Routes
 
-- `/` - dummy app home page and template guidance
+- `/` - dummy app home page, template guidance, and Duplicatable capability status
 - `/recording_studio` - mounted Recording Studio engine
 - `/users/sign_in` - Devise sign-in page
 - `/up` - Rails health check
@@ -33,3 +34,5 @@ Then open the app and sign in with:
 ## Why This App Exists
 
 Use this app to verify the generated addon experience before renaming the gem or copying patterns into another host app. If a layout, route, asset source, or Recording Studio initializer change breaks here, the template likely needs adjustment before reuse.
+
+The home page includes a **Duplicatable capability** card that shows the per-type options configured on `Workspace` via `GemTemplate::Capabilities::Duplicatable.with(...)`. Use it to confirm that capability registration and option resolution are wired correctly end-to-end.
