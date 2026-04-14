@@ -1,6 +1,6 @@
 # GemTemplate
 
-Internal template for building Rails engine addons on top of RecordingStudio.
+Recording Studio addon that provides a simple, opt-in duplicatable capability for recordables.
 
 ## What's Included
 
@@ -8,7 +8,7 @@ Internal template for building Rails engine addons on top of RecordingStudio.
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace** root recording set up following RecordingStudio's Quick Start pattern
 - **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a working login screen and FlatPack default sidebar layout for authenticated pages
+- **Dummy app** (`test/dummy/`) with a working login screen, FlatPack default sidebar layout, and a live duplication demo
 
 ## Quick Start
 
@@ -104,17 +104,17 @@ end
 
 ## RecordingStudio Duplicatable Capability
 
-`GemTemplate::Capabilities::Duplicatable` adds in-place duplication to any RecordingStudio recordable model. When a recording is duplicated, its underlying recordable is copied, optionally renamed, and a new `"duplicated"` recording event is created under the same parent.
+`GemTemplate::Capabilities::Duplicatable` adds in-place duplication to any RecordingStudio recordable model. When a recording is duplicated, its underlying recordable is copied, optionally renamed, and a new `"duplicated"` recording is created under the same parent.
 
 ### What It Does
 
 - Duplicates the recording's recordable object in-place under the same parent recording
 - Optionally prepends/appends a prefix/suffix to the duplicate's `name` or `title` attribute
 - Optionally copies child recordings of selected (or all except excluded) types
-- Fires `GemTemplate::Hooks.run(:after_duplicate, new_recording)` so host apps can react
+- Fires an `:after_duplicate` hook so host apps can react after the duplication transaction commits
 - Raises `RecordingStudio::AccessDenied` if the actor lacks `:edit` access
 - Raises `RecordingStudio::CapabilityDisabled` if the type hasn't enabled the capability
-- All work is wrapped in a database transaction with row-level locking
+- All write work is wrapped in a database transaction with row-level locking
 
 ### How to Install
 
@@ -211,7 +211,7 @@ result = GemTemplate::Services::DuplicationService.call(
 
 ### Post-Duplication Hooks
 
-Register an `:after_duplicate` hook in an initializer to react to every duplication:
+Register an `:after_duplicate` hook in an initializer to react to every duplication after commit:
 
 ```ruby
 GemTemplate.configure do |config|
@@ -243,7 +243,7 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 
 | Component       | Version |
 |-----------------|---------|
-| Ruby            | 3.3+    |
+| Ruby            | 3.2+    |
 | Rails           | 8.1+    |
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |

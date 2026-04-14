@@ -48,12 +48,13 @@ unless defined?(RecordingStudio)
     end
 
     def self.record!(**kwargs)
-      # Returns a fake new Recording built from kwargs so callers can inspect it.
-      FakeRecording.new(
-        recordable:       kwargs[:recordable],
-        recordable_type:  kwargs[:recordable]&.class&.name,
-        root_recording:   kwargs[:root_recording],
-        parent_recording: kwargs[:parent_recording]
+      FakeEvent.new(
+        recording: FakeRecording.new(
+          recordable:       kwargs[:recordable],
+          recordable_type:  kwargs[:recordable]&.class&.name,
+          root_recording:   kwargs[:root_recording],
+          parent_recording: kwargs[:parent_recording]
+        )
       )
     end
 
@@ -121,6 +122,8 @@ class FakeRecording
     recordable.dup
   end
 end
+
+FakeEvent = Struct.new(:recording, keyword_init: true)
 
 # ---------------------------------------------------------------------------
 # Simple recordable structs used as test data
@@ -408,7 +411,7 @@ module GemTemplate
         )
 
         recorded_calls = []
-        RecordingStudio.stub(:record!, ->(action:, **_kwargs) { recorded_calls << action; FakeRecording.new }) do
+        RecordingStudio.stub(:record!, ->(action:, **_kwargs) { recorded_calls << action; FakeEvent.new(recording: FakeRecording.new) }) do
           recording.duplicate_in_place!(actor: :user)
         end
 
@@ -430,7 +433,7 @@ module GemTemplate
         record_calls = []
         RecordingStudio.stub(
           :record!,
-          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeRecording.new }
+          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeEvent.new(recording: FakeRecording.new) }
         ) do
           recording.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
         end
@@ -454,7 +457,7 @@ module GemTemplate
         record_calls = []
         RecordingStudio.stub(
           :record!,
-          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeRecording.new }
+          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeEvent.new(recording: FakeRecording.new) }
         ) do
           recording.duplicate_in_place!(actor: :user, exclude_children: ["NamedRecordable"])
         end
@@ -483,7 +486,7 @@ module GemTemplate
         record_calls = []
         RecordingStudio.stub(
           :record!,
-          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeRecording.new }
+          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeEvent.new(recording: FakeRecording.new) }
         ) do
           recording.duplicate_in_place!(actor: :user)
         end
@@ -604,13 +607,75 @@ module GemTemplate
         )
 
         record_calls = []
-        RecordingStudio.stub(:record!, ->(**kwargs) { record_calls << kwargs; FakeRecording.new }) do
+        RecordingStudio.stub(:record!, ->(**kwargs) { record_calls << kwargs; FakeEvent.new(recording: FakeRecording.new) }) do
           # include_children: false — not nil so guard doesn't exit, but falsy so else [] is reached
           recording.duplicate_in_place!(actor: :user, include_children: false, exclude_children: nil)
         end
 
         # Only the parent recording is duplicated; the else [] branch produces no children
         assert_equal 1, record_calls.size
+      end
+
+      def test_uses_recording_from_recording_studio_event_result
+        source = FakeRecording.new(recordable: NamedRecordable.new(id: 1, name: "Original"))
+        created = FakeRecording.new(
+          id: 88,
+          recordable: NamedRecordable.new(id: 2, name: "Original (Copy)")
+        )
+
+        RecordingStudio.stub(:record!, ->(**_kwargs) { FakeEvent.new(recording: created) }) do
+          assert_equal created, source.duplicate_in_place!(actor: :user)
+        end
+      end
+
+      def test_child_duplicates_are_parented_under_created_recording
+        child = FakeRecording.new(
+          id: 10,
+          recordable: NamedRecordable.new(id: 10, name: "Child"),
+          recordable_type: "NamedRecordable"
+        )
+        source = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          child_recordings: [child]
+        )
+        created = FakeRecording.new(id: 88, recordable: NamedRecordable.new(id: 2, name: "Parent (Copy)"))
+        parent_recordings = []
+        call_index = 0
+
+        RecordingStudio.stub(:record!, lambda { |**kwargs|
+          parent_recordings << kwargs[:parent_recording]
+          call_index += 1
+          if call_index == 1
+            FakeEvent.new(recording: created)
+          else
+            FakeEvent.new(recording: FakeRecording.new)
+          end
+        }) do
+          source.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
+        end
+
+        assert_equal [nil, created], parent_recordings
+      end
+
+      def test_after_duplicate_callback_runs_after_transaction
+        recording = FakeRecording.new(recordable: NamedRecordable.new(id: 1, name: "Original"))
+        order = []
+
+        FakeRecording.stub(:transaction, lambda { |&block|
+          order << :transaction_started
+          result = block.call
+          order << :transaction_committed
+          result
+        }) do
+          RecordingStudio.stub(:record!, lambda { |**_kwargs|
+            order << :recording_created
+            FakeEvent.new(recording: FakeRecording.new)
+          }) do
+            recording.duplicate_in_place!(actor: :user) { order << :callback_ran }
+          end
+        end
+
+        assert_equal [:transaction_started, :recording_created, :transaction_committed, :callback_ran], order
       end
     end
   end

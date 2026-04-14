@@ -99,6 +99,8 @@ module GemTemplate
                                  prefix: :default, suffix: :default,
                                  include_children: :default, exclude_children: :default,
                                  &after_duplicate)
+          new_recording = nil
+
           self.class.transaction do
             locked = acquire_lock
             locked.reload
@@ -133,7 +135,7 @@ module GemTemplate
               actor:             actor,
               impersonator:      impersonator,
               metadata:          metadata
-            )
+            ).recording
 
             duplicate_child_recordings(
               locked, new_recording,
@@ -141,12 +143,12 @@ module GemTemplate
               prefix: resolved_prefix, suffix: resolved_suffix,
               include_children: resolved_include, exclude_children: resolved_exclude
             )
-
-            after_duplicate.call(new_recording) if after_duplicate
-            GemTemplate::Hooks.run(:after_duplicate, new_recording)
-
-            new_recording
           end
+
+          after_duplicate.call(new_recording) if after_duplicate
+          GemTemplate::Hooks.run(:after_duplicate, new_recording)
+
+          new_recording
         end
 
         private

@@ -32,8 +32,9 @@ class GemTemplateTest < Minitest::Test
     readme_path = File.expand_path("dummy/README.md", __dir__)
     readme_source = File.read(readme_path)
 
-    assert_includes readme_source, "This Rails app exists to validate the Recording Studio addon template"
+    assert_includes readme_source, "This Rails app exists to validate the Recording Studio duplicatable addon"
     assert_includes readme_source, "/recording_studio"
+    assert_includes readme_source, "Duplicate current workspace"
   end
 
   def test_dummy_home_page_mentions_template_workflow
@@ -43,6 +44,24 @@ class GemTemplateTest < Minitest::Test
     assert_includes view_source, "Template workflow"
     assert_includes view_source, "Workspace state"
     assert_includes view_source, "Recording Studio mount"
+    assert_includes view_source, "Duplicate current workspace"
+    assert_includes view_source, "Recent workspace recordings"
+  end
+
+  def test_dummy_home_controller_uses_duplication_service
+    controller_path = File.expand_path("dummy/app/controllers/home_controller.rb", __dir__)
+    controller_source = File.read(controller_path)
+
+    assert_includes controller_source, "GemTemplate::Services::DuplicationService.call"
+    assert_includes controller_source, "duplicate_workspace"
+  end
+
+  def test_dummy_routes_include_duplication_demo_and_recording_studio_redirect
+    routes_path = File.expand_path("dummy/config/routes.rb", __dir__)
+    routes_source = File.read(routes_path)
+
+    assert_includes routes_source, 'post "duplicate_workspace"'
+    assert_includes routes_source, 'get "/recording_studio", to: redirect("/")'
   end
 
   def test_engine_home_page_uses_flatpack_components
