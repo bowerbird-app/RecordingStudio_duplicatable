@@ -135,7 +135,11 @@ end
 TitledRecordable = Struct.new(:id, :title, keyword_init: true) do
   def save! = true
   def respond_to?(method_name, include_private = false)
-    [:title].include?(method_name.to_sym) || (method_name.to_sym != :name && super)
+    case method_name.to_sym
+    when :title then true
+    when :name  then false
+    else super
+    end
   end
 end
 
@@ -579,8 +583,12 @@ module GemTemplate
 
         assert_equal 42, found_id
       ensure
-        # Remove the temporary method to avoid polluting other tests
-        FakeRecording.singleton_class.remove_method(:lock) if FakeRecording.singleton_class.method_defined?(:lock, false)
+        # Remove the temporary method, guarded in case definition failed mid-test
+        begin
+          FakeRecording.singleton_class.remove_method(:lock)
+        rescue NameError
+          # method was never defined — nothing to remove
+        end
       end
 
       # -------------------------------------------------------------------

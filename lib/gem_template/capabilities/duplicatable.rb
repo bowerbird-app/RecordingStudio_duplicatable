@@ -158,17 +158,22 @@ module GemTemplate
         end
 
         # Apply prefix/suffix rename to a recordable's name or title attribute.
-        # Falls back through: configured attribute → :name → :title.
+        # When `duplication_rename_attribute` is configured, that attribute is used.
+        # Otherwise falls back through: :name → :title.
         # No-ops silently when neither attribute is present.
         def apply_duplication_rename(recordable, prefix:, suffix:)
-          attr_name = GemTemplate.configuration.duplication_rename_attribute
-          attr_name ||= if recordable.respond_to?(:name)
-                          :name
-                        elsif recordable.respond_to?(:title)
-                          :title
-                        end
+          configured_attr = GemTemplate.configuration.duplication_rename_attribute
 
-          return unless attr_name && recordable.respond_to?(attr_name)
+          attr_name =
+            if configured_attr && recordable.respond_to?(configured_attr)
+              configured_attr
+            elsif recordable.respond_to?(:name)
+              :name
+            elsif recordable.respond_to?(:title)
+              :title
+            end
+
+          return unless attr_name
 
           current_value = recordable.public_send(attr_name).to_s
           recordable.public_send(:"#{attr_name}=", "#{prefix}#{current_value}#{suffix}")

@@ -72,10 +72,12 @@ module GemTemplate
           &@after_duplicate
         )
         success(new_recording)
+      rescue RecordingStudio::AccessDenied, RecordingStudio::CapabilityDisabled => e
+        # Expected capability failures — return as structured failures
+        failure(e)
       rescue StandardError => e
-        # Covers RecordingStudio::AccessDenied, RecordingStudio::CapabilityDisabled,
-        # and any other unexpected errors — all become failure Results so callers
-        # don't need bare rescue blocks.
+        # Unexpected errors — still converted to failure Results so callers
+        # never need bare rescue blocks around DuplicationService.call
         failure(e)
       end
 

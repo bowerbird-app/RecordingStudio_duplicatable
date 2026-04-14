@@ -178,16 +178,6 @@ module GemTemplate
         assert_equal "denied", result.error
       end
 
-      def test_failure_on_access_denied_does_not_raise
-        recording = StubRecording.new(raise_error: RecordingStudio::AccessDenied.new("no access"))
-
-        result = DuplicationService.call(recording: recording, actor: @actor)
-
-        # The service must absorb the error and return a failure Result, never raise
-        assert result.failure?
-        assert_equal "no access", result.error
-      end
-
       # -------------------------------------------------------------------
       # Failure — CapabilityDisabled
       # -------------------------------------------------------------------
@@ -210,14 +200,6 @@ module GemTemplate
 
         assert result.failure?
         assert_equal "unexpected", result.error
-      end
-
-      def test_failure_result_is_not_success
-        recording = StubRecording.new(raise_error: StandardError.new("boom"))
-        result = DuplicationService.call(recording: recording, actor: @actor)
-
-        refute result.success?
-        assert result.failure?
       end
 
       def test_failure_value_is_nil
