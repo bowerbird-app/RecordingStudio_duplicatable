@@ -25,43 +25,85 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "Built-in capabilities remain disabled"
+    assert_includes initializer_source, 'config.recordable_types = ["Workspace", "Page"]'
     refute_includes initializer_source, "config.features."
   end
 
-  def test_dummy_readme_explains_dummy_app_purpose
+  def test_dummy_readme_describes_page_demo
     readme_path = File.expand_path("dummy/README.md", __dir__)
     readme_source = File.read(readme_path)
 
-    assert_includes readme_source, "This Rails app exists to validate the Recording Studio duplicatable addon"
-    assert_includes readme_source, "/recording_studio"
-    assert_includes readme_source, "Duplicate current workspace"
+    assert_includes readme_source, "Page"
+    assert_includes readme_source, "/pages/setup"
+    assert_includes readme_source, "simple page-card duplication demo"
+    refute_includes readme_source, "/up"
   end
 
-  def test_dummy_home_page_mentions_addon_verification_workflow
+  def test_dummy_home_page_mentions_page_demo
     view_path = File.expand_path("dummy/app/views/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, "Addon verification workflow"
-    assert_includes view_source, "Workspace state"
-    assert_includes view_source, "Recording Studio mount"
-    assert_includes view_source, "Duplicate current workspace"
-    assert_includes view_source, "Recent workspace recordings"
+    assert_includes view_source, "Duplicatable Demo"
+    assert_includes view_source, "Seeded page"
+    assert_includes view_source, "Read guide"
+    assert_includes view_source, "Duplicate"
+    refute_includes view_source, "Health check"
+    refute_includes view_source, "Recording Studio mount"
   end
 
-  def test_dummy_home_controller_uses_duplication_service
+  def test_dummy_show_page_mentions_api_docs_card
+    view_path = File.expand_path("dummy/app/views/home/show.html.erb", __dir__)
+    view_source = File.read(view_path)
+
+    assert_includes view_source, "Duplicatable API"
+    assert_includes view_source, "Example"
+    assert_includes view_source, "FlatPack::Card::Component"
+  end
+
+  def test_dummy_home_controller_uses_page_duplication_service
     controller_path = File.expand_path("dummy/app/controllers/home_controller.rb", __dir__)
     controller_source = File.read(controller_path)
 
     assert_includes controller_source, "RecordingStudioDuplicatable::Services::DuplicationService.call"
-    assert_includes controller_source, "duplicate_workspace"
+    assert_includes controller_source, "duplicate_page"
+    assert_includes controller_source, "Page.find_by!(slug: params[:slug])"
   end
 
-  def test_dummy_routes_include_duplication_demo_and_recording_studio_redirect
+  def test_dummy_page_model_enables_duplicatable_capability
+    model_path = File.expand_path("dummy/app/models/page.rb", __dir__)
+    model_source = File.read(model_path)
+
+    assert_includes model_source, "RecordingStudioDuplicatable::Capabilities::Duplicatable.with"
+    assert_includes model_source, "belongs_to :workspace"
+    assert_includes model_source, "before_validation :ensure_slug"
+  end
+
+  def test_dummy_routes_include_page_docs_and_duplication
     routes_path = File.expand_path("dummy/config/routes.rb", __dir__)
     routes_source = File.read(routes_path)
 
-    assert_includes routes_source, 'post "duplicate_workspace"'
-    assert_includes routes_source, 'get "/recording_studio", to: redirect("/")'
+    assert_includes routes_source, 'get "pages/:slug"'
+    assert_includes routes_source, 'post "pages/:slug/duplicate"'
+    refute_includes routes_source, 'post "duplicate_workspace"'
+  end
+
+  def test_dummy_sidebar_uses_duplicatable_navigation
+    sidebar_path = File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__)
+    sidebar_source = File.read(sidebar_path)
+
+    assert_includes sidebar_source, 'title: "Duplicatable"'
+    assert_includes sidebar_source, 'label: "Setup"'
+    assert_includes sidebar_source, 'label: "Use"'
+    assert_includes sidebar_source, 'label: "Methods"'
+    refute_includes sidebar_source, 'label: "Health"'
+    refute_includes sidebar_source, 'label: "Recording Studio"'
+  end
+
+  def test_dummy_top_nav_removes_old_title_text
+    top_nav_path = File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__)
+    top_nav_source = File.read(top_nav_path)
+
+    refute_includes top_nav_source, "Recording Studio Duplicatable"
   end
 
   def test_engine_home_page_uses_flatpack_components

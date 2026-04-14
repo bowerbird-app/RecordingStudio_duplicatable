@@ -6,11 +6,10 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- Root workspace and root recording setup
+- A seeded `Workspace` root recording with child `Page` recordables
 - FlatPack layout integration and Tailwind source scanning
-- Mounted `RecordingStudio::Engine` route behavior inside a host app
-- `RecordingStudioDuplicatable::Capabilities::Duplicatable` wired on `Workspace`
-- A live "Duplicate current workspace" demo on the home page
+- A simple page-card duplication demo on the home page
+- Sidebar-linked setup, use, and methods guides for the addon
 
 ## Quick Start
 
@@ -27,13 +26,12 @@ Then open the app and sign in with:
 
 ## Useful Routes
 
-- `/` - dummy app home page, duplication demo, and Duplicatable capability status
-- `/recording_studio` - mounted Recording Studio engine path (the bare base route redirects to `/`)
+- `/` - seeded `Page` cards with a real duplicate action
+- `/pages/setup` - how to opt a recordable into duplication
+- `/pages/use` - how to call the duplication service
+- `/pages/methods` - the addon API surface explained
 - `/users/sign_in` - Devise sign-in page
-- `/up` - Rails health check
 
 ## Why This App Exists
 
-Use this app to verify the real addon integration in a host application. If authentication, layout wiring, routes, asset sources, or Recording Studio initializer behavior break here, the addon likely needs adjustment before release.
-
-The home page includes a **Duplicatable capability** card with a real duplicate action. Use it to create a duplicate `Workspace`, confirm the configured per-type options, and inspect the resulting copied recording tree end to end.
+Use this app to verify the real addon integration in a host application. If authentication, layout wiring, asset sources, or the page duplication flow break here, the addon likely needs adjustment before release.

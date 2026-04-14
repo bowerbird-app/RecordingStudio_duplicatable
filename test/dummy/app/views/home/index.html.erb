@@ -1,7 +1,7 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
-    title: @workspace&.name || "Recording Studio Duplicatable",
-    subtitle: "Use this dummy app to validate authentication, root recording setup, and recursive duplication behavior in a real host app.",
+    title: "Duplicatable Demo",
+    subtitle: "Seeded Pages act as a simple recordable type so you can duplicate a card and immediately see the copied record appear.",
     variant: :h1
   ) %>
 
@@ -19,162 +19,54 @@
     ) %>
   <% end %>
 
-  <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+  <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+    <% @pages.each do |page| %>
+      <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
         <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
-            title: "Addon verification workflow",
-            subtitle: "Key checks to run before shipping the duplicatable addon.",
+            title: page.title,
+            subtitle: page.summary,
             variant: :h3,
             class: "mb-0 pb-0"
           ) %>
-      <% end %>
+        <% end %>
 
         <% card.body do %>
-          <ol class="space-y-4 text-sm leading-6 text-[var(--surface-content-color)]">
-            <li>
-              Confirm the host app can boot with the engine mounted and the admin user signed in.
-            </li>
-            <li>
-              Run the duplicate action to confirm a new workspace recording is created through Recording Studio.
-            </li>
-            <li>
-              Verify the configured prefix, suffix, and descendant-copy filters match your intended behavior.
-            </li>
-            <li>
-              Use this dummy app to check layout, authentication, Tailwind sources, and Recording Studio wiring before shipping.
-            </li>
-          </ol>
+          <div class="space-y-4 text-sm text-[var(--surface-content-color)]">
+            <%= render FlatPack::Badge::Component.new(
+              text: duplicate_page?(page) ? "Duplicate" : "Seeded page",
+              style: duplicate_page?(page) ? :info : :success,
+              size: :sm
+            ) %>
+
+            <p><%= page.body.truncate(180) %></p>
+
+            <dl class="space-y-2 text-xs text-[var(--surface-muted-content-color)]">
+              <div>
+                <dt class="font-medium text-[var(--surface-content-color)]">Slug</dt>
+                <dd><%= page.slug %></dd>
+              </div>
+              <div>
+                <dt class="font-medium text-[var(--surface-content-color)]">Workspace</dt>
+                <dd><%= page.workspace.name %></dd>
+              </div>
+            </dl>
+
+            <div class="flex items-center justify-between gap-3">
+              <%= link_to "Read guide", page_path(page.slug), class: "text-sm font-medium text-[var(--link-color,var(--surface-content-color))] underline-offset-4 hover:underline" %>
+
+              <%= form_with url: duplicate_page_path(page.slug), method: :post, local: true do %>
+                <%= render FlatPack::Button::Component.new(
+                  text: "Duplicate",
+                  style: :primary,
+                  size: :sm,
+                  type: "submit"
+                ) %>
+              <% end %>
+            </div>
+          </div>
         <% end %>
+      <% end %>
     <% end %>
-
-    <div class="flex flex-col gap-6">
-      <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
-        <% card.header do %>
-          <%= render FlatPack::PageTitle::Component.new(
-            title: "Workspace state",
-            subtitle: "The seeded Recording Studio baseline for local development.",
-            variant: :h3,
-            class: "mb-0 pb-0"
-          ) %>
-        <% end %>
-
-        <% card.body do %>
-          <dl class="space-y-3 text-sm">
-            <div>
-              <dt class="text-[var(--surface-muted-content-color)]">Workspace</dt>
-              <dd class="font-medium"><%= @workspace&.name || "Not seeded" %></dd>
-            </div>
-            <div>
-              <dt class="text-[var(--surface-muted-content-color)]">Root recording</dt>
-              <dd class="font-mono text-xs"><%= @root_recording&.id || "Missing" %></dd>
-            </div>
-            <div>
-              <dt class="text-[var(--surface-muted-content-color)]">Signed in as</dt>
-              <dd class="font-medium"><%= current_user.email %></dd>
-            </div>
-          </dl>
-        <% end %>
-      <% end %>
-
-      <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
-        <% card.header do %>
-          <%= render FlatPack::PageTitle::Component.new(
-            title: "Duplicatable capability",
-            subtitle: "Workspace has the :duplicatable capability enabled via RecordingStudioDuplicatable::Capabilities::Duplicatable.with(...), and you can trigger a real duplicate below.",
-            variant: :h3,
-            class: "mb-0 pb-0"
-          ) %>
-        <% end %>
-
-        <% card.body do %>
-          <div class="space-y-4">
-            <dl class="space-y-3 text-sm">
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">Demo action</dt>
-                <dd class="mt-2">
-                  <%= form_with url: duplicate_workspace_path, method: :post, local: true do %>
-                    <%= render FlatPack::Button::Component.new(
-                      text: "Duplicate current workspace",
-                      style: :primary,
-                      size: :md,
-                      type: "submit"
-                    ) %>
-                  <% end %>
-                </dd>
-              </div>
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">Workspace recordings</dt>
-                <dd class="font-mono text-xs"><%= @workspace_recordings.size %></dd>
-              </div>
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">Duplicates created</dt>
-                <dd class="font-mono text-xs"><%= @workspace_duplicates.size %></dd>
-              </div>
-            </dl>
-
-            <dl class="space-y-3 text-sm">
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">Capability</dt>
-                <dd class="font-mono text-xs">:duplicatable</dd>
-              </div>
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">Recordable type</dt>
-                <dd class="font-mono text-xs">Workspace</dd>
-              </div>
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">prefix</dt>
-                <dd class="font-mono text-xs"><%= @duplicatable_options[:prefix].inspect %></dd>
-              </div>
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">suffix</dt>
-                <dd class="font-mono text-xs"><%= @duplicatable_options[:suffix].inspect %></dd>
-              </div>
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">include_children</dt>
-                <dd class="font-mono text-xs"><%= @duplicatable_options[:include_children].inspect %></dd>
-              </div>
-              <div>
-                <dt class="text-[var(--surface-muted-content-color)]">exclude_children</dt>
-                <dd class="font-mono text-xs"><%= @duplicatable_options[:exclude_children].inspect %></dd>
-              </div>
-            </dl>
-
-            <div>
-              <p class="mb-2 text-sm text-[var(--surface-muted-content-color)]">Recent workspace recordings</p>
-              <ul class="space-y-2 text-sm">
-                <% @workspace_recordings.last(5).reverse_each do |recording| %>
-                  <li class="rounded-md border border-[var(--border-color)] px-3 py-2">
-                    <div class="font-medium"><%= recording.recordable.name %></div>
-                    <div class="font-mono text-xs text-[var(--surface-muted-content-color)]">
-                      recording #<%= recording.id %> · parent <%= recording.parent_recording_id || "nil" %>
-                    </div>
-                  </li>
-                <% end %>
-              </ul>
-            </div>
-          </div>
-        <% end %>
-      <% end %>
-
-      <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
-        <% card.header do %>
-          <%= render FlatPack::PageTitle::Component.new(
-            title: "Useful routes",
-            subtitle: "Quick links for checking the mounted engine and local app shell.",
-            variant: :h3,
-            class: "mb-0 pb-0"
-          ) %>
-        <% end %>
-
-        <% card.body do %>
-          <div class="space-y-3 text-sm">
-            <p><strong>App home:</strong> <code>/</code></p>
-            <p><strong>Recording Studio mount:</strong> <code>/recording_studio</code></p>
-            <p><strong>Health check:</strong> <code>/up</code></p>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
   </div>
 </div>
