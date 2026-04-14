@@ -1,6 +1,25 @@
 # frozen_string_literal: true
 
 module RecordingStudioDuplicatable
+  class << self
+    def register_recording_studio_capability!
+      return unless defined?(RecordingStudio) && RecordingStudio.respond_to?(:register_capability)
+
+      RecordingStudio.register_capability(
+        :duplicatable,
+        RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
+      )
+    end
+
+    def apply_recording_studio_capabilities!
+      register_recording_studio_capability!
+      return unless defined?(RecordingStudio) && RecordingStudio.respond_to?(:apply_capabilities!)
+      return unless defined?(RecordingStudio::Recording)
+
+      RecordingStudio.apply_capabilities!
+    end
+  end
+
   module Capabilities
     # Duplicatable capability for RecordingStudio recordable models.
     #
@@ -97,13 +116,14 @@ module RecordingStudioDuplicatable
                                 prefix: :default, suffix: :default,
                                 include_children: :default, exclude_children: :default,
                                 &after_duplicate)
+          RecordingStudioDuplicatable.ensure_current_impersonator_attribute!
           new_recording = nil
 
           self.class.transaction do
             locked = acquire_lock
             locked.reload
 
-            locked.assert_capability!(:duplicatable)
+            locked.send(:assert_capability!, :duplicatable)
 
             check_target = locked.parent_recording || locked
             unless RecordingStudio::Services::AccessCheck.allowed?(
@@ -243,9 +263,4 @@ module RecordingStudioDuplicatable
   end
 end
 
-if defined?(RecordingStudio)
-  RecordingStudio.register_capability(
-    :duplicatable,
-    RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
-  )
-end
+RecordingStudioDuplicatable.register_recording_studio_capability!

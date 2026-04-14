@@ -6,11 +6,20 @@ class EngineTest < Minitest::Test
   def setup
     @original_configuration = RecordingStudioDuplicatable.instance_variable_get(:@configuration)
     RecordingStudioDuplicatable.instance_variable_set(:@configuration, RecordingStudioDuplicatable::Configuration.new)
+    @recording_studio_defined = Object.const_defined?(:RecordingStudio)
+    @original_recording_studio = RecordingStudio if @recording_studio_defined
   end
 
   def teardown
     RecordingStudioDuplicatable.configuration.hooks.clear!
     RecordingStudioDuplicatable.instance_variable_set(:@configuration, @original_configuration)
+
+    if @recording_studio_defined
+      Object.send(:remove_const, :RecordingStudio) if Object.const_defined?(:RecordingStudio)
+      Object.const_set(:RecordingStudio, @original_recording_studio)
+    elsif Object.const_defined?(:RecordingStudio)
+      Object.send(:remove_const, :RecordingStudio)
+    end
   end
 
   def test_before_and_after_initialize_initializers_run_hooks
@@ -108,6 +117,45 @@ class EngineTest < Minitest::Test
     assert_equal 2, to_prepare_blocks.size
   end
 
+  def test_capability_initializer_registers_and_applies_capabilities
+    recording_class = Class.new
+    recording_studio = build_recording_studio_stub(recording_class: recording_class)
+
+    swap_recording_studio_constant(recording_studio)
+
+    find_initializer("recording_studio_duplicatable.apply_recording_studio_capabilities").block.call
+
+    assert_equal(
+      RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods,
+      recording_studio.registered_capabilities[:duplicatable]
+    )
+    assert_includes recording_class.included_modules,
+                    RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
+  end
+
+  def test_model_extension_prepare_block_reapplies_recording_studio_capabilities
+    to_prepare_blocks = []
+    config_stub = Object.new
+    config_stub.define_singleton_method(:to_prepare) do |&block|
+      to_prepare_blocks << block
+    end
+
+    recording_class = Class.new
+    recording_studio = build_recording_studio_stub(recording_class: recording_class)
+    swap_recording_studio_constant(recording_studio)
+
+    RecordingStudioDuplicatable::Engine.stub(:config, config_stub) do
+      find_initializer("recording_studio_duplicatable.apply_model_extensions").block.call
+    end
+
+    assert_equal 1, to_prepare_blocks.size
+
+    to_prepare_blocks.first.call
+
+    assert_includes recording_class.included_modules,
+                    RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
+  end
+
   def test_apply_model_extensions_adds_registered_methods_once
     model_class = Class.new do
       def self.name
@@ -148,6 +196,32 @@ class EngineTest < Minitest::Test
   end
 
   private
+
+  def build_recording_studio_stub(recording_class:)
+    Module.new do
+      @registered_capabilities = {}
+
+      define_singleton_method(:registered_capabilities) { @registered_capabilities }
+      const_set(:Recording, recording_class)
+
+      define_singleton_method(:register_capability) do |name, mod|
+        @registered_capabilities[name.to_sym] = mod
+      end
+
+      define_singleton_method(:apply_capabilities!) do
+        @registered_capabilities.each_value do |mod|
+          next if const_get(:Recording).included_modules.include?(mod)
+
+          const_get(:Recording).include(mod)
+        end
+      end
+    end
+  end
+
+  def swap_recording_studio_constant(mod)
+    Object.send(:remove_const, :RecordingStudio) if Object.const_defined?(:RecordingStudio)
+    Object.const_set(:RecordingStudio, mod)
+  end
 
   def find_initializer(name)
     RecordingStudioDuplicatable::Engine.initializers.find { |initializer| initializer.name == name }

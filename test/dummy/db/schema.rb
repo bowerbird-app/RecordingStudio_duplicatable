@@ -15,6 +15,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_14_061000) do
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
 
+  create_table "pages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "body", null: false
+    t.text "code_sample"
+    t.datetime "created_at", null: false
+    t.boolean "published", default: true, null: false
+    t.string "slug", null: false
+    t.string "summary", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "workspace_id", null: false
+    t.index ["workspace_id", "slug"], name: "index_pages_on_workspace_id_and_slug", unique: true
+    t.index ["workspace_id"], name: "index_pages_on_workspace_id"
+  end
+
   create_table "recording_studio_access_boundaries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "minimum_role"
@@ -78,20 +92,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_14_061000) do
     t.index ["root_recording_id"], name: "index_rs_recordings_on_root_recording"
   end
 
-  create_table "pages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "workspace_id", null: false
-    t.string "title", null: false
-    t.string "slug", null: false
-    t.string "summary", null: false
-    t.text "body", null: false
-    t.text "code_sample"
-    t.boolean "published", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["workspace_id", "slug"], name: "index_pages_on_workspace_id_and_slug", unique: true
-    t.index ["workspace_id"], name: "index_pages_on_workspace_id"
-  end
-
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -110,9 +110,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_14_061000) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "pages", "workspaces"
   add_foreign_key "recording_studio_device_sessions", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
-  add_foreign_key "pages", "workspaces"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
 end

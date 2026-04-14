@@ -1,7 +1,7 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Duplicatable Demo",
-    subtitle: "Seeded Pages act as a simple recordable type so you can duplicate a card and immediately see the copied record appear.",
+    subtitle: "This is a demo of the duplication functionality",
     variant: :h1
   ) %>
 
@@ -15,55 +15,31 @@
     <%= render FlatPack::Alert::Component.new(
       title: "Duplication error",
       description: flash[:alert],
-      style: :error
+      style: :danger
     ) %>
   <% end %>
 
   <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
     <% @pages.each do |page| %>
       <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
-        <% card.header do %>
-          <%= render FlatPack::PageTitle::Component.new(
-            title: page.title,
-            subtitle: page.summary,
-            variant: :h3,
-            class: "mb-0 pb-0"
-          ) %>
-        <% end %>
-
         <% card.body do %>
-          <div class="space-y-4 text-sm text-[var(--surface-content-color)]">
+          <div class="flex flex-col items-start gap-2">
+            <h3 class="text-lg font-semibold text-(--surface-content-color)"><%= page.title %></h3>
+
             <%= render FlatPack::Badge::Component.new(
-              text: duplicate_page?(page) ? "Duplicate" : "Seeded page",
-              style: duplicate_page?(page) ? :info : :success,
+              text: "Page",
+              style: :info,
               size: :sm
             ) %>
 
-            <p><%= page.body.truncate(180) %></p>
-
-            <dl class="space-y-2 text-xs text-[var(--surface-muted-content-color)]">
-              <div>
-                <dt class="font-medium text-[var(--surface-content-color)]">Slug</dt>
-                <dd><%= page.slug %></dd>
-              </div>
-              <div>
-                <dt class="font-medium text-[var(--surface-content-color)]">Workspace</dt>
-                <dd><%= page.workspace.name %></dd>
-              </div>
-            </dl>
-
-            <div class="flex items-center justify-between gap-3">
-              <%= link_to "Read guide", page_path(page.slug), class: "text-sm font-medium text-[var(--link-color,var(--surface-content-color))] underline-offset-4 hover:underline" %>
-
-              <%= form_with url: duplicate_page_path(page.slug), method: :post, local: true do %>
-                <%= render FlatPack::Button::Component.new(
-                  text: "Duplicate",
-                  style: :primary,
-                  size: :sm,
-                  type: "submit"
-                ) %>
-              <% end %>
-            </div>
+            <%= form_with url: duplicate_page_path(page.slug), method: :post, local: true do %>
+              <%= render FlatPack::Button::Component.new(
+                text: "Duplicate",
+                style: :default,
+                size: :sm,
+                type: "submit"
+              ) %>
+            <% end %>
           </div>
         <% end %>
       <% end %>

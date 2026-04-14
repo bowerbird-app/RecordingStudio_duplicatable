@@ -13,6 +13,13 @@ module RecordingStudioDuplicatable
       @configuration ||= Configuration.new
     end
 
+    def ensure_current_impersonator_attribute!
+      return unless defined?(Current) && Current.respond_to?(:attribute)
+      return if Current.respond_to?(:impersonator) && Current.respond_to?(:impersonator=)
+
+      Current.attribute :impersonator
+    end
+
     def configure
       yield(configuration) if block_given?
     end

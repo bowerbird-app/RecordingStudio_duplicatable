@@ -94,9 +94,15 @@ module RecordingStudioDuplicatable
       RecordingStudioDuplicatable::Hooks.run(:after_initialize, self)
     end
 
+    initializer "recording_studio_duplicatable.apply_recording_studio_capabilities",
+                after: "recording_studio.after_initialize" do
+      RecordingStudioDuplicatable.apply_recording_studio_capabilities!
+    end
+
     # Apply model extensions when models are loaded
     initializer "recording_studio_duplicatable.apply_model_extensions" do
       config.to_prepare do
+        RecordingStudioDuplicatable.apply_recording_studio_capabilities!
         next unless defined?(ActiveRecord::Base)
 
         ActiveRecord::Base.descendants.each do |model|

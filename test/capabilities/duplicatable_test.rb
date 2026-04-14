@@ -117,6 +117,8 @@ class FakeRecording
     raise RecordingStudio::CapabilityDisabled, "capability not enabled" unless @capability_enabled
   end
 
+  private :assert_capability!
+
   # Stub duplicate_recordable — dup the recordable object
   def duplicate_recordable(recordable)
     recordable.dup
@@ -172,6 +174,14 @@ module RecordingStudioDuplicatable
 
       def test_duplicate_in_place_is_defined_on_fake_recording
         assert_respond_to FakeRecording.new, :duplicate_in_place!
+      end
+
+      def test_duplicate_in_place_works_with_private_assert_capability
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Original")
+        )
+
+        assert_equal "Original (Copy)", recording.duplicate_in_place!(actor: :user).recordable.name
       end
 
       # -------------------------------------------------------------------

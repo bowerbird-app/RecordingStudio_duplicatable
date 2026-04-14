@@ -3,12 +3,41 @@
 require "test_helper"
 
 class RecordingStudioDuplicatableTest < Minitest::Test
+  def setup
+    @current_defined = Object.const_defined?(:Current)
+    @original_current = Current if @current_defined
+  end
+
+  def teardown
+    if @current_defined
+      Object.send(:remove_const, :Current) if Object.const_defined?(:Current)
+      Object.const_set(:Current, @original_current)
+    elsif Object.const_defined?(:Current)
+      Object.send(:remove_const, :Current)
+    end
+  end
+
   def test_version_exists
     refute_nil ::RecordingStudioDuplicatable::VERSION
   end
 
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioDuplicatable::Engine
+  end
+
+  def test_ensure_current_impersonator_attribute_adds_optional_accessor
+    Object.send(:remove_const, :Current) if Object.const_defined?(:Current)
+    Object.const_set(:Current, Class.new(ActiveSupport::CurrentAttributes) do
+      attribute :actor
+    end)
+
+    refute Current.respond_to?(:impersonator)
+
+    RecordingStudioDuplicatable.ensure_current_impersonator_attribute!
+
+    assert Current.respond_to?(:impersonator)
+    assert Current.respond_to?(:impersonator=)
+    assert_nil Current.impersonator
   end
 
   def test_dummy_app_uses_flatpack_sidebar_layout
@@ -44,11 +73,13 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, "Duplicatable Demo"
-    assert_includes view_source, "Seeded page"
-    assert_includes view_source, "Read guide"
+    assert_includes view_source, "This is a demo of the duplication functionality"
+    assert_includes view_source, "Page"
     assert_includes view_source, "Duplicate"
+    assert_includes view_source, "style: :danger"
     refute_includes view_source, "Health check"
     refute_includes view_source, "Recording Studio mount"
+    refute_includes view_source, "style: :error"
   end
 
   def test_dummy_show_page_mentions_api_docs_card
@@ -104,6 +135,15 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     top_nav_source = File.read(top_nav_path)
 
     refute_includes top_nav_source, "Recording Studio Duplicatable"
+  end
+
+  def test_dummy_top_nav_uses_center_slot_to_push_avatar_right
+    top_nav_path = File.expand_path("dummy/app/views/layouts/flat_pack/_top_nav.html.erb", __dir__)
+    top_nav_source = File.read(top_nav_path)
+
+    assert_includes top_nav_source, "<% nav.center do %>"
+    assert_operator top_nav_source.index("<% nav.center do %>"), :<,
+                    top_nav_source.index("<% nav.right do %>")
   end
 
   def test_engine_home_page_uses_flatpack_components
