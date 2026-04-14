@@ -6,11 +6,17 @@ module RecordingStudioDuplicatable
 
     class << self
       def apply_model_extensions(target)
-        apply_extensions(target, RecordingStudioDuplicatable.configuration.hooks.model_extensions_for(extension_keys_for(target)))
+        apply_extensions(
+          target,
+          RecordingStudioDuplicatable.configuration.hooks.model_extensions_for(extension_keys_for(target))
+        )
       end
 
       def apply_controller_extensions(target)
-        apply_extensions(target, RecordingStudioDuplicatable.configuration.hooks.controller_extensions_for(extension_keys_for(target)))
+        apply_extensions(
+          target,
+          RecordingStudioDuplicatable.configuration.hooks.controller_extensions_for(extension_keys_for(target))
+        )
       end
 
       private
@@ -41,7 +47,8 @@ module RecordingStudioDuplicatable
     end
 
     # Run before_initialize hooks
-    initializer "recording_studio_duplicatable.before_initialize", before: "recording_studio_duplicatable.load_config" do |_app|
+    initializer "recording_studio_duplicatable.before_initialize",
+                before: "recording_studio_duplicatable.load_config" do |_app|
       RecordingStudioDuplicatable::Hooks.run(:before_initialize, self)
     end
 
@@ -82,7 +89,8 @@ module RecordingStudioDuplicatable
     end
 
     # Run after_initialize hooks
-    initializer "recording_studio_duplicatable.after_initialize", after: "recording_studio_duplicatable.load_config" do |_app|
+    initializer "recording_studio_duplicatable.after_initialize",
+                after: "recording_studio_duplicatable.load_config" do |_app|
       RecordingStudioDuplicatable::Hooks.run(:after_initialize, self)
     end
 
