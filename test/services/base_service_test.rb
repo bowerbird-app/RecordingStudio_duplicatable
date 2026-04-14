@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-module GemTemplate
+module RecordingStudioDuplicatable
   module Services
     class BaseServiceTest < Minitest::Test
       # Test subclass for testing BaseService
@@ -141,7 +141,7 @@ module GemTemplate
 
       def test_around_service_hook_wraps_perform
         wrapped = false
-        GemTemplate.configuration.hooks.around_service do |_service, blk|
+        RecordingStudioDuplicatable.configuration.hooks.around_service do |_service, blk|
           wrapped = true
           blk.call
         end
@@ -152,7 +152,7 @@ module GemTemplate
         assert result.success?
         assert_equal "around", result.value
       ensure
-        GemTemplate.configuration.hooks.clear!
+        RecordingStudioDuplicatable.configuration.hooks.clear!
       end
     end
   end

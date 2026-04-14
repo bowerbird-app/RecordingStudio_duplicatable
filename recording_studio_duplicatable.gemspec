@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/gem_template/version"
+require_relative "lib/recording_studio_duplicatable/version"
 
 Gem::Specification.new do |spec|
-  spec.name        = "gem_template"
-  spec.version     = GemTemplate::VERSION
+  spec.name        = "recording_studio_duplicatable"
+  spec.version     = RecordingStudioDuplicatable::VERSION
   spec.authors     = ["Bowerbird"]
   spec.homepage    = "https://github.com/bowerbird-app/RecordingStudio_duplicatable"
   spec.summary     = "Recording Studio addon for in-place duplication"

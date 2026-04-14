@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-module GemTemplate
+module RecordingStudioDuplicatable
   module Capabilities
     # Duplicatable capability for RecordingStudio recordable models.
     #
     # Enables in-place duplication of a recording and its recordable, with
     # optional prefix/suffix renaming and selective child recording duplication.
     #
-    # == Direct include (uses global GemTemplate.configuration defaults)
+    # == Direct include (uses global RecordingStudioDuplicatable.configuration defaults)
     #
     #   class Page < ApplicationRecord
-    #     include GemTemplate::Capabilities::Duplicatable
+    #     include RecordingStudioDuplicatable::Capabilities::Duplicatable
     #   end
     #
     # == Factory method (per-type options override global config)
     #
     #   class Page < ApplicationRecord
-    #     include GemTemplate::Capabilities::Duplicatable.with(
+    #     include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
     #       prefix: nil,
     #       suffix: " (Copy)",
     #       include_children: nil,
@@ -33,7 +33,7 @@ module GemTemplate
 
       # Returns a Module that, when included in a recordable model, enables the
       # :duplicatable capability with per-type options that override the global
-      # GemTemplate.configuration defaults.
+      # RecordingStudioDuplicatable.configuration defaults.
       #
       # @param prefix [String, nil] String prepended to the duplicate's name/title
       # @param suffix [String, nil] String appended to the duplicate's name/title
@@ -82,9 +82,9 @@ module GemTemplate
         # @param impersonator [Object, nil] Impersonating actor, if any
         # @param metadata [Hash] Arbitrary metadata stored on the recording event
         # @param prefix [String, nil, :default] Prepended to the duplicate's name/title.
-        #   :default resolves to the per-type option, then GemTemplate.configuration.duplication_prefix
+        #   :default resolves to the per-type option, then RecordingStudioDuplicatable.configuration.duplication_prefix
         # @param suffix [String, nil, :default] Appended to the duplicate's name/title.
-        #   :default resolves to the per-type option, then GemTemplate.configuration.duplication_suffix
+        #   :default resolves to the per-type option, then RecordingStudioDuplicatable.configuration.duplication_suffix
         # @param include_children [:default, Array<String,Class>, nil] Child types to copy.
         #   :default resolves to the per-type option (nil = no children).
         # @param exclude_children [:default, Array<String,Class>, nil] Child types to skip.
@@ -114,7 +114,7 @@ module GemTemplate
 
             type_name = locked.recordable_type
             type_opts = RecordingStudio.capability_options(:duplicatable, for_type: type_name) || {}
-            config    = GemTemplate.configuration
+            config    = RecordingStudioDuplicatable.configuration
 
             resolved_prefix  = prefix  == :default ? type_opts.fetch(:prefix,  config.duplication_prefix)  : prefix
             resolved_suffix  = suffix  == :default ? type_opts.fetch(:suffix,  config.duplication_suffix)  : suffix
@@ -144,7 +144,7 @@ module GemTemplate
           end
 
           after_duplicate&.call(new_recording)
-          GemTemplate::Hooks.run(:after_duplicate, new_recording)
+          RecordingStudioDuplicatable::Hooks.run(:after_duplicate, new_recording)
 
           new_recording
         end
@@ -162,7 +162,7 @@ module GemTemplate
         # Otherwise falls back through: :name → :title.
         # No-ops silently when neither attribute is present.
         def apply_duplication_rename(recordable, prefix:, suffix:)
-          configured_attr = GemTemplate.configuration.duplication_rename_attribute
+          configured_attr = RecordingStudioDuplicatable.configuration.duplication_rename_attribute
 
           attr_name =
             if configured_attr && recordable.respond_to?(configured_attr)
@@ -246,6 +246,6 @@ end
 if defined?(RecordingStudio)
   RecordingStudio.register_capability(
     :duplicatable,
-    GemTemplate::Capabilities::Duplicatable::RecordingMethods
+    RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
   )
 end

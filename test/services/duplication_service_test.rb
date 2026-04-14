@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Load RecordingStudio stubs before test_helper so gem_template finds them at
+# Load RecordingStudio stubs before test_helper so recording_studio_duplicatable finds them at
 # require time. Guard with `unless defined?` so the stubs defined in
 # duplicatable_test.rb are reused when both test files run in the same process.
 unless defined?(RecordingStudio)
@@ -44,7 +44,7 @@ end
 
 require "test_helper"
 
-module GemTemplate
+module RecordingStudioDuplicatable
   module Services
     class DuplicationServiceTest < Minitest::Test
       # -------------------------------------------------------------------

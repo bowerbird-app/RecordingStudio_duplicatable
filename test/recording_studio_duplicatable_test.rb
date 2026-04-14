@@ -2,13 +2,13 @@
 
 require "test_helper"
 
-class GemTemplateTest < Minitest::Test
+class RecordingStudioDuplicatableTest < Minitest::Test
   def test_version_exists
-    refute_nil ::GemTemplate::VERSION
+    refute_nil ::RecordingStudioDuplicatable::VERSION
   end
 
   def test_engine_exists
-    assert_kind_of Class, ::GemTemplate::Engine
+    assert_kind_of Class, ::RecordingStudioDuplicatable::Engine
   end
 
   def test_dummy_app_uses_flatpack_sidebar_layout
@@ -52,7 +52,7 @@ class GemTemplateTest < Minitest::Test
     controller_path = File.expand_path("dummy/app/controllers/home_controller.rb", __dir__)
     controller_source = File.read(controller_path)
 
-    assert_includes controller_source, "GemTemplate::Services::DuplicationService.call"
+    assert_includes controller_source, "RecordingStudioDuplicatable::Services::DuplicationService.call"
     assert_includes controller_source, "duplicate_workspace"
   end
 
@@ -65,7 +65,7 @@ class GemTemplateTest < Minitest::Test
   end
 
   def test_engine_home_page_uses_flatpack_components
-    view_path = File.expand_path("../app/views/gem_template/home/index.html.erb", __dir__)
+    view_path = File.expand_path("../app/views/recording_studio_duplicatable/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
     assert_includes view_source, "RecordingStudio Duplicatable"

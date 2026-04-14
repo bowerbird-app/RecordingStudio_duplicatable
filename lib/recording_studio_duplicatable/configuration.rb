@@ -2,7 +2,7 @@
 
 require_relative "hooks"
 
-module GemTemplate
+module RecordingStudioDuplicatable
   class Configuration
     attr_accessor :duplication_prefix, :duplication_suffix, :duplication_rename_attribute
     attr_reader :hooks

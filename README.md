@@ -17,13 +17,13 @@
 Add the gem from this repository to your host app:
 
 ```ruby
-gem "gem_template", github: "bowerbird-app/RecordingStudio_duplicatable"
+gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
 Then run the installer if you want the initializer, YAML config, mount, and Tailwind source hints:
 
 ```bash
-bin/rails generate gem_template:install
+bin/rails generate recording_studio_duplicatable:install
 ```
 
 ## Opting a model into duplication
@@ -32,7 +32,7 @@ Use the capability directly:
 
 ```ruby
 class Workspace < ApplicationRecord
-  include GemTemplate::Capabilities::Duplicatable
+  include RecordingStudioDuplicatable::Capabilities::Duplicatable
 end
 ```
 
@@ -40,7 +40,7 @@ Or configure per-type overrides:
 
 ```ruby
 class Workspace < ApplicationRecord
-  include GemTemplate::Capabilities::Duplicatable.with(
+  include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
     prefix: nil,
     suffix: " (Copy)",
     include_children: nil,
@@ -54,7 +54,7 @@ end
 Global defaults:
 
 ```ruby
-GemTemplate.configure do |config|
+RecordingStudioDuplicatable.configure do |config|
   config.duplication_prefix = nil
   config.duplication_suffix = " (Copy)"
   config.duplication_rename_attribute = nil
@@ -84,7 +84,7 @@ new_recording = recording.duplicate_in_place!(
 Or use the service object:
 
 ```ruby
-result = GemTemplate::Services::DuplicationService.call(
+result = RecordingStudioDuplicatable::Services::DuplicationService.call(
   recording: recording,
   actor: current_user
 )

@@ -44,8 +44,8 @@
 
         <% card.body do %>
           <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
-          <li>Add the gem to the host app and run <code>rails generate gem_template:install</code> if you want the initializer and mount.</li>
-          <li>Opt the desired recordable types into <code>GemTemplate::Capabilities::Duplicatable</code>.</li>
+          <li>Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount.</li>
+          <li>Opt the desired recordable types into <code>RecordingStudioDuplicatable::Capabilities::Duplicatable</code>.</li>
           <li>Configure Recording Studio recordable types and capability options in the host app initializer.</li>
           <li>Use the dummy app to validate recursive duplication, asset scanning, and authentication flows.</li>
           </ol>
@@ -96,8 +96,8 @@
       <% card.body do %>
         <ul class="space-y-3 text-sm leading-6">
           <li>Add the gem to your host app and run <code>bundle install</code>.</li>
-          <li>Run <code>rails generate gem_template:install</code> to mount the engine and add configuration.</li>
-          <li>Run <code>rails generate gem_template:migrations</code> to copy engine migrations into the host app.</li>
+          <li>Run <code>rails generate recording_studio_duplicatable:install</code> to mount the engine and add configuration.</li>
+          <li>Run <code>rails generate recording_studio_duplicatable:migrations</code> to copy engine migrations into the host app.</li>
           <li>Rebuild Tailwind if needed with <code>bin/rails tailwindcss:build</code>.</li>
         </ul>
       <% end %>

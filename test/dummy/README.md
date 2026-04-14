@@ -9,7 +9,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 - Root workspace and root recording setup
 - FlatPack layout integration and Tailwind source scanning
 - Mounted `RecordingStudio::Engine` route behavior inside a host app
-- `GemTemplate::Capabilities::Duplicatable` wired on `Workspace`
+- `RecordingStudioDuplicatable::Capabilities::Duplicatable` wired on `Workspace`
 - A live "Duplicate current workspace" demo on the home page
 
 ## Quick Start

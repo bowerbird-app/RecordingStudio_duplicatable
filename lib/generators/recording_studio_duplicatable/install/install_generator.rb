@@ -2,7 +2,7 @@
 
 require "rails/generators"
 
-module GemTemplate
+module RecordingStudioDuplicatable
   module Generators
     class InstallGenerator < Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
@@ -12,22 +12,22 @@ module GemTemplate
       class_option(
         :mount_path,
         type: :string,
-        default: "/gem_template",
+        default: "/recording_studio_duplicatable",
         desc: "Route prefix used when mounting the engine"
       )
 
       def mount_engine
-        route %(mount GemTemplate::Engine, at: "#{options[:mount_path]}")
+        route %(mount RecordingStudioDuplicatable::Engine, at: "#{options[:mount_path]}")
       end
 
       def copy_initializer
-        template "gem_template_initializer.rb", "config/initializers/gem_template.rb"
+        template "recording_studio_duplicatable_initializer.rb", "config/initializers/recording_studio_duplicatable.rb"
       end
 
       def add_yaml_config
-        return unless yes?("Would you like to add `config/gem_template.yml` for environment-specific settings? [y/N]")
+        return unless yes?("Would you like to add `config/recording_studio_duplicatable.yml` for environment-specific settings? [y/N]")
 
-        template "gem_template.yml", "config/gem_template.yml"
+        template "recording_studio_duplicatable.yml", "config/recording_studio_duplicatable.yml"
       end
 
       def add_tailwind_source
@@ -95,8 +95,8 @@ module GemTemplate
 
       def tailwind_source_lines
         [
-          '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";',
+          '@source "../../vendor/bundle/**/recording_studio_duplicatable/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_duplicatable-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]

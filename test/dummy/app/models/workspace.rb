@@ -1,5 +1,5 @@
 class Workspace < ApplicationRecord
-  include GemTemplate::Capabilities::Duplicatable.with(
+  include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
     prefix: nil,
     suffix: " (Copy)",
     include_children: nil,

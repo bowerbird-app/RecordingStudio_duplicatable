@@ -4,7 +4,7 @@ require "test_helper"
 
 class ConfigurationTest < Minitest::Test
   def setup
-    @configuration = GemTemplate::Configuration.new
+    @configuration = RecordingStudioDuplicatable::Configuration.new
   end
 
   def test_merge_updates_known_attributes
@@ -53,8 +53,8 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_configure_without_block_is_safe
-    GemTemplate.configure
+    RecordingStudioDuplicatable.configure
 
-    assert_kind_of GemTemplate::Configuration, GemTemplate.configuration
+    assert_kind_of RecordingStudioDuplicatable::Configuration, RecordingStudioDuplicatable.configuration
   end
 end

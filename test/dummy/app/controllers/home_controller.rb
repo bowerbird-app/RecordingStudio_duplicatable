@@ -18,7 +18,7 @@ class HomeController < ApplicationController
       return
     end
 
-    result = GemTemplate::Services::DuplicationService.call(
+    result = RecordingStudioDuplicatable::Services::DuplicationService.call(
       recording: root_recording,
       actor: current_user
     )

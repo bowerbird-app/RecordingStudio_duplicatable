@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-GemTemplate.configure do |config|
+RecordingStudioDuplicatable.configure do |config|
   # Prefix applied to duplicated names/titles.
   # config.duplication_prefix = "[Copy] "
 

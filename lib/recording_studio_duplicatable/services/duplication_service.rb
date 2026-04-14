@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GemTemplate
+module RecordingStudioDuplicatable
   module Services
     # Service object that wraps Recording#duplicate_in_place! with a
     # standardised Result interface.
@@ -10,7 +10,7 @@ module GemTemplate
     # converting each into a failure Result so callers don't need rescue blocks.
     #
     # @example Basic usage
-    #   result = GemTemplate::Services::DuplicationService.call(
+    #   result = RecordingStudioDuplicatable::Services::DuplicationService.call(
     #     recording: recording,
     #     actor:     current_user
     #   )
@@ -18,7 +18,7 @@ module GemTemplate
     #   result.on_failure { |msg|     render_error(msg) }
     #
     # @example With rename override and child copying
-    #   result = GemTemplate::Services::DuplicationService.call(
+    #   result = RecordingStudioDuplicatable::Services::DuplicationService.call(
     #     recording:        recording,
     #     actor:            current_user,
     #     suffix:           " — clone",
@@ -26,7 +26,7 @@ module GemTemplate
     #   )
     #
     # @example With a post-duplication callback
-    #   result = GemTemplate::Services::DuplicationService.call(
+    #   result = RecordingStudioDuplicatable::Services::DuplicationService.call(
     #     recording:      recording,
     #     actor:          current_user,
     #     after_duplicate: ->(new_rec) { notify_team(new_rec) }

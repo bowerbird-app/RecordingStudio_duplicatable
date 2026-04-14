@@ -2,7 +2,7 @@
 
 # ---------------------------------------------------------------------------
 # RecordingStudio stubs
-# These must be defined before test_helper loads gem_template so that
+# These must be defined before test_helper loads recording_studio_duplicatable so that
 # the `include RecordingStudio::Capability if defined?(RecordingStudio::Capability)`
 # guard in RecordingMethods resolves correctly.
 # ---------------------------------------------------------------------------
@@ -78,7 +78,7 @@ require "test_helper"
 # RecordingStudio::Recording without touching the database.
 # ---------------------------------------------------------------------------
 class FakeRecording
-  include GemTemplate::Capabilities::Duplicatable::RecordingMethods
+  include RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
 
   attr_accessor :id, :recordable, :recordable_type, :recordable_id,
                 :root_recording, :parent_recording, :child_recordings,
@@ -152,14 +152,14 @@ UnnamedRecordable = Struct.new(:id, keyword_init: true) do
   def save! = true
 end
 
-module GemTemplate
+module RecordingStudioDuplicatable
   module Capabilities
     class DuplicatableTest < Minitest::Test
       def setup
         RecordingStudio.reset!
-        GemTemplate.configuration.duplication_prefix           = nil
-        GemTemplate.configuration.duplication_suffix           = " (Copy)"
-        GemTemplate.configuration.duplication_rename_attribute = nil
+        RecordingStudioDuplicatable.configuration.duplication_prefix           = nil
+        RecordingStudioDuplicatable.configuration.duplication_suffix           = " (Copy)"
+        RecordingStudioDuplicatable.configuration.duplication_rename_attribute = nil
       end
 
       # -------------------------------------------------------------------
@@ -188,7 +188,7 @@ module GemTemplate
 
         Class.new do
           def self.name = "TestPage"
-          include GemTemplate::Capabilities::Duplicatable.with(suffix: " [dup]")
+          include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(suffix: " [dup]")
         end
 
         assert_includes RecordingStudio::ENABLED_CAPABILITIES[:duplicatable], "TestPage"
@@ -201,7 +201,7 @@ module GemTemplate
 
         Class.new do
           def self.name = "TestWidget"
-          include GemTemplate::Capabilities::Duplicatable
+          include RecordingStudioDuplicatable::Capabilities::Duplicatable
         end
 
         assert_includes RecordingStudio::ENABLED_CAPABILITIES[:duplicatable], "TestWidget"
@@ -344,8 +344,8 @@ module GemTemplate
       # -------------------------------------------------------------------
 
       def test_applies_prefix_from_global_config
-        GemTemplate.configuration.duplication_prefix = "COPY — "
-        GemTemplate.configuration.duplication_suffix = nil
+        RecordingStudioDuplicatable.configuration.duplication_prefix = "COPY — "
+        RecordingStudioDuplicatable.configuration.duplication_suffix = nil
 
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Report")
@@ -390,7 +390,7 @@ module GemTemplate
       end
 
       def test_renames_configured_attribute
-        GemTemplate.configuration.duplication_rename_attribute = :title
+        RecordingStudioDuplicatable.configuration.duplication_rename_attribute = :title
 
         recording = FakeRecording.new(
           recordable: TitledRecordable.new(id: 2, title: "My Title")
@@ -605,13 +605,13 @@ module GemTemplate
         )
 
         hook_received = nil
-        GemTemplate.configuration.hooks.on(:after_duplicate) { |rec| hook_received = rec }
+        RecordingStudioDuplicatable.configuration.hooks.on(:after_duplicate) { |rec| hook_received = rec }
 
         recording.duplicate_in_place!(actor: :user)
 
         refute_nil hook_received
       ensure
-        GemTemplate.configuration.hooks.clear(:after_duplicate)
+        RecordingStudioDuplicatable.configuration.hooks.clear(:after_duplicate)
       end
 
       # -------------------------------------------------------------------
@@ -634,7 +634,7 @@ module GemTemplate
 
       def test_capability_is_registered_with_recording_studio
         assert_equal(
-          GemTemplate::Capabilities::Duplicatable::RecordingMethods,
+          RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods,
           RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable]
         )
       end
@@ -656,7 +656,7 @@ module GemTemplate
         FakeRecording.define_singleton_method(:lock) { lock_obj }
 
         # Call the original acquire_lock from RecordingMethods (not the FakeRecording override)
-        GemTemplate::Capabilities::Duplicatable::RecordingMethods
+        RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
           .instance_method(:acquire_lock)
           .bind(rec)
           .call
