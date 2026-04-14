@@ -28,9 +28,7 @@ module GemTemplate
       extend ActiveSupport::Concern
 
       included do
-        if defined?(RecordingStudio)
-          RecordingStudio.enable_capability(:duplicatable, on: name)
-        end
+        RecordingStudio.enable_capability(:duplicatable, on: name) if defined?(RecordingStudio)
       end
 
       # Returns a Module that, when included in a recordable model, enables the
@@ -96,9 +94,9 @@ module GemTemplate
         # @raise [RecordingStudio::CapabilityDisabled] if :duplicatable is not enabled for this type
         # @raise [RecordingStudio::AccessDenied] if the actor lacks :edit access
         def duplicate_in_place!(actor:, impersonator: nil, metadata: {},
-                                 prefix: :default, suffix: :default,
-                                 include_children: :default, exclude_children: :default,
-                                 &after_duplicate)
+                                prefix: :default, suffix: :default,
+                                include_children: :default, exclude_children: :default,
+                                &after_duplicate)
           new_recording = nil
 
           self.class.transaction do
@@ -128,13 +126,13 @@ module GemTemplate
             dup_recordable.save!
 
             new_recording = RecordingStudio.record!(
-              action:            "duplicated",
-              recordable:        dup_recordable,
-              root_recording:    locked.root_recording,
-              parent_recording:  locked.parent_recording,
-              actor:             actor,
-              impersonator:      impersonator,
-              metadata:          metadata
+              action: "duplicated",
+              recordable: dup_recordable,
+              root_recording: locked.root_recording,
+              parent_recording: locked.parent_recording,
+              actor: actor,
+              impersonator: impersonator,
+              metadata: metadata
             ).recording
 
             duplicate_child_recordings(
@@ -145,7 +143,7 @@ module GemTemplate
             )
           end
 
-          after_duplicate.call(new_recording) if after_duplicate
+          after_duplicate&.call(new_recording)
           GemTemplate::Hooks.run(:after_duplicate, new_recording)
 
           new_recording
@@ -187,41 +185,58 @@ module GemTemplate
         #   - exclude_children set  → copy all except those types
         #   - neither set (both nil) → copy nothing (default-off)
         def duplicate_child_recordings(source_recording, new_parent_recording,
-                                        actor:, impersonator:, metadata:,
-                                        prefix:, suffix:,
-                                        include_children:, exclude_children:)
+                                       actor:, impersonator:, metadata:,
+                                       prefix:, suffix:,
+                                       include_children:, exclude_children:)
           return if include_children.nil? && exclude_children.nil?
-
-          children = source_recording.child_recordings
-
-          children_to_copy =
-            if include_children
-              include_types = Array(include_children).map { |t| t.is_a?(Class) ? t.name : t.to_s }
-              children.select { |c| include_types.include?(c.recordable_type) }
-            elsif exclude_children
-              exclude_types = Array(exclude_children).map { |t| t.is_a?(Class) ? t.name : t.to_s }
-              children.reject { |c| exclude_types.include?(c.recordable_type) }
-            else
-              []
-            end
 
           child_root = new_parent_recording.root_recording || new_parent_recording
 
-          children_to_copy.each do |child|
-            dup_child = source_recording.send(:duplicate_recordable, child.recordable)
+          filtered_child_recordings(source_recording.child_recordings,
+                                    include_children: include_children,
+                                    exclude_children: exclude_children).each do |child|
+            dup_child = child.send(:duplicate_recordable, child.recordable)
             apply_duplication_rename(dup_child, prefix: prefix, suffix: suffix)
             dup_child.save!
 
-            RecordingStudio.record!(
-              action:           "duplicated",
-              recordable:       dup_child,
-              root_recording:   child_root,
+            new_child_recording = RecordingStudio.record!(
+              action: "duplicated",
+              recordable: dup_child,
+              root_recording: child_root,
               parent_recording: new_parent_recording,
-              actor:            actor,
-              impersonator:     impersonator,
-              metadata:         metadata
+              actor: actor,
+              impersonator: impersonator,
+              metadata: metadata
+            ).recording
+
+            duplicate_child_recordings(
+              child,
+              new_child_recording,
+              actor: actor,
+              impersonator: impersonator,
+              metadata: metadata,
+              prefix: prefix,
+              suffix: suffix,
+              include_children: include_children,
+              exclude_children: exclude_children
             )
           end
+        end
+
+        def filtered_child_recordings(children, include_children:, exclude_children:)
+          if include_children
+            include_types = normalized_recordable_types(include_children)
+            Array(children).select { |child| include_types.include?(child.recordable_type) }
+          elsif exclude_children
+            exclude_types = normalized_recordable_types(exclude_children)
+            Array(children).reject { |child| exclude_types.include?(child.recordable_type) }
+          else
+            []
+          end
+        end
+
+        def normalized_recordable_types(types)
+          Array(types).map { |type| type.is_a?(Class) ? type.name : type.to_s }
         end
       end
     end

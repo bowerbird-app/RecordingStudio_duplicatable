@@ -35,11 +35,11 @@ class EngineTest < Minitest::Test
       hook_payload = cfg
     end
 
-    xcfg = Struct.new(:gem_template).new({ enable_feature_x: true })
+    xcfg = Struct.new(:gem_template).new({ duplication_suffix: " [dup]" })
     app_config = Struct.new(:x).new(xcfg)
     app = Struct.new(:config) do
       def config_for(_name)
-        { api_key: "from_yaml", timeout: 12 }
+        { duplication_prefix: "Copy: " }
       end
     end.new(app_config)
 
@@ -47,15 +47,14 @@ class EngineTest < Minitest::Test
 
     assert hook_called
     assert_equal GemTemplate.configuration, hook_payload
-    assert_equal "from_yaml", GemTemplate.configuration.api_key
-    assert_equal 12, GemTemplate.configuration.timeout
-    assert_equal true, GemTemplate.configuration.enable_feature_x
+    assert_equal "Copy: ", GemTemplate.configuration.duplication_prefix
+    assert_equal " [dup]", GemTemplate.configuration.duplication_suffix
   end
 
   def test_load_config_handles_errors_and_each_pair_fallback
     pair_config = Class.new do
       def each_pair
-        yield(:timeout, 15)
+        yield(:duplication_suffix, " via x config")
       end
     end.new
 
@@ -70,7 +69,7 @@ class EngineTest < Minitest::Test
 
     find_initializer("gem_template.load_config").block.call(app)
 
-    assert_equal 15, GemTemplate.configuration.timeout
+    assert_equal " via x config", GemTemplate.configuration.duplication_suffix
   end
 
   def test_load_config_swallow_each_pair_errors
@@ -84,14 +83,14 @@ class EngineTest < Minitest::Test
     app_config = Struct.new(:x).new(xcfg)
     app = Struct.new(:config) do
       def config_for(_name)
-        { api_key: "ok" }
+        { duplication_prefix: "[copy] " }
       end
     end.new(app_config)
 
     # Should not raise even if xcfg.each_pair fails.
     find_initializer("gem_template.load_config").block.call(app)
 
-    assert_equal "ok", GemTemplate.configuration.api_key
+    assert_equal "[copy] ", GemTemplate.configuration.duplication_prefix
   end
 
   def test_apply_extension_initializers_register_active_support_on_load_callbacks

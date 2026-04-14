@@ -7,7 +7,7 @@ module GemTemplate
     class InstallGenerator < Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
 
-      desc "Installs GemTemplate engine into your application"
+      desc "Installs the Recording Studio duplicatable addon into your application"
 
       class_option(
         :mount_path,
@@ -38,7 +38,7 @@ module GemTemplate
         missing_lines = missing_tailwind_source_lines(tailwind_content)
 
         if missing_lines.empty?
-          say "Tailwind already configured to include GemTemplate and FlatPack sources.", :green
+          say "Tailwind already configured to include the duplicatable addon and FlatPack sources.", :green
           return
         end
 
@@ -72,13 +72,13 @@ module GemTemplate
         inject_into_file tailwind_css_path, after: "@import \"tailwindcss\";\n" do
           "#{formatted_tailwind_source_block(missing_lines)}\n"
         end
-        say "Added GemTemplate and FlatPack sources to Tailwind CSS configuration.", :green
+        say "Added duplicatable addon and FlatPack sources to Tailwind CSS configuration.", :green
         say "Run 'bin/rails tailwindcss:build' to rebuild your CSS.", :green
       end
 
       def formatted_tailwind_source_block(missing_lines)
         [
-          "\n/* Include GemTemplate engine views for Tailwind CSS */",
+          "\n/* Include the duplicatable addon engine views for Tailwind CSS */",
           missing_lines.first(2),
           "\n/* Include FlatPack component sources for Tailwind CSS */",
           missing_lines.drop(2)

@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-# Use the gem_template engine
+# Use the local duplicatable addon engine
 gem "gem_template", path: "../.."
 
 # RecordingStudio engine

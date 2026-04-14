@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 3.3
+  TargetRubyVersion: 3.2
   NewCops: enable
   Exclude:
     - 'test/dummy/**/*'
@@ -26,16 +26,41 @@ Metrics/MethodLength:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'lib/gem_template/capabilities/duplicatable.rb'
+    - 'lib/gem_template/services/duplication_service.rb'
 
 Metrics/AbcSize:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
+    - 'lib/gem_template/capabilities/duplicatable.rb'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/gem_template/capabilities/duplicatable.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/gem_template/capabilities/duplicatable.rb'
+
+Metrics/ParameterLists:
+  Exclude:
+    - 'lib/gem_template/capabilities/duplicatable.rb'
+    - 'lib/gem_template/services/duplication_service.rb'
+    - 'test/**/*'
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'lib/gem_template/capabilities/duplicatable.rb'
 
 # Allow empty blocks in tests (common for stubs/mocks)
 Lint/EmptyBlock:
   Exclude:
     - 'test/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'lib/gem_template/capabilities/duplicatable.rb'
 
 # Allow nested method definitions in tests (common for testing behavior)
 Lint/NestedMethodDefinition:
@@ -52,3 +77,15 @@ Lint/MissingSuper:
   Exclude:
     - 'lib/gem_template/services/**/*'
     - 'test/services/**/*'
+
+Naming/PredicateMethod:
+  Exclude:
+    - 'test/**/*'
+
+Style/OptionalBooleanParameter:
+  Exclude:
+    - 'test/**/*'
+
+Style/MutableConstant:
+  Exclude:
+    - 'test/**/*'

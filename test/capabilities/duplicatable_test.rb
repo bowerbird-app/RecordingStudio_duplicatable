@@ -23,7 +23,7 @@ unless defined?(RecordingStudio)
 
     module Services
       module AccessCheck
-        def self.allowed?(actor:, recording:, role:)
+        def self.allowed?(**)
           # Overridden per-test via AccessCheck.stub(:allowed?, ...) or by
           # swapping the implementation below.
           true
@@ -50,9 +50,9 @@ unless defined?(RecordingStudio)
     def self.record!(**kwargs)
       FakeEvent.new(
         recording: FakeRecording.new(
-          recordable:       kwargs[:recordable],
-          recordable_type:  kwargs[:recordable]&.class&.name,
-          root_recording:   kwargs[:root_recording],
+          recordable: kwargs[:recordable],
+          recordable_type: kwargs[:recordable]&.class&.name,
+          root_recording: kwargs[:root_recording],
           parent_recording: kwargs[:parent_recording]
         )
       )
@@ -130,6 +130,7 @@ FakeEvent = Struct.new(:recording, keyword_init: true)
 # ---------------------------------------------------------------------------
 NamedRecordable = Struct.new(:id, :name, keyword_init: true) do
   def save! = true
+
   def respond_to?(method_name, include_private = false)
     method_name.to_sym == :name || super
   end
@@ -137,6 +138,7 @@ end
 
 TitledRecordable = Struct.new(:id, :title, keyword_init: true) do
   def save! = true
+
   def respond_to?(method_name, include_private = false)
     case method_name.to_sym
     when :title then true
@@ -242,14 +244,17 @@ module GemTemplate
       def test_uses_parent_recording_for_access_check_when_present
         parent = FakeRecording.new(id: 99)
         recording = FakeRecording.new(
-          recordable:       NamedRecordable.new(id: 1, name: "Original"),
+          recordable: NamedRecordable.new(id: 1, name: "Original"),
           parent_recording: parent
         )
 
         checked_recording = nil
         RecordingStudio::Services::AccessCheck.stub(
           :allowed?,
-          ->(**kwargs) { checked_recording = kwargs[:recording]; true }
+          lambda { |**kwargs|
+            checked_recording = kwargs[:recording]
+            true
+          }
         ) do
           recording.duplicate_in_place!(actor: :user)
         end
@@ -265,7 +270,10 @@ module GemTemplate
         checked_recording = nil
         RecordingStudio::Services::AccessCheck.stub(
           :allowed?,
-          ->(**kwargs) { checked_recording = kwargs[:recording]; true }
+          lambda { |**kwargs|
+            checked_recording = kwargs[:recording]
+            true
+          }
         ) do
           recording.duplicate_in_place!(actor: :user)
         end
@@ -300,7 +308,7 @@ module GemTemplate
       def test_applies_per_type_suffix_via_capability_options
         RecordingStudio.set_capability_options(:duplicatable, on: "NamedRecordable", suffix: " (Dup)")
         recording = FakeRecording.new(
-          recordable:      NamedRecordable.new(id: 1, name: "Item"),
+          recordable: NamedRecordable.new(id: 1, name: "Item"),
           recordable_type: "NamedRecordable"
         )
 
@@ -312,7 +320,7 @@ module GemTemplate
       def test_explicit_suffix_overrides_per_type_options
         RecordingStudio.set_capability_options(:duplicatable, on: "NamedRecordable", suffix: " (Dup)")
         recording = FakeRecording.new(
-          recordable:      NamedRecordable.new(id: 1, name: "Item"),
+          recordable: NamedRecordable.new(id: 1, name: "Item"),
           recordable_type: "NamedRecordable"
         )
 
@@ -400,18 +408,21 @@ module GemTemplate
       def test_no_children_copied_by_default
         child_recordable = NamedRecordable.new(id: 10, name: "Child")
         child = FakeRecording.new(
-          id:              10,
-          recordable:      child_recordable,
+          id: 10,
+          recordable: child_recordable,
           recordable_type: "NamedRecordable"
         )
 
         recording = FakeRecording.new(
-          recordable:       NamedRecordable.new(id: 1, name: "Parent"),
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
           child_recordings: [child]
         )
 
         recorded_calls = []
-        RecordingStudio.stub(:record!, ->(action:, **_kwargs) { recorded_calls << action; FakeEvent.new(recording: FakeRecording.new) }) do
+        RecordingStudio.stub(:record!, lambda { |action:, **_kwargs|
+          recorded_calls << action
+          FakeEvent.new(recording: FakeRecording.new)
+        }) do
           recording.duplicate_in_place!(actor: :user)
         end
 
@@ -426,14 +437,17 @@ module GemTemplate
                                     recordable_type: "TitledRecordable")
 
         recording = FakeRecording.new(
-          recordable:       NamedRecordable.new(id: 1, name: "Parent"),
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
           child_recordings: [child_a, child_b]
         )
 
         record_calls = []
         RecordingStudio.stub(
           :record!,
-          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeEvent.new(recording: FakeRecording.new) }
+          lambda { |**kwargs|
+            record_calls << kwargs[:recordable]
+            FakeEvent.new(recording: FakeRecording.new)
+          }
         ) do
           recording.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
         end
@@ -443,6 +457,31 @@ module GemTemplate
         assert_kind_of NamedRecordable, record_calls.last
       end
 
+      def test_include_children_copies_matching_descendants_recursively
+        grandchild = FakeRecording.new(id: 12, recordable: NamedRecordable.new(id: 12, name: "Grandchild"),
+                                       recordable_type: "NamedRecordable")
+        child = FakeRecording.new(id: 10, recordable: NamedRecordable.new(id: 10, name: "Child"),
+                                  recordable_type: "NamedRecordable", child_recordings: [grandchild])
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          child_recordings: [child]
+        )
+
+        record_calls = []
+        RecordingStudio.stub(
+          :record!,
+          lambda { |**kwargs|
+            record_calls << kwargs[:recordable]
+            FakeEvent.new(recording: FakeRecording.new(child_recordings: []))
+          }
+        ) do
+          recording.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
+        end
+
+        assert_equal 3, record_calls.size
+        assert_equal ["Parent (Copy)", "Child (Copy)", "Grandchild (Copy)"], record_calls.map(&:name)
+      end
+
       def test_exclude_children_skips_matching_types
         child_a = FakeRecording.new(id: 10, recordable: NamedRecordable.new(id: 10, name: "A"),
                                     recordable_type: "NamedRecordable")
@@ -450,14 +489,17 @@ module GemTemplate
                                     recordable_type: "TitledRecordable")
 
         recording = FakeRecording.new(
-          recordable:       NamedRecordable.new(id: 1, name: "Parent"),
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
           child_recordings: [child_a, child_b]
         )
 
         record_calls = []
         RecordingStudio.stub(
           :record!,
-          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeEvent.new(recording: FakeRecording.new) }
+          lambda { |**kwargs|
+            record_calls << kwargs[:recordable]
+            FakeEvent.new(recording: FakeRecording.new)
+          }
         ) do
           recording.duplicate_in_place!(actor: :user, exclude_children: ["NamedRecordable"])
         end
@@ -465,6 +507,35 @@ module GemTemplate
         # 1 parent + 1 non-excluded child (TitledRecordable) = 2
         assert_equal 2, record_calls.size
         assert_kind_of TitledRecordable, record_calls.last
+      end
+
+      def test_exclude_children_skips_excluded_descendant_subtrees
+        grandchild = FakeRecording.new(id: 12, recordable: NamedRecordable.new(id: 12, name: "Grandchild"),
+                                       recordable_type: "NamedRecordable")
+        excluded_child = FakeRecording.new(id: 10, recordable: TitledRecordable.new(id: 10, title: "Excluded"),
+                                           recordable_type: "TitledRecordable", child_recordings: [grandchild])
+        included_child = FakeRecording.new(id: 11, recordable: NamedRecordable.new(id: 11, name: "Included"),
+                                           recordable_type: "NamedRecordable")
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          child_recordings: [excluded_child, included_child]
+        )
+
+        record_calls = []
+        RecordingStudio.stub(
+          :record!,
+          lambda { |**kwargs|
+            record_calls << kwargs[:recordable]
+            FakeEvent.new(recording: FakeRecording.new)
+          }
+        ) do
+          recording.duplicate_in_place!(actor: :user, exclude_children: ["TitledRecordable"])
+        end
+
+        assert_equal 2, record_calls.size
+        assert_equal(["Parent (Copy)", "Included (Copy)"], record_calls.map do |recordable|
+          recordable.respond_to?(:name) ? recordable.name : recordable.title
+        end)
       end
 
       def test_per_type_include_children_option
@@ -478,15 +549,18 @@ module GemTemplate
                                     recordable_type: "TitledRecordable")
 
         recording = FakeRecording.new(
-          recordable:       NamedRecordable.new(id: 1, name: "Parent"),
-          recordable_type:  "NamedRecordable",
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          recordable_type: "NamedRecordable",
           child_recordings: [child_a, child_b]
         )
 
         record_calls = []
         RecordingStudio.stub(
           :record!,
-          ->(**kwargs) { record_calls << kwargs[:recordable]; FakeEvent.new(recording: FakeRecording.new) }
+          lambda { |**kwargs|
+            record_calls << kwargs[:recordable]
+            FakeEvent.new(recording: FakeRecording.new)
+          }
         ) do
           recording.duplicate_in_place!(actor: :user)
         end
@@ -573,7 +647,10 @@ module GemTemplate
         rec = FakeRecording.new(id: 42)
         found_id = nil
         lock_obj = Object.new
-        lock_obj.define_singleton_method(:find) { |id| found_id = id; rec }
+        lock_obj.define_singleton_method(:find) do |id|
+          found_id = id
+          rec
+        end
 
         # Define a temporary class-level lock method so the stub can be exercised
         FakeRecording.define_singleton_method(:lock) { lock_obj }
@@ -602,12 +679,15 @@ module GemTemplate
         child = FakeRecording.new(id: 10, recordable: NamedRecordable.new(id: 10, name: "Child"),
                                   recordable_type: "NamedRecordable")
         recording = FakeRecording.new(
-          recordable:       NamedRecordable.new(id: 1, name: "Parent"),
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
           child_recordings: [child]
         )
 
         record_calls = []
-        RecordingStudio.stub(:record!, ->(**kwargs) { record_calls << kwargs; FakeEvent.new(recording: FakeRecording.new) }) do
+        RecordingStudio.stub(:record!, lambda { |**kwargs|
+          record_calls << kwargs
+          FakeEvent.new(recording: FakeRecording.new)
+        }) do
           # include_children: false — not nil so guard doesn't exit, but falsy so else [] is reached
           recording.duplicate_in_place!(actor: :user, include_children: false, exclude_children: nil)
         end
@@ -629,16 +709,23 @@ module GemTemplate
       end
 
       def test_child_duplicates_are_parented_under_created_recording
+        grandchild = FakeRecording.new(
+          id: 11,
+          recordable: NamedRecordable.new(id: 11, name: "Grandchild"),
+          recordable_type: "NamedRecordable"
+        )
         child = FakeRecording.new(
           id: 10,
           recordable: NamedRecordable.new(id: 10, name: "Child"),
-          recordable_type: "NamedRecordable"
+          recordable_type: "NamedRecordable",
+          child_recordings: [grandchild]
         )
         source = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Parent"),
           child_recordings: [child]
         )
         created = FakeRecording.new(id: 88, recordable: NamedRecordable.new(id: 2, name: "Parent (Copy)"))
+        created_child = FakeRecording.new(id: 89, recordable: NamedRecordable.new(id: 3, name: "Child (Copy)"))
         parent_recordings = []
         call_index = 0
 
@@ -647,6 +734,8 @@ module GemTemplate
           call_index += 1
           if call_index == 1
             FakeEvent.new(recording: created)
+          elsif call_index == 2
+            FakeEvent.new(recording: created_child)
           else
             FakeEvent.new(recording: FakeRecording.new)
           end
@@ -654,7 +743,7 @@ module GemTemplate
           source.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
         end
 
-        assert_equal [nil, created], parent_recordings
+        assert_equal [nil, created, created_child], parent_recordings
       end
 
       def test_after_duplicate_callback_runs_after_transaction
@@ -675,7 +764,7 @@ module GemTemplate
           end
         end
 
-        assert_equal [:transaction_started, :recording_created, :transaction_committed, :callback_ran], order
+        assert_equal %i[transaction_started recording_created transaction_committed callback_ran], order
       end
     end
   end

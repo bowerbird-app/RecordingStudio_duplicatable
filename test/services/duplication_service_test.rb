@@ -16,7 +16,7 @@ unless defined?(RecordingStudio)
 
     module Services
       module AccessCheck
-        def self.allowed?(actor:, recording:, role:) = true
+        def self.allowed?(**) = true
       end
     end
 
@@ -28,7 +28,12 @@ unless defined?(RecordingStudio)
     def self.set_capability_options(name, on:, **opts) = (CAPABILITY_OPTIONS_STORE[[name, on]] = opts)
     def self.capability_options(name, for_type:) = CAPABILITY_OPTIONS_STORE[[name, for_type]]
     def self.register_capability(name, mod) = (REGISTERED_CAPABILITIES[name] = mod)
-    def self.reset! = (REGISTERED_CAPABILITIES.clear; ENABLED_CAPABILITIES.clear; CAPABILITY_OPTIONS_STORE.clear)
+
+    def self.reset!
+      REGISTERED_CAPABILITIES.clear
+      ENABLED_CAPABILITIES.clear
+      CAPABILITY_OPTIONS_STORE.clear
+    end
 
     def self.record!(**_kwargs)
       # Returns a minimal struct so callers get a non-nil new recording

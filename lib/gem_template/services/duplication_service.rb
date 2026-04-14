@@ -62,22 +62,17 @@ module GemTemplate
 
       def perform
         new_recording = @recording.duplicate_in_place!(
-          actor:            @actor,
-          impersonator:     @impersonator,
-          metadata:         @metadata,
-          prefix:           @prefix,
-          suffix:           @suffix,
+          actor: @actor,
+          impersonator: @impersonator,
+          metadata: @metadata,
+          prefix: @prefix,
+          suffix: @suffix,
           include_children: @include_children,
           exclude_children: @exclude_children,
           &@after_duplicate
         )
         success(new_recording)
-      rescue RecordingStudio::AccessDenied, RecordingStudio::CapabilityDisabled => e
-        # Expected capability failures — return as structured failures
-        failure(e)
       rescue StandardError => e
-        # Unexpected errors — still converted to failure Results so callers
-        # never need bare rescue blocks around DuplicationService.call
         failure(e)
       end
 

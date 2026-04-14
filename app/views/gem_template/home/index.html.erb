@@ -1,55 +1,55 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-12">
   <%= render FlatPack::PageTitle::Component.new(
-    title: "GemTemplate Engine",
-    subtitle: "The engine is mounted and ready for FlatPack-based Recording Studio addon development.",
+    title: "RecordingStudio Duplicatable",
+    subtitle: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables.",
     variant: :h1
   ) %>
 
   <div class="flex flex-wrap gap-2">
     <%= render FlatPack::Badge::Component.new(text: "Engine mounted", style: :success, size: :sm) %>
     <%= render FlatPack::Badge::Component.new(text: "FlatPack enabled", style: :info, size: :sm) %>
-    <%= render FlatPack::Badge::Component.new(text: "Rails 8.1 template", style: :warning, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: "Recursive duplication", style: :warning, size: :sm) %>
   </div>
 
   <div class="grid gap-6 lg:grid-cols-2">
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
-        <%= render FlatPack::PageTitle::Component.new(
-          title: "What's working",
-          subtitle: "Core template capabilities already wired in.",
-          variant: :h3,
-          class: "mb-0 pb-0"
-        ) %>
+          <%= render FlatPack::PageTitle::Component.new(
+            title: "What's working",
+            subtitle: "Core addon capabilities already wired in.",
+            variant: :h3,
+            class: "mb-0 pb-0"
+          ) %>
       <% end %>
 
       <% card.body do %>
-        <ul class="space-y-3 text-sm leading-6">
-          <li>Rails engine routes are mounted and responding.</li>
-          <li>PostgreSQL UUID-oriented migrations are included in the engine.</li>
-          <li>Tailwind sources can be wired into a host app through the install generator.</li>
-          <li>The dummy app exercises authentication, FlatPack layouts, and Recording Studio setup.</li>
-        </ul>
+          <ul class="space-y-3 text-sm leading-6">
+            <li>Rails engine routes are mounted and responding.</li>
+            <li>PostgreSQL UUID-oriented migrations are included in the engine.</li>
+            <li>Tailwind sources can be wired into a host app through the install generator.</li>
+            <li>The dummy app exercises authentication, FlatPack layouts, Recording Studio setup, and live duplication.</li>
+          </ul>
       <% end %>
     <% end %>
 
     <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
       <% card.header do %>
-        <%= render FlatPack::PageTitle::Component.new(
-          title: "Next steps",
-          subtitle: "The usual first moves when turning the template into a real addon.",
-          variant: :h3,
-          class: "mb-0 pb-0"
-        ) %>
+          <%= render FlatPack::PageTitle::Component.new(
+            title: "How to use it",
+            subtitle: "The standard path for enabling duplication in a host app.",
+            variant: :h3,
+            class: "mb-0 pb-0"
+          ) %>
       <% end %>
 
-      <% card.body do %>
-        <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
-          <li>Run <code>bin/rename_gem your_addon_name</code> when you are ready to rename the engine.</li>
-          <li>Replace the sample migration with your addon tables and install them into the host app.</li>
-          <li>Configure Recording Studio recordable types and capabilities in the host app initializer.</li>
-          <li>Use the dummy app to validate layout, asset scanning, and authentication flows.</li>
-        </ol>
-      <% end %>
+        <% card.body do %>
+          <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
+          <li>Add the gem to the host app and run <code>rails generate gem_template:install</code> if you want the initializer and mount.</li>
+          <li>Opt the desired recordable types into <code>GemTemplate::Capabilities::Duplicatable</code>.</li>
+          <li>Configure Recording Studio recordable types and capability options in the host app initializer.</li>
+          <li>Use the dummy app to validate recursive duplication, asset scanning, and authentication flows.</li>
+          </ol>
+        <% end %>
     <% end %>
 
     <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
@@ -104,6 +104,5 @@
     <% end %>
   </div>
 </div>
-
 
 

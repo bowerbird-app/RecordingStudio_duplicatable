@@ -4,7 +4,6 @@ require "gem_template/version"
 require "gem_template/engine"
 require "gem_template/configuration"
 require "gem_template/services/base_service"
-require "gem_template/services/example_service"
 require "gem_template/capabilities/duplicatable"
 require "gem_template/services/duplication_service"
 

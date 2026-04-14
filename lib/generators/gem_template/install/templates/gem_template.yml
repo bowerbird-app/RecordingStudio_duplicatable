@@ -1,9 +1,9 @@
 development:
-  api_key: "dev-key"
-  enable_feature_x: true
-  timeout: 5
+  duplication_prefix:
+  duplication_suffix: " (Copy)"
+  duplication_rename_attribute:
 
 production:
-  api_key: <%= ENV["GEM_TEMPLATE_API_KEY"] %>
-  enable_feature_x: false
-  timeout: 5
+  duplication_prefix:
+  duplication_suffix: " (Copy)"
+  duplication_rename_attribute:

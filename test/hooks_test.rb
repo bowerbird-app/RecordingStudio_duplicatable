@@ -308,7 +308,7 @@ class HooksTest < Minitest::Test
       @hooks.run(:error_event)
     end
 
-    assert logger_errors.any? { |m| m.include?("intentional") }
+    assert(logger_errors.any? { |m| m.include?("intentional") })
   end
 
   def test_class_run_around_delegates_to_configuration_hooks

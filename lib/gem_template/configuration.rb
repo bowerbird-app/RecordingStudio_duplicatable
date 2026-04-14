@@ -4,14 +4,10 @@ require_relative "hooks"
 
 module GemTemplate
   class Configuration
-    attr_accessor :api_key, :enable_feature_x, :timeout
     attr_accessor :duplication_prefix, :duplication_suffix, :duplication_rename_attribute
     attr_reader :hooks
 
     def initialize
-      @api_key = ENV.fetch("GEM_TEMPLATE_API_KEY", nil)
-      @enable_feature_x = false
-      @timeout = 5
       @hooks = Hooks.new
 
       # Duplicatable capability defaults
@@ -22,9 +18,6 @@ module GemTemplate
 
     def to_h
       {
-        api_key: api_key,
-        enable_feature_x: enable_feature_x,
-        timeout: timeout,
         duplication_prefix: duplication_prefix,
         duplication_suffix: duplication_suffix,
         duplication_rename_attribute: duplication_rename_attribute,

@@ -37,11 +37,11 @@ class GemTemplateTest < Minitest::Test
     assert_includes readme_source, "Duplicate current workspace"
   end
 
-  def test_dummy_home_page_mentions_template_workflow
+  def test_dummy_home_page_mentions_addon_verification_workflow
     view_path = File.expand_path("dummy/app/views/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, "Template workflow"
+    assert_includes view_source, "Addon verification workflow"
     assert_includes view_source, "Workspace state"
     assert_includes view_source, "Recording Studio mount"
     assert_includes view_source, "Duplicate current workspace"
@@ -68,6 +68,7 @@ class GemTemplateTest < Minitest::Test
     view_path = File.expand_path("../app/views/gem_template/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
+    assert_includes view_source, "RecordingStudio Duplicatable"
     assert_includes view_source, "FlatPack::PageTitle::Component"
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "FlatPack::Button::Component"

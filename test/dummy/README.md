@@ -34,6 +34,6 @@ Then open the app and sign in with:
 
 ## Why This App Exists
 
-Use this app to verify the generated addon experience before renaming the gem or copying patterns into another host app. If a layout, route, asset source, or Recording Studio initializer change breaks here, the template likely needs adjustment before reuse.
+Use this app to verify the real addon integration in a host application. If authentication, layout wiring, routes, asset sources, or Recording Studio initializer behavior break here, the addon likely needs adjustment before release.
 
-The home page includes a **Duplicatable capability** card with a real duplicate action. Use it to create a duplicate `Workspace`, confirm the configured per-type options, and inspect the resulting workspace recordings without adding any addon-specific views to the engine itself.
+The home page includes a **Duplicatable capability** card with a real duplicate action. Use it to create a duplicate `Workspace`, confirm the configured per-type options, and inspect the resulting copied recording tree end to end.

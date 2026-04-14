@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 GemTemplate.configure do |config|
-  # Set your API key (recommended to use ENV or Rails credentials)
-  # config.api_key = ENV["GEM_TEMPLATE_API_KEY"]
+  # Prefix applied to duplicated names/titles.
+  # config.duplication_prefix = "[Copy] "
 
-  # Enable optional feature X
-  # config.enable_feature_x = false
+  # Suffix applied to duplicated names/titles.
+  # config.duplication_suffix = " (Copy)"
 
-  # Timeout in seconds for external calls
-  # config.timeout = 5
+  # Override rename attribute detection (:name, then :title by default).
+  # config.duplication_rename_attribute = :title
 end
