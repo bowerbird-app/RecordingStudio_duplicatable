@@ -10,6 +10,7 @@
 - Renames the duplicate with configurable prefix/suffix rules
 - Recursively duplicates descendant recordings when child copying is enabled
 - Preserves Recording Studio access checks and parent/root recording relationships
+- Ships with a built-in duplication controller and route for simple buttons/links
 - Exposes a small controller-friendly `DuplicationService`
 
 ## Installation
@@ -25,6 +26,8 @@ Then run the installer if you want the initializer, YAML config, mount, and Tail
 ```bash
 bin/rails generate recording_studio_duplicatable:install
 ```
+
+The installer mounts the engine so host app views can use the built-in duplicate endpoint.
 
 ## Opting a model into duplication
 
@@ -73,7 +76,37 @@ Available options:
 
 ## Usage
 
-Duplicate from a recording:
+### Built-in controller and route
+
+Once the engine is mounted, host app views can post directly to the gem:
+
+```erb
+<%= button_to "Duplicate",
+  recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id),
+  method: :post %>
+```
+
+The built-in controller:
+
+- resolves the actor from your existing Recording Studio actor setup
+- falls back to `Current.actor` when needed
+- passes optional `Current.impersonator`
+- relies on the existing duplication API, which performs the standard Recording Studio `:edit` access check
+- redirects back with a notice or alert
+
+Make sure your host app keeps Recording Studio configured with the current actor, for example:
+
+```ruby
+RecordingStudio.configure do |config|
+  config.actor = -> { Current.actor }
+end
+```
+
+The engine controller inherits from your host app `ApplicationController` when one is present, so existing authentication and current-actor callbacks continue to apply.
+
+### Direct recording API
+
+Duplicate from a recording when you want custom controller behavior:
 
 ```ruby
 new_recording = recording.duplicate_in_place!(
@@ -81,7 +114,9 @@ new_recording = recording.duplicate_in_place!(
 )
 ```
 
-Or use the service object:
+### Service object
+
+Or use the service object in your own controller/service:
 
 ```ruby
 result = RecordingStudioDuplicatable::Services::DuplicationService.call(
@@ -89,6 +124,8 @@ result = RecordingStudioDuplicatable::Services::DuplicationService.call(
   actor: current_user
 )
 ```
+
+The lower-level recording and service APIs remain available for apps that want custom redirects, response formats, or extra side effects.
 
 ## Behavior notes
 
@@ -105,7 +142,7 @@ The dummy app in `test/dummy/` demonstrates:
 - Devise authentication
 - `Current.actor` wiring
 - root `Workspace` recording setup
-- a live “Duplicate current workspace” action
+- cards that post to the gem-provided duplicate endpoint
 - the resulting duplicated workspace recordings in the UI
 
 Run it with:

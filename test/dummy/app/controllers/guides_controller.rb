@@ -2,8 +2,23 @@ class GuidesController < ApplicationController
   GUIDE_CONTENT = {
     "setup" => {
       title: "Setup",
-      subtitle: "Opt a recordable into duplication and define how child recordings should behave.",
+      subtitle: "Mount the engine, keep your current actor available, and opt recordables into duplication.",
       sections: [
+        {
+          title: "Mount and actor setup",
+          subtitle: "The built-in duplicate endpoint uses the mounted engine route plus your existing Recording Studio actor resolver.",
+          code_block: {
+            title: "Routes and actor setup",
+            language: "ruby",
+            code: <<~RUBY
+              mount RecordingStudioDuplicatable::Engine, at: "/recording_studio_duplicatable"
+
+              RecordingStudio.configure do |config|
+                config.actor = -> { Current.actor }
+              end
+            RUBY
+          }
+        },
         {
           title: "Capability",
           subtitle: "Include the addon with the child-copy options you want.",
@@ -56,18 +71,17 @@ class GuidesController < ApplicationController
     },
     "use" => {
       title: "Use",
-      subtitle: "How to duplicate something.",
+      subtitle: "How to duplicate something with the built-in route, plus the custom option when you need it.",
       sections: [
         {
           code_block: {
-            title: "Duplicate a recording",
-            language: "ruby",
-            code: <<~RUBY
-              result = RecordingStudioDuplicatable::Services::DuplicationService.call(
-                recording: page_recording,
-                actor: current_user
-              )
-            RUBY
+            title: "Simple button",
+            language: "erb",
+            code: <<~ERB
+              <%= button_to "Duplicate",
+                recording_studio_duplicatable.duplicate_recording_path(recording_id: page_recording.id),
+                method: :post %>
+            ERB
           }
         },
         {
@@ -80,18 +94,36 @@ class GuidesController < ApplicationController
               {recordable: "Folder", child_behavior: "Nested folders and comments are duplicated"}
             ]
           }
+        },
+        {
+          title: "Custom controller (optional)",
+          subtitle: "Use the service directly when you want custom redirects or non-browser responses.",
+          code_block: {
+            title: "Service object",
+            language: "ruby",
+            code: <<~RUBY
+              result = RecordingStudioDuplicatable::Services::DuplicationService.call(
+                recording: page_recording,
+                actor: current_user
+              )
+            RUBY
+          }
         }
       ]
     },
     "methods" => {
       title: "Methods",
-      subtitle: "The main public entry points exposed by the duplicatable addon.",
+      subtitle: "The built-in endpoint is the simple option. The service and recording APIs are still there for custom workflows.",
       sections: [
         {
           title: "API surface",
-          subtitle: "Use the model capability for setup and the service or recording for execution.",
+          subtitle: "Use the route helper for simple UI actions, or drop down to the service and recording APIs when you need more control.",
           table: {
             data: [
+              {
+                method: "recording_studio_duplicatable.duplicate_recording_path(recording_id: ...)",
+                purpose: "Post to the gem-provided controller from a button or link"
+              },
               {
                 method: "RecordingStudioDuplicatable::Capabilities::Duplicatable",
                 purpose: "Enable duplication with global defaults"
@@ -112,8 +144,8 @@ class GuidesController < ApplicationController
           }
         },
         {
-          title: "Recording call",
-          subtitle: "Call duplication directly when you already have the recording object.",
+          title: "Direct recording call",
+          subtitle: "Call duplication directly when you already have the recording object and want full control in your own code.",
           code_block: {
             title: "Recording API",
             language: "ruby",

@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   # Keep legacy links working by redirecting the base path to the app home.
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
+  mount RecordingStudioDuplicatable::Engine, at: "/recording_studio_duplicatable"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   get "up" => "rails/health#show", as: :rails_health_check
@@ -13,8 +14,5 @@ Rails.application.routes.draw do
   get "pages/:slug", to: "home#show_page", as: :page
   get "reports/:slug", to: "home#show_report", as: :report
   get "folders/:slug", to: "home#show_folder", as: :folder
-  post "pages/:slug/duplicate", to: "home#duplicate_page", as: :duplicate_page
-  post "reports/:slug/duplicate", to: "home#duplicate_report", as: :duplicate_report
-  post "folders/:slug/duplicate", to: "home#duplicate_folder", as: :duplicate_folder
   root "home#index"
 end

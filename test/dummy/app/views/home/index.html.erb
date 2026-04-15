@@ -1,7 +1,7 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Duplicatable Demo",
-    subtitle: "Pages duplicate with their comment recordings. Reports duplicate without comment recordings, using only the addon API configuration.",
+    subtitle: "These cards post to the gem's built-in duplication endpoint. Pages copy comments, reports skip comments, and folders copy their nested tree.",
     variant: :h1
   ) %>
 
@@ -31,7 +31,7 @@
         recordable_type_label: "Page",
         child_count: child_count_for(page),
         recordable_path: page_path(page.slug),
-        duplicate_path: duplicate_page_path(page.slug) %>
+        duplicate_path: duplicate_recording_path_for(page) %>
     <% end %>
   </div>
 
@@ -47,7 +47,7 @@
         recordable_type_label: "Report",
         child_count: child_count_for(report),
         recordable_path: report_path(report.slug),
-        duplicate_path: duplicate_report_path(report.slug) %>
+        duplicate_path: duplicate_recording_path_for(report) %>
     <% end %>
   </div>
 
@@ -63,7 +63,7 @@
         recordable_type_label: "Folder",
         child_count: child_count_for(folder),
         recordable_path: folder_path(folder.slug),
-        duplicate_path: duplicate_folder_path(folder.slug) %>
+        duplicate_path: duplicate_recording_path_for(folder) %>
     <% end %>
   </div>
 </div>

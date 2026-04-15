@@ -75,6 +75,32 @@ class InstallGeneratorTest < Minitest::Test
     end
   end
 
+  def test_initializer_template_mentions_builtin_duplicate_route_and_actor_setup
+    initializer_template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_duplicatable/install/templates/" \
+        "recording_studio_duplicatable_initializer.rb",
+        __dir__
+      )
+    )
+
+    assert_includes initializer_template, "config.actor = -> { Current.actor }"
+    assert_includes initializer_template, "duplicate_recording_path"
+  end
+
+  def test_install_docs_mention_builtin_duplicate_endpoint
+    install_template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_duplicatable/install/templates/INSTALL.md",
+        __dir__
+      )
+    )
+
+    assert_includes install_template, "built-in duplicate endpoint"
+    assert_includes install_template, "duplicate_recording_path"
+    assert_includes install_template, "config.actor = -> { Current.actor }"
+  end
+
   private
 
   def assert_tailwind_sources_present(css)

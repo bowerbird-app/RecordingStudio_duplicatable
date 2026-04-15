@@ -39,8 +39,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     Object.const_set(:Current, Class.new(ActiveSupport::CurrentAttributes) do
       attribute :actor
     end)
-
-    refute Current.respond_to?(:impersonator)
+    Current.impersonator = nil if Current.respond_to?(:impersonator=)
 
     RecordingStudioDuplicatable.ensure_current_impersonator_attribute!
 
@@ -73,6 +72,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes readme_source, "Page`, `Report`, `Folder`, and `Comment`"
     assert_includes readme_source, "/guides/setup"
+    assert_includes readme_source, "gem-provided duplicate route"
     assert_includes readme_source, "included vs excluded child copying"
     refute_includes readme_source, "/pages/setup"
   end
@@ -83,11 +83,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes view_source, "Duplicatable Demo"
     assert_includes view_source, "FlatPack::SectionTitle::Component"
-    assert_includes view_source, "page_path(page.slug)"
-    assert_includes view_source, "report_path(report.slug)"
-    assert_includes view_source, "folder_path(folder.slug)"
-    assert_includes view_source, "duplicate_report_path"
-    assert_includes view_source, "duplicate_folder_path"
+    assert_includes view_source, "duplicate_recording_path_for(page)"
+    assert_includes view_source, "duplicate_recording_path_for(report)"
+    assert_includes view_source, "duplicate_recording_path_for(folder)"
+    assert_includes view_source, "built-in duplication endpoint"
     refute_includes view_source, "xl:grid-cols-2"
   end
 
@@ -99,6 +98,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "text: \"\#{child_count} children\""
     assert_includes view_source, 'text: "Duplicate"'
     assert_includes view_source, "url: recordable_path"
+    assert_includes view_source, "form_with url: duplicate_path"
     refute_includes view_source, "card.header"
     refute_includes view_source, "recordable.body.truncate"
   end
@@ -112,13 +112,13 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, "GUIDE_CONTENT"
     assert_includes controller_source, '"setup"'
     assert_includes controller_source, '"methods"'
-    assert_includes controller_source, 'subtitle: "How to duplicate something."'
-    assert_includes controller_source, 'title: "What gets copied"'
-    refute_includes controller_source, 'title: "Service call"'
-    refute_includes(
+    assert_includes(
       controller_source,
-      'subtitle: "Duplicate through the recording layer so Recording Studio keeps the copied tree attached correctly."'
+      'subtitle: "How to duplicate something with the built-in route, plus the custom option when you need it."'
     )
+    assert_includes controller_source, "duplicate_recording_path"
+    assert_includes controller_source, 'title: "Custom controller (optional)"'
+    assert_includes controller_source, 'title: "What gets copied"'
     refute_includes controller_source, 'title: "2. Register the recordable type"'
     assert_includes view_source, "FlatPack::SectionTitle::Component"
     assert_includes view_source, "section[:title].present? || section[:subtitle].present?"
@@ -127,21 +127,22 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "FlatPack::CodeBlock::Component"
   end
 
-  def test_dummy_home_controller_uses_page_report_folder_show_and_duplication_service
+  def test_dummy_home_controller_uses_page_report_folder_show_and_engine_duplicate_helper
     controller_path = File.expand_path("dummy/app/controllers/home_controller.rb", __dir__)
     controller_source = File.read(controller_path)
 
-    assert_includes controller_source, "RecordingStudioDuplicatable::Services::DuplicationService.call"
+    assert_includes controller_source, "duplicate_recording_path_for"
+    assert_includes controller_source, "recording_studio_duplicatable.duplicate_recording_path"
     assert_includes controller_source, "show_page"
     assert_includes controller_source, "show_report"
     assert_includes controller_source, "show_folder"
-    assert_includes controller_source, "duplicate_page"
-    assert_includes controller_source, "duplicate_report"
-    assert_includes controller_source, "duplicate_folder"
     assert_includes controller_source, "Report.find_by!(slug: params[:slug])"
     assert_includes controller_source, "Folder.find_by!(slug: params[:slug])"
     assert_includes controller_source, "@child_folder_recordings"
     assert_includes controller_source, "render :show_recordable"
+    refute_includes controller_source, "duplicate_page"
+    refute_includes controller_source, "duplicate_report"
+    refute_includes controller_source, "duplicate_folder"
   end
 
   def test_dummy_home_controller_load_recordings_groups_recordables_by_class_name
@@ -231,17 +232,18 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes comment_model_source, "belongs_to :commentable, polymorphic: true"
   end
 
-  def test_dummy_routes_include_guides_show_pages_reports_folders_and_duplication
+  def test_dummy_routes_include_guides_show_pages_reports_folders_and_engine_mount
     routes_path = File.expand_path("dummy/config/routes.rb", __dir__)
     routes_source = File.read(routes_path)
 
+    assert_includes routes_source, 'mount RecordingStudioDuplicatable::Engine, at: "/recording_studio_duplicatable"'
     assert_includes routes_source, 'get "guides/:slug"'
     assert_includes routes_source, 'get "pages/:slug"'
     assert_includes routes_source, 'get "reports/:slug"'
     assert_includes routes_source, 'get "folders/:slug"'
-    assert_includes routes_source, 'post "pages/:slug/duplicate"'
-    assert_includes routes_source, 'post "reports/:slug/duplicate"'
-    assert_includes routes_source, 'post "folders/:slug/duplicate"'
+    refute_includes routes_source, 'post "pages/:slug/duplicate"'
+    refute_includes routes_source, 'post "reports/:slug/duplicate"'
+    refute_includes routes_source, 'post "folders/:slug/duplicate"'
   end
 
   def test_dummy_sidebar_uses_static_guide_navigation
@@ -307,6 +309,39 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "FlatPack::Button::Component"
     assert_includes view_source, "FlatPack::Badge::Component"
+  end
+
+  def test_readme_documents_builtin_duplication_endpoint_and_lower_level_apis
+    readme_path = File.expand_path("../README.md", __dir__)
+    readme_source = File.read(readme_path)
+
+    assert_includes readme_source, "duplicate_recording_path(recording_id: recording.id)"
+    assert_includes readme_source, "config.actor = -> { Current.actor }"
+    assert_includes readme_source, "DuplicationService.call"
+    assert_includes readme_source, "duplicate_in_place!"
+    assert_includes readme_source, "host app `ApplicationController`"
+  end
+
+  def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint
+    routes_path = File.expand_path("../config/routes.rb", __dir__)
+    routes_source = File.read(routes_path)
+    application_controller_path = File.expand_path(
+      "../app/controllers/recording_studio_duplicatable/application_controller.rb",
+      __dir__
+    )
+    application_controller_source = File.read(application_controller_path)
+    duplications_controller_path = File.expand_path(
+      "../app/controllers/recording_studio_duplicatable/duplications_controller.rb",
+      __dir__
+    )
+    duplications_controller_source = File.read(duplications_controller_path)
+
+    assert_includes routes_source, 'post "recordings/:recording_id/duplicate"'
+    assert_includes application_controller_source, "defined?(::ApplicationController) ? ::ApplicationController : ActionController::Base"
+    assert_includes application_controller_source, "current_duplication_actor"
+    assert_includes duplications_controller_source, "Services::DuplicationService.call"
+    assert_includes duplications_controller_source, "current_duplication_impersonator"
+    assert_includes duplications_controller_source, "redirect_back"
   end
 
   private

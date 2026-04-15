@@ -21,13 +21,15 @@
           url: recordable_path
         ) %>
 
-        <%= form_with url: duplicate_path, method: :post, local: true do %>
-          <%= render FlatPack::Button::Component.new(
-            text: "Duplicate",
-            style: :primary,
-            size: :sm,
-            type: "submit"
-          ) %>
+        <% if duplicate_path.present? %>
+          <%= form_with url: duplicate_path, method: :post, local: true do %>
+            <%= render FlatPack::Button::Component.new(
+              text: "Duplicate",
+              style: :primary,
+              size: :sm,
+              type: "submit"
+            ) %>
+          <% end %>
         <% end %>
       </div>
     </div>
