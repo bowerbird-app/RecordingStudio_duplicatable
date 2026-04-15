@@ -5,7 +5,7 @@ require "action_controller"
 
 ActionController::Base.singleton_class.class_eval do
   define_method(:allow_browser) { |**_options| } unless method_defined?(:allow_browser)
-  define_method(:stale_when_importmap_changes) { } unless method_defined?(:stale_when_importmap_changes)
+  define_method(:stale_when_importmap_changes) {} unless method_defined?(:stale_when_importmap_changes)
 end
 
 require_relative "dummy/app/controllers/application_controller"
@@ -112,8 +112,16 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, "GUIDE_CONTENT"
     assert_includes controller_source, '"setup"'
     assert_includes controller_source, '"methods"'
+    assert_includes controller_source, 'subtitle: "How to duplicate something."'
+    assert_includes controller_source, 'title: "What gets copied"'
+    refute_includes controller_source, 'title: "Service call"'
+    refute_includes(
+      controller_source,
+      'subtitle: "Duplicate through the recording layer so Recording Studio keeps the copied tree attached correctly."'
+    )
     refute_includes controller_source, 'title: "2. Register the recordable type"'
     assert_includes view_source, "FlatPack::SectionTitle::Component"
+    assert_includes view_source, "section[:title].present? || section[:subtitle].present?"
     assert_includes view_source, "anchor_link: true"
     assert_includes view_source, "FlatPack::Table::Component"
     assert_includes view_source, "FlatPack::CodeBlock::Component"
@@ -132,19 +140,20 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, "duplicate_folder"
     assert_includes controller_source, "Report.find_by!(slug: params[:slug])"
     assert_includes controller_source, "Folder.find_by!(slug: params[:slug])"
+    assert_includes controller_source, "@child_folder_recordings"
     assert_includes controller_source, "render :show_recordable"
   end
 
   def test_dummy_home_controller_load_recordings_groups_recordables_by_class_name
     controller = HomeController.new
     recording_studio_defined = Object.const_defined?(:RecordingStudio)
-    recording_studio_module = recording_studio_defined ? RecordingStudio : Object.const_set(:RecordingStudio, Module.new)
+    recording_studio_module =
+      recording_studio_defined ? RecordingStudio : Object.const_set(:RecordingStudio, Module.new)
     recording_class_defined = recording_studio_module.const_defined?(:Recording, false)
-    recording_class = if recording_class_defined
-      recording_studio_module.const_get(:Recording, false)
-    else
-      recording_studio_module.const_set(:Recording, Class.new)
-    end
+    recording_class = fetch_or_define_recording_class(
+      recording_studio_module,
+      recording_class_defined
+    )
     page_class = Class.new do
       def self.name = "Page"
 
@@ -280,6 +289,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes view_source, "recordable_title(@recordable)"
     assert_includes view_source, "text: \"\#{@child_recordings.size} children\""
+    assert_includes view_source, "@child_folder_recordings.any?"
+    assert_includes view_source, 'title: "Child folders"'
     assert_includes view_source, "FlatPack::Badge::Component"
     assert_includes view_source, "FlatPack::SectionTitle::Component"
     assert_includes view_source, "FlatPack::Table::Component"
@@ -296,5 +307,15 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "FlatPack::Button::Component"
     assert_includes view_source, "FlatPack::Badge::Component"
+  end
+
+  private
+
+  def fetch_or_define_recording_class(recording_studio_module, recording_class_defined)
+    if recording_class_defined
+      recording_studio_module.const_get(:Recording, false)
+    else
+      recording_studio_module.const_set(:Recording, Class.new)
+    end
   end
 end

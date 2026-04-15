@@ -56,13 +56,11 @@ class GuidesController < ApplicationController
     },
     "use" => {
       title: "Use",
-      subtitle: "Duplicate through the recording layer so Recording Studio keeps the copied tree attached correctly.",
+      subtitle: "How to duplicate something.",
       sections: [
         {
-          title: "Service call",
-          subtitle: "Pass a recording and actor into the service.",
           code_block: {
-            title: "Controller usage",
+            title: "Duplicate a recording",
             language: "ruby",
             code: <<~RUBY
               result = RecordingStudioDuplicatable::Services::DuplicationService.call(
@@ -73,12 +71,13 @@ class GuidesController < ApplicationController
           }
         },
         {
-          title: "Demo behavior",
-          subtitle: "The dummy app shows both included and excluded child-copy rules.",
+          title: "What gets copied",
+          subtitle: "The dummy app shows the difference between included and excluded child recordings.",
           table: {
             data: [
               {recordable: "Page", child_behavior: "Comments are duplicated"},
-              {recordable: "Report", child_behavior: "Comments are excluded"}
+              {recordable: "Report", child_behavior: "Comments are excluded"},
+              {recordable: "Folder", child_behavior: "Nested folders and comments are duplicated"}
             ]
           }
         }

@@ -65,6 +65,7 @@ class HomeController < ApplicationController
     @recordable_type_label = recordable_type_label
     @recording = RecordingStudio::Recording.unscoped.includes(child_recordings: :recordable).find_by(recordable: recordable)
     @child_recordings = Array(@recording&.child_recordings).sort_by(&:created_at)
+    @child_folder_recordings = @child_recordings.select { |child_recording| child_recording.recordable.is_a?(Folder) }
     render :show_recordable
   end
 

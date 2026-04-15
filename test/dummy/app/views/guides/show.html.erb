@@ -6,11 +6,13 @@
   ) %>
 
   <% @guide[:sections].each do |section| %>
-    <%= render FlatPack::SectionTitle::Component.new(
-      title: section[:title],
-      subtitle: section[:subtitle],
-      anchor_link: true
-    ) %>
+    <% if section[:title].present? || section[:subtitle].present? %>
+      <%= render FlatPack::SectionTitle::Component.new(
+        title: section[:title],
+        subtitle: section[:subtitle],
+        anchor_link: true
+      ) %>
+    <% end %>
 
     <% if section[:table].present? %>
       <%= render FlatPack::Table::Component.new(data: section[:table][:data]) do |table| %>
