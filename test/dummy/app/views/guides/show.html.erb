@@ -6,62 +6,26 @@
   ) %>
 
   <% @guide[:sections].each do |section| %>
-    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-      <% card.header do %>
-        <%= render FlatPack::PageTitle::Component.new(
-          title: section[:title],
-          variant: :h3,
-          class: "mb-0 pb-0"
-        ) %>
-      <% end %>
+    <%= render FlatPack::SectionTitle::Component.new(
+      title: section[:title],
+      subtitle: section[:subtitle],
+      anchor_link: true
+    ) %>
 
-      <% card.body do %>
-        <div class="space-y-4 text-sm leading-7 text-[var(--surface-content-color)]">
-          <% Array(section[:body]).each do |paragraph| %>
-            <p><%= paragraph %></p>
-          <% end %>
-
-          <% if section[:code_sample].present? %>
-            <pre class="overflow-x-auto rounded-lg bg-[var(--surface-raised-background-color)] p-4 text-xs leading-6"><code><%= section[:code_sample] %></code></pre>
-          <% end %>
-        </div>
+    <% if section[:table].present? %>
+      <%= render FlatPack::Table::Component.new(data: section[:table][:data]) do |table| %>
+        <% section[:table][:data].first.keys.each do |column_name| %>
+          <% table.column(title: column_name.to_s.humanize, html: ->(row) { row[column_name] }) %>
+        <% end %>
       <% end %>
     <% end %>
-  <% end %>
 
-  <% if @guide[:table].present? %>
-    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
-      <% card.header do %>
-        <%= render FlatPack::PageTitle::Component.new(
-          title: "Reference",
-          subtitle: "Key options and methods used by the addon.",
-          variant: :h3,
-          class: "mb-0 pb-0"
-        ) %>
-      <% end %>
-
-      <% card.body do %>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-[var(--border-color)] text-left text-sm">
-            <thead>
-              <tr>
-                <% @guide[:table][:headers].each do |header| %>
-                  <th class="px-3 py-2 font-semibold text-[var(--surface-content-color)]"><%= header %></th>
-                <% end %>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[var(--border-color)] text-[var(--surface-muted-content-color)]">
-              <% @guide[:table][:rows].each do |row| %>
-                <tr>
-                  <% row.each do |value| %>
-                    <td class="px-3 py-2 align-top"><%= value %></td>
-                  <% end %>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-      <% end %>
+    <% if section[:code_block].present? %>
+      <%= render FlatPack::CodeBlock::Component.new(
+        title: section[:code_block][:title],
+        code: section[:code_block][:code],
+        language: section[:code_block][:language]
+      ) %>
     <% end %>
   <% end %>
 </div>

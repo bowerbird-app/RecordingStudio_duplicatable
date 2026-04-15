@@ -10,6 +10,8 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   get "guides/:slug", to: "guides#show", as: :guide
+  get "pages/:slug", to: "home#show_page", as: :page
+  get "reports/:slug", to: "home#show_report", as: :report
   post "pages/:slug/duplicate", to: "home#duplicate_page", as: :duplicate_page
   post "reports/:slug/duplicate", to: "home#duplicate_report", as: :duplicate_report
   root "home#index"

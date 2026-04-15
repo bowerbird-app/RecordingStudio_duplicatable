@@ -73,23 +73,26 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, "Duplicatable Demo"
-    assert_includes view_source, "Pages duplicate with their comment recordings"
-    assert_includes view_source, "Comments duplicate too"
-    assert_includes view_source, "Comments are excluded"
+    assert_includes view_source, "FlatPack::SectionTitle::Component"
+    assert_includes view_source, "page_path(page.slug)"
+    assert_includes view_source, "report_path(report.slug)"
     assert_includes view_source, "duplicate_report_path"
-    refute_includes view_source, "style: :danger"
+    refute_includes view_source, "xl:grid-cols-2"
   end
 
-  def test_dummy_recordable_card_mentions_comment_counts
+  def test_dummy_recordable_card_links_to_show_view_and_stays_minimal
     view_path = File.expand_path("dummy/app/views/home/_recordable_card.html.erb", __dir__)
     view_source = File.read(view_path)
 
     assert_includes view_source, "recordable.comments.size"
     assert_includes view_source, 'text: "Duplicate"'
-    assert_includes view_source, "text: recordable_type_label"
+    assert_includes view_source, 'text: "View"'
+    assert_includes view_source, "url: recordable_path"
+    refute_includes view_source, "Seeded demo record"
+    refute_includes view_source, "Slug"
   end
 
-  def test_static_guides_are_separate_from_recordable_demo
+  def test_static_guides_use_flatpack_sections_tables_and_code_blocks
     controller_path = File.expand_path("dummy/app/controllers/guides_controller.rb", __dir__)
     controller_source = File.read(controller_path)
     view_path = File.expand_path("dummy/app/views/guides/show.html.erb", __dir__)
@@ -98,18 +101,24 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, "GUIDE_CONTENT"
     assert_includes controller_source, '"setup"'
     assert_includes controller_source, '"methods"'
-    assert_includes view_source, "<table"
-    assert_includes view_source, "code_sample"
+    refute_includes controller_source, 'title: "2. Register the recordable type"'
+    assert_includes view_source, "FlatPack::SectionTitle::Component"
+    assert_includes view_source, "anchor_link: true"
+    assert_includes view_source, "FlatPack::Table::Component"
+    assert_includes view_source, "FlatPack::CodeBlock::Component"
   end
 
-  def test_dummy_home_controller_uses_page_and_report_duplication_service
+  def test_dummy_home_controller_uses_page_report_show_and_duplication_service
     controller_path = File.expand_path("dummy/app/controllers/home_controller.rb", __dir__)
     controller_source = File.read(controller_path)
 
     assert_includes controller_source, "RecordingStudioDuplicatable::Services::DuplicationService.call"
+    assert_includes controller_source, "show_page"
+    assert_includes controller_source, "show_report"
     assert_includes controller_source, "duplicate_page"
     assert_includes controller_source, "duplicate_report"
     assert_includes controller_source, "Report.find_by!(slug: params[:slug])"
+    assert_includes controller_source, "render :show_recordable"
   end
 
   def test_dummy_page_and_report_models_configure_child_duplication_rules
@@ -127,14 +136,15 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes comment_model_source, "belongs_to :commentable, polymorphic: true"
   end
 
-  def test_dummy_routes_include_guides_and_report_duplication
+  def test_dummy_routes_include_guides_show_pages_and_report_duplication
     routes_path = File.expand_path("dummy/config/routes.rb", __dir__)
     routes_source = File.read(routes_path)
 
     assert_includes routes_source, 'get "guides/:slug"'
+    assert_includes routes_source, 'get "pages/:slug"'
+    assert_includes routes_source, 'get "reports/:slug"'
     assert_includes routes_source, 'post "pages/:slug/duplicate"'
     assert_includes routes_source, 'post "reports/:slug/duplicate"'
-    refute_includes routes_source, 'get "pages/:slug"'
   end
 
   def test_dummy_sidebar_uses_static_guide_navigation
@@ -171,6 +181,18 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes seeds_source, "DEMO_REPORTS"
     assert_includes seeds_source, "ensure_comment_recordings!"
     assert_includes seeds_source, "parent_recording_id: parent_recording.id"
+  end
+
+  def test_dummy_recordable_show_view_lists_children
+    view_path = File.expand_path("dummy/app/views/home/show_recordable.html.erb", __dir__)
+    view_source = File.read(view_path)
+
+    assert_includes view_source, "@recordable.title"
+    assert_includes view_source, "text: \"\#{@child_recordables.size} children\""
+    assert_includes view_source, "FlatPack::Badge::Component"
+    assert_includes view_source, "FlatPack::SectionTitle::Component"
+    assert_includes view_source, "FlatPack::Table::Component"
+    assert_includes view_source, "comment.author_name"
   end
 
   def test_engine_home_page_uses_flatpack_components

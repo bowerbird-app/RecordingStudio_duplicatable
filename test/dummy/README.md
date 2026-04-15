@@ -27,6 +27,8 @@ Then open the app and sign in with:
 ## Useful Routes
 
 - `/` - seeded `Page` and `Report` cards with duplicate actions
+- `/pages/:slug` - inspect a seeded page and its child comments
+- `/reports/:slug` - inspect a seeded report and its child comments
 - `/guides/setup` - how to opt a recordable into duplication
 - `/guides/use` - how to call the duplication service
 - `/guides/methods` - the addon API surface explained

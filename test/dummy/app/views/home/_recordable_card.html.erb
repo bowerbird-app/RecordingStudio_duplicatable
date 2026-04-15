@@ -10,24 +10,13 @@
 
   <% card.body do %>
     <div class="space-y-4 text-sm text-[var(--surface-content-color)]">
-      <div class="flex flex-wrap gap-2">
-        <%= render FlatPack::Badge::Component.new(text: recordable_type_label, style: :info, size: :sm) %>
-        <%= render FlatPack::Badge::Component.new(
-          text: duplicate_state ? "Duplicate" : "Seeded demo record",
-          style: duplicate_state ? :warning : :success,
-          size: :sm
-        ) %>
-      </div>
+      <%= render FlatPack::Badge::Component.new(text: recordable_type_label, style: :info, size: :sm) %>
 
       <% if recordable.respond_to?(:body) %>
         <p><%= recordable.body.truncate(140) %></p>
       <% end %>
 
       <dl class="space-y-2 text-xs text-[var(--surface-muted-content-color)]">
-        <div>
-          <dt class="font-medium text-[var(--surface-content-color)]">Slug</dt>
-          <dd><%= recordable.slug %></dd>
-        </div>
         <div>
           <dt class="font-medium text-[var(--surface-content-color)]">Comments</dt>
           <dd><%= recordable.comments.size %></dd>
@@ -38,14 +27,23 @@
         </div>
       </dl>
 
-      <%= form_with url: duplicate_path, method: :post, local: true do %>
+      <div class="flex flex-wrap gap-2">
         <%= render FlatPack::Button::Component.new(
-          text: "Duplicate",
-          style: :primary,
+          text: "View",
+          style: :ghost,
           size: :sm,
-          type: "submit"
+          url: recordable_path
         ) %>
-      <% end %>
+
+        <%= form_with url: duplicate_path, method: :post, local: true do %>
+          <%= render FlatPack::Button::Component.new(
+            text: "Duplicate",
+            style: :primary,
+            size: :sm,
+            type: "submit"
+          ) %>
+        <% end %>
+      </div>
     </div>
   <% end %>
 <% end %>

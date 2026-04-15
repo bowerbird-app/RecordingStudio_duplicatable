@@ -19,53 +19,35 @@
     ) %>
   <% end %>
 
-  <div class="grid gap-6 xl:grid-cols-2">
-    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-      <% card.header do %>
-        <%= render FlatPack::PageTitle::Component.new(
-          title: "Pages",
-          subtitle: "Configured with `include_children: [\"Comment\"]` so duplicate page recordings also copy their child comments.",
-          variant: :h2,
-          class: "mb-0 pb-0"
-        ) %>
-      <% end %>
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Pages",
+    subtitle: "Configured with `include_children: [\"Comment\"]` so duplicate page recordings also copy their child comments."
+  ) %>
 
-      <% card.body do %>
-        <div class="grid gap-4 md:grid-cols-2">
-          <% @pages.each do |page| %>
-            <%= render "recordable_card",
-              recordable: page,
-              recordable_type_label: "Page",
-              duplicate_path: duplicate_page_path(page.slug),
-              child_copy_label: "Comments duplicate too",
-              duplicate_state: duplicate_recordable?(page) %>
-          <% end %>
-        </div>
-      <% end %>
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <% @pages.each do |page| %>
+      <%= render "recordable_card",
+        recordable: page,
+        recordable_type_label: "Page",
+        recordable_path: page_path(page.slug),
+        duplicate_path: duplicate_page_path(page.slug),
+        child_copy_label: "Comments duplicate too" %>
     <% end %>
+  </div>
 
-    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-      <% card.header do %>
-        <%= render FlatPack::PageTitle::Component.new(
-          title: "Reports",
-          subtitle: "Configured with `exclude_children: [\"Comment\"]` so duplicate reports leave their child comments behind.",
-          variant: :h2,
-          class: "mb-0 pb-0"
-        ) %>
-      <% end %>
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Reports",
+    subtitle: "Configured with `exclude_children: [\"Comment\"]` so duplicate reports leave their child comments behind."
+  ) %>
 
-      <% card.body do %>
-        <div class="grid gap-4 md:grid-cols-2">
-          <% @reports.each do |report| %>
-            <%= render "recordable_card",
-              recordable: report,
-              recordable_type_label: "Report",
-              duplicate_path: duplicate_report_path(report.slug),
-              child_copy_label: "Comments are excluded",
-              duplicate_state: duplicate_recordable?(report) %>
-          <% end %>
-        </div>
-      <% end %>
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <% @reports.each do |report| %>
+      <%= render "recordable_card",
+        recordable: report,
+        recordable_type_label: "Report",
+        recordable_path: report_path(report.slug),
+        duplicate_path: duplicate_report_path(report.slug),
+        child_copy_label: "Comments are excluded" %>
     <% end %>
   </div>
 </div>

@@ -1,9 +1,17 @@
 class HomeController < ApplicationController
-  helper_method :duplicate_recordable?
-
   def index
     @pages = Page.includes(:workspace, :comments).order(:created_at)
     @reports = Report.includes(:workspace, :comments).order(:created_at)
+  end
+
+  def show_page
+    page = Page.includes(:comments).find_by!(slug: params[:slug])
+    assign_recordable_show(page, recordable_type_label: "Page")
+  end
+
+  def show_report
+    report = Report.includes(:comments).find_by!(slug: params[:slug])
+    assign_recordable_show(report, recordable_type_label: "Report")
   end
 
   def duplicate_page
@@ -38,7 +46,10 @@ class HomeController < ApplicationController
     end
   end
 
-  def duplicate_recordable?(recordable)
-    recordable.title.include?("(Copy)") || recordable.slug.match?(/-\d+\z/)
+  def assign_recordable_show(recordable, recordable_type_label:)
+    @recordable = recordable
+    @recordable_type_label = recordable_type_label
+    @child_recordables = recordable.comments.order(:created_at)
+    render :show_recordable
   end
 end
