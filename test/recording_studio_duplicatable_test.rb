@@ -87,7 +87,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, 'text: "Show"'
-    assert_includes view_source, 'text: "#{child_count} children"'
+    assert_includes view_source, "text: \"\#{child_count} children\""
     assert_includes view_source, 'text: "Duplicate"'
     assert_includes view_source, "url: recordable_path"
     refute_includes view_source, "card.header"
