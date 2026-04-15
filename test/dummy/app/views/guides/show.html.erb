@@ -6,28 +6,30 @@
   ) %>
 
   <% @guide[:sections].each do |section| %>
-    <% if section[:title].present? || section[:subtitle].present? %>
-      <%= render FlatPack::SectionTitle::Component.new(
-        title: section[:title],
-        subtitle: section[:subtitle],
-        anchor_link: true
-      ) %>
-    <% end %>
+    <div<%= section[:anchor].present? ? %( id="#{section[:anchor]}") : "" %>>
+      <% if section[:title].present? || section[:subtitle].present? %>
+        <%= render FlatPack::SectionTitle::Component.new(
+          title: section[:title],
+          subtitle: section[:subtitle],
+          anchor_link: true
+        ) %>
+      <% end %>
 
-    <% if section[:table].present? %>
-      <%= render FlatPack::Table::Component.new(data: section[:table][:data]) do |table| %>
-        <% section[:table][:data].first.keys.each do |column_name| %>
-          <% table.column(title: column_name.to_s.humanize, html: ->(row) { row[column_name] }) %>
+      <% if section[:table].present? %>
+        <%= render FlatPack::Table::Component.new(data: section[:table][:data]) do |table| %>
+          <% section[:table][:data].first.keys.each do |column_name| %>
+            <% table.column(title: column_name.to_s.humanize, html: ->(row) { row[column_name] }) %>
+          <% end %>
         <% end %>
       <% end %>
-    <% end %>
 
-    <% if section[:code_block].present? %>
-      <%= render FlatPack::CodeBlock::Component.new(
-        title: section[:code_block][:title],
-        code: section[:code_block][:code],
-        language: section[:code_block][:language]
-      ) %>
-    <% end %>
+      <% if section[:code_block].present? %>
+        <%= render FlatPack::CodeBlock::Component.new(
+          title: section[:code_block][:title],
+          code: section[:code_block][:code],
+          language: section[:code_block][:language]
+        ) %>
+      <% end %>
+    </div>
   <% end %>
 </div>

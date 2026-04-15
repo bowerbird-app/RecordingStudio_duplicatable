@@ -112,15 +112,37 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, "GUIDE_CONTENT"
     assert_includes controller_source, '"setup"'
     assert_includes controller_source, '"methods"'
+    assert_includes controller_source, 'anchor: "duplicate-link"'
+    assert_includes controller_source, 'anchor: "capability"'
+    assert_includes controller_source, 'title: "Mount and actor setup"'
+    assert_includes controller_source, 'title: "Capability"'
+    assert_includes controller_source, 'title: "Built-in route"'
+    assert_includes controller_source, 'title: "Host app link"'
+    assert_includes controller_source, 'title: "Host app ERB example"'
+    assert_includes controller_source, 'title: "Simple button"'
+    assert_includes(
+      controller_source,
+      'subtitle: "Add your own POST route and controller action when you want a UI link for duplication."'
+    )
+    assert_includes controller_source, "duplicate_page_path(page.slug)"
+    assert_includes controller_source, "data: { turbo_method: :post }"
+    assert_includes controller_source, 'title: "Options"'
+    assert_includes controller_source, 'title: "What gets copied"'
+    assert_includes controller_source, "Comments are duplicated"
+    assert_includes controller_source, "Comments are excluded"
+    assert_includes controller_source, "Nested folders and comments are duplicated"
+    assert_operator controller_source.index('"use"'), :<, controller_source.index('title: "Built-in route"')
+    assert_operator controller_source.rindex('"methods"'), :>, controller_source.index('title: "Built-in route"')
     assert_includes(
       controller_source,
       'subtitle: "How to duplicate something with the built-in route, plus the custom option when you need it."'
     )
     assert_includes controller_source, "duplicate_recording_path"
     assert_includes controller_source, 'title: "Custom controller (optional)"'
-    assert_includes controller_source, 'title: "What gets copied"'
+    assert_includes controller_source, 'title: "Direct recording call"'
     refute_includes controller_source, 'title: "2. Register the recordable type"'
     assert_includes view_source, "FlatPack::SectionTitle::Component"
+    assert_includes view_source, "section[:anchor].present?"
     assert_includes view_source, "section[:title].present? || section[:subtitle].present?"
     assert_includes view_source, "anchor_link: true"
     assert_includes view_source, "FlatPack::Table::Component"

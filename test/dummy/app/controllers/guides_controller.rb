@@ -21,6 +21,7 @@ class GuidesController < ApplicationController
         },
         {
           title: "Capability",
+          anchor: "capability",
           subtitle: "Include the addon with the child-copy options you want.",
           code_block: {
             title: "Page configuration",
@@ -48,24 +49,6 @@ class GuidesController < ApplicationController
               {option: "exclude_children", purpose: "Skips the listed child recording types"}
             ]
           }
-        },
-        {
-          title: "Report example",
-          subtitle: "Reports can opt out of copying comment children.",
-          code_block: {
-            title: "Report configuration",
-            language: "ruby",
-            code: <<~RUBY
-              class Report < ApplicationRecord
-                include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
-                  prefix: nil,
-                  suffix: " (Copy)",
-                  include_children: nil,
-                  exclude_children: ["Comment"]
-                )
-              end
-            RUBY
-          }
         }
       ]
     },
@@ -74,6 +57,9 @@ class GuidesController < ApplicationController
       subtitle: "How to duplicate something with the built-in route, plus the custom option when you need it.",
       sections: [
         {
+          anchor: "built-in-route",
+          title: "Built-in route",
+          subtitle: "Post to the mounted engine when you want a simple duplicate button or link.",
           code_block: {
             title: "Simple button",
             language: "erb",
@@ -81,6 +67,20 @@ class GuidesController < ApplicationController
               <%= button_to "Duplicate",
                 recording_studio_duplicatable.duplicate_recording_path(recording_id: page_recording.id),
                 method: :post %>
+            ERB
+          }
+        },
+        {
+          anchor: "duplicate-link",
+          title: "Host app link",
+          subtitle: "Add your own POST route and controller action when you want a UI link for duplication.",
+          code_block: {
+            title: "Host app ERB example",
+            language: "erb",
+            code: <<~ERB
+              <%= link_to "Duplicate page",
+                  duplicate_page_path(page.slug),
+                  data: { turbo_method: :post } %>
             ERB
           }
         },
