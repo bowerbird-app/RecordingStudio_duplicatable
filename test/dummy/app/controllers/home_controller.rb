@@ -69,7 +69,7 @@ class HomeController < ApplicationController
   end
 
   def load_recordings_for(*collections)
-    collections.flatten.compact.group_by(&:class.name).flat_map do |recordable_type, recordables|
+    collections.flatten.compact.group_by { |recordable| recordable.class.name }.flat_map do |recordable_type, recordables|
       RecordingStudio::Recording.unscoped
         .includes(:child_recordings)
         .where(recordable_type: recordable_type, recordable_id: recordables.map(&:id))

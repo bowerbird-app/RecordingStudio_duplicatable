@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "action_controller"
+
+ActionController::Base.singleton_class.class_eval do
+  define_method(:allow_browser) { |**_options| } unless method_defined?(:allow_browser)
+  define_method(:stale_when_importmap_changes) { } unless method_defined?(:stale_when_importmap_changes)
+end
+
+require_relative "dummy/app/controllers/application_controller"
+require_relative "dummy/app/controllers/home_controller"
 
 class RecordingStudioDuplicatableTest < Minitest::Test
   def setup
@@ -124,6 +133,73 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, "Report.find_by!(slug: params[:slug])"
     assert_includes controller_source, "Folder.find_by!(slug: params[:slug])"
     assert_includes controller_source, "render :show_recordable"
+  end
+
+  def test_dummy_home_controller_load_recordings_groups_recordables_by_class_name
+    controller = HomeController.new
+    recording_studio_defined = Object.const_defined?(:RecordingStudio)
+    recording_studio_module = recording_studio_defined ? RecordingStudio : Object.const_set(:RecordingStudio, Module.new)
+    recording_class_defined = recording_studio_module.const_defined?(:Recording, false)
+    recording_class = if recording_class_defined
+      recording_studio_module.const_get(:Recording, false)
+    else
+      recording_studio_module.const_set(:Recording, Class.new)
+    end
+    page_class = Class.new do
+      def self.name = "Page"
+
+      attr_reader :id
+
+      def initialize(id)
+        @id = id
+      end
+    end
+    report_class = Class.new do
+      def self.name = "Report"
+
+      attr_reader :id
+
+      def initialize(id)
+        @id = id
+      end
+    end
+    page = page_class.new(1)
+    report = report_class.new(2)
+    queried_conditions = []
+    scope = Object.new
+
+    scope.define_singleton_method(:includes) do |*_args|
+      self
+    end
+
+    scope.define_singleton_method(:where) do |conditions|
+      queried_conditions << conditions
+      []
+    end
+
+    original_unscoped = recording_class.method(:unscoped) if recording_class.respond_to?(:unscoped)
+    recording_class.singleton_class.send(:define_method, :unscoped) { scope }
+
+    begin
+      assert_equal({}, controller.send(:load_recordings_for, [page], [report]))
+    ensure
+      if original_unscoped
+        recording_class.singleton_class.send(:define_method, :unscoped, original_unscoped)
+      else
+        recording_class.singleton_class.send(:remove_method, :unscoped)
+      end
+
+      recording_studio_module.send(:remove_const, :Recording) unless recording_class_defined
+      Object.send(:remove_const, :RecordingStudio) unless recording_studio_defined
+    end
+
+    assert_equal(
+      [
+        { recordable_type: "Page", recordable_id: [1] },
+        { recordable_type: "Report", recordable_id: [2] }
+      ],
+      queried_conditions
+    )
   end
 
   def test_dummy_page_report_and_folder_models_configure_child_duplication_rules
