@@ -29,9 +29,9 @@
       <%= render "recordable_card",
         recordable: page,
         recordable_type_label: "Page",
+        child_count: child_count_for(page),
         recordable_path: page_path(page.slug),
-        duplicate_path: duplicate_page_path(page.slug),
-        child_copy_label: "Comments duplicate too" %>
+        duplicate_path: duplicate_page_path(page.slug) %>
     <% end %>
   </div>
 
@@ -45,9 +45,25 @@
       <%= render "recordable_card",
         recordable: report,
         recordable_type_label: "Report",
+        child_count: child_count_for(report),
         recordable_path: report_path(report.slug),
-        duplicate_path: duplicate_report_path(report.slug),
-        child_copy_label: "Comments are excluded" %>
+        duplicate_path: duplicate_report_path(report.slug) %>
+    <% end %>
+  </div>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Folders",
+    subtitle: "Configured with `include_children: [\"Folder\", \"Comment\"]` so nested folders duplicate recursively."
+  ) %>
+
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <% @folders.each do |folder| %>
+      <%= render "recordable_card",
+        recordable: folder,
+        recordable_type_label: "Folder",
+        child_count: child_count_for(folder),
+        recordable_path: folder_path(folder.slug),
+        duplicate_path: duplicate_folder_path(folder.slug) %>
     <% end %>
   </div>
 </div>

@@ -12,7 +12,9 @@ Rails.application.routes.draw do
   get "guides/:slug", to: "guides#show", as: :guide
   get "pages/:slug", to: "home#show_page", as: :page
   get "reports/:slug", to: "home#show_report", as: :report
+  get "folders/:slug", to: "home#show_folder", as: :folder
   post "pages/:slug/duplicate", to: "home#duplicate_page", as: :duplicate_page
   post "reports/:slug/duplicate", to: "home#duplicate_report", as: :duplicate_report
+  post "folders/:slug/duplicate", to: "home#duplicate_folder", as: :duplicate_folder
   root "home#index"
 end

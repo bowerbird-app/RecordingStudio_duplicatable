@@ -154,6 +154,26 @@ UnnamedRecordable = Struct.new(:id, keyword_init: true) do
   def save! = true
 end
 
+FakeBelongsToReflection = Struct.new(:name, :polymorphic, :association_class, keyword_init: true) do
+  def polymorphic?
+    polymorphic
+  end
+
+  def klass
+    association_class
+  end
+end
+
+PolymorphicChildRecordable = Struct.new(:id, :commentable, :body, keyword_init: true) do
+  def self.reflect_on_all_associations(kind)
+    return [] unless kind == :belongs_to
+
+    [FakeBelongsToReflection.new(name: :commentable, polymorphic: true, association_class: nil)]
+  end
+
+  def save! = true
+end
+
 module RecordingStudioDuplicatable
   module Capabilities
     class DuplicatableTest < Minitest::Test
@@ -490,6 +510,44 @@ module RecordingStudioDuplicatable
 
         assert_equal 3, record_calls.size
         assert_equal ["Parent (Copy)", "Child (Copy)", "Grandchild (Copy)"], record_calls.map(&:name)
+      end
+
+      def test_include_children_reparents_matching_belongs_to_association_to_created_parent
+        source_parent_recordable = NamedRecordable.new(id: 1, name: "Parent")
+        child_recordable = PolymorphicChildRecordable.new(
+          id: 10,
+          commentable: source_parent_recordable,
+          body: "Child note"
+        )
+        child = FakeRecording.new(
+          id: 10,
+          recordable: child_recordable,
+          recordable_type: "PolymorphicChildRecordable"
+        )
+        source = FakeRecording.new(
+          recordable: source_parent_recordable,
+          child_recordings: [child]
+        )
+
+        parent_duplicate_recordable = nil
+        child_duplicate_recordable = nil
+
+        RecordingStudio.stub(
+          :record!,
+          lambda { |**kwargs|
+            if parent_duplicate_recordable.nil?
+              parent_duplicate_recordable = kwargs[:recordable]
+              FakeEvent.new(recording: FakeRecording.new(id: 88, recordable: parent_duplicate_recordable))
+            else
+              child_duplicate_recordable = kwargs[:recordable]
+              FakeEvent.new(recording: FakeRecording.new(id: 89, recordable: child_duplicate_recordable))
+            end
+          }
+        ) do
+          source.duplicate_in_place!(actor: :user, include_children: ["PolymorphicChildRecordable"])
+        end
+
+        assert_same parent_duplicate_recordable, child_duplicate_recordable.commentable
       end
 
       def test_exclude_children_skips_matching_types

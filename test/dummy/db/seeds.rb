@@ -45,6 +45,37 @@ DEMO_REPORTS = [
   }
 ].freeze
 
+DEMO_FOLDERS = [
+  {
+    slug: "product-docs",
+    name: "Product Docs",
+    description: "Top-level folder for recursive duplication.",
+    comments: [
+      { author_name: "Harper", body: "This folder should copy its nested folders too." }
+    ],
+    children: [
+      {
+        slug: "release-notes",
+        name: "Release Notes",
+        description: "Second-tier folder in the duplication tree.",
+        comments: [
+          { author_name: "Indy", body: "The middle tier should keep its own copied comments." }
+        ],
+        children: [
+          {
+            slug: "q2-launch",
+            name: "Q2 Launch",
+            description: "Third-tier folder that proves deep duplication.",
+            comments: [
+              { author_name: "Jules", body: "Deep nested folders should duplicate in place." }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+].freeze
+
 user = User.find_or_create_by!(email: "admin@admin.com") do |u|
   u.password = "Password"
   u.password_confirmation = "Password"
@@ -74,6 +105,37 @@ def ensure_comment_recordings!(root_recording:, parent_recording:, recordable:, 
       recordable: comment,
       root_recording_id: root_recording.id,
       parent_recording_id: parent_recording.id
+    )
+  end
+end
+
+def ensure_folder_recordings!(root_recording:, parent_recording:, workspace:, folder_attributes:, parent_folder: nil)
+  folder = workspace.folders.find_or_initialize_by(slug: folder_attributes[:slug])
+  folder.assign_attributes(
+    folder_attributes.except(:comments, :children).merge(parent_folder: parent_folder)
+  )
+  folder.save!
+
+  folder_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
+    recordable: folder,
+    root_recording_id: root_recording.id,
+    parent_recording_id: parent_recording.id
+  )
+
+  ensure_comment_recordings!(
+    root_recording: root_recording,
+    parent_recording: folder_recording,
+    recordable: folder,
+    comments: folder_attributes[:comments] || []
+  )
+
+  Array(folder_attributes[:children]).each do |child_attributes|
+    ensure_folder_recordings!(
+      root_recording: root_recording,
+      parent_recording: folder_recording,
+      workspace: workspace,
+      folder_attributes: child_attributes,
+      parent_folder: folder
     )
   end
 end
@@ -116,6 +178,15 @@ DEMO_REPORTS.each do |attributes|
   )
 end
 
+DEMO_FOLDERS.each do |attributes|
+  ensure_folder_recordings!(
+    root_recording: root_recording,
+    parent_recording: root_recording,
+    workspace: workspace,
+    folder_attributes: attributes
+  )
+end
+
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
-puts "Seeded: #{workspace.pages.count} demo pages, #{workspace.reports.count} demo reports, #{Comment.count} demo comments"
+puts "Seeded: #{workspace.pages.count} demo pages, #{workspace.reports.count} demo reports, #{workspace.folders.count} demo folders, #{Comment.count} demo comments"

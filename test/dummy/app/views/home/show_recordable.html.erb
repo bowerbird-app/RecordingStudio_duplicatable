@@ -1,23 +1,24 @@
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
-    title: @recordable.title,
-    subtitle: @recordable.summary,
+    title: recordable_title(@recordable),
+    subtitle: recordable_subtitle(@recordable),
     variant: :h1
   ) %>
 
   <div class="flex flex-wrap gap-2">
     <%= render FlatPack::Badge::Component.new(text: @recordable_type_label, style: :info, size: :sm) %>
-    <%= render FlatPack::Badge::Component.new(text: "#{@child_recordables.size} children", style: :default, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: "#{@child_recordings.size} children", style: :default, size: :sm) %>
   </div>
 
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Children",
-    subtitle: "Comments attached to this #{@recordable_type_label.downcase}.",
+    subtitle: "Direct child recordings attached to this #{@recordable_type_label.downcase}.",
     anchor_link: true
   ) %>
 
-  <%= render FlatPack::Table::Component.new(data: @child_recordables) do |table| %>
-    <% table.column(title: "Author", html: ->(comment) { comment.author_name }) %>
-    <% table.column(title: "Comment", html: ->(comment) { comment.body }) %>
+  <%= render FlatPack::Table::Component.new(data: @child_recordings) do |table| %>
+    <% table.column(title: "Type", html: ->(child_recording) { child_recording.recordable_type }) %>
+    <% table.column(title: "Title", html: ->(child_recording) { child_recording_title(child_recording) }) %>
+    <% table.column(title: "Open", html: ->(child_recording) { child_recording_link(child_recording) }) %>
   <% end %>
 </div>

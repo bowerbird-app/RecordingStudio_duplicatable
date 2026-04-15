@@ -216,6 +216,11 @@ module RecordingStudioDuplicatable
                                     include_children: include_children,
                                     exclude_children: exclude_children).each do |child|
             dup_child = child.send(:duplicate_recordable, child.recordable)
+            reparent_duplicate_recordable!(
+              dup_child,
+              source_parent_recording: source_recording,
+              new_parent_recording: new_parent_recording
+            )
             apply_duplication_rename(dup_child, prefix: prefix, suffix: suffix)
             dup_child.save!
 
@@ -257,6 +262,32 @@ module RecordingStudioDuplicatable
 
         def normalized_recordable_types(types)
           Array(types).map { |type| type.is_a?(Class) ? type.name : type.to_s }
+        end
+
+        def reparent_duplicate_recordable!(duplicate_recordable, source_parent_recording:, new_parent_recording:)
+          source_parent_recordable = source_parent_recording.recordable
+          new_parent_recordable = new_parent_recording.recordable
+
+          return unless source_parent_recordable && new_parent_recordable
+          return unless duplicate_recordable.class.respond_to?(:reflect_on_all_associations)
+
+          duplicate_recordable.class.reflect_on_all_associations(:belongs_to).each do |reflection|
+            next unless duplicate_recordable.respond_to?(reflection.name)
+            next unless duplicate_recordable.respond_to?(:"#{reflection.name}=")
+
+            current_parent = duplicate_recordable.public_send(reflection.name)
+            next unless current_parent == source_parent_recordable
+            next unless reflection.polymorphic? || reflection_supports_recordable?(reflection, new_parent_recordable)
+
+            duplicate_recordable.public_send(:"#{reflection.name}=", new_parent_recordable)
+            break
+          end
+        end
+
+        def reflection_supports_recordable?(reflection, recordable)
+          reflection.klass && recordable.is_a?(reflection.klass)
+        rescue StandardError
+          false
         end
       end
     end
