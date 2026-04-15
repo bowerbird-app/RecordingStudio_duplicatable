@@ -1,21 +1,28 @@
 class HomeController < ApplicationController
-  helper_method :duplicate_page?
+  helper_method :duplicate_recordable?
 
   def index
-    @pages = Page.includes(:workspace).order(:created_at)
-  end
-
-  def show
-    @page = Page.find_by!(slug: params[:slug])
-    @api_methods = duplicatable_api_methods if @page.slug == "methods"
+    @pages = Page.includes(:workspace, :comments).order(:created_at)
+    @reports = Report.includes(:workspace, :comments).order(:created_at)
   end
 
   def duplicate_page
     page = Page.find_by!(slug: params[:slug])
-    recording = page_recording(page)
+    duplicate_recordable(page, success_key: :title)
+  end
+
+  def duplicate_report
+    report = Report.find_by!(slug: params[:slug])
+    duplicate_recordable(report, success_key: :title)
+  end
+
+  private
+
+  def duplicate_recordable(recordable, success_key:)
+    recording = RecordingStudio::Recording.unscoped.find_by(recordable: recordable)
 
     unless recording
-      redirect_to root_path, alert: "No page recording is available to duplicate."
+      redirect_to root_path, alert: "No recording is available to duplicate."
       return
     end
 
@@ -25,40 +32,13 @@ class HomeController < ApplicationController
     )
 
     if result.success?
-      redirect_to root_path, notice: %(Created duplicate "#{result.value.recordable.title}".)
+      redirect_to root_path, notice: %(Created duplicate "#{result.value.recordable.public_send(success_key)}".)
     else
       redirect_to root_path, alert: "Duplication failed: #{result.error}"
     end
   end
 
-  private
-
-  def page_recording(page)
-    RecordingStudio::Recording.unscoped.find_by(recordable: page)
-  end
-
-  def duplicate_page?(page)
-    page.slug.match?(/-\d+\z/) || page.title.include?("(Copy)")
-  end
-
-  def duplicatable_api_methods
-    [
-      {
-        name: "include RecordingStudioDuplicatable::Capabilities::Duplicatable",
-        description: "Turns on the capability for a recordable type using the global defaults."
-      },
-      {
-        name: ".with(prefix:, suffix:, include_children:, exclude_children:)",
-        description: "Enables the capability with per-type duplication settings."
-      },
-      {
-        name: "recording.duplicate_in_place!(actor:, ...)",
-        description: "Duplicates a Recording Studio recording directly when you already have the recording object."
-      },
-      {
-        name: "RecordingStudioDuplicatable::Services::DuplicationService.call(recording:, actor:, ...)",
-        description: "Wraps duplication in the addon result object for controller-friendly success and error handling."
-      }
-    ]
+  def duplicate_recordable?(recordable)
+    recordable.title.include?("(Copy)") || recordable.slug.match?(/-\d+\z/)
   end
 end

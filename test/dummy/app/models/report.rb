@@ -1,9 +1,9 @@
-class Page < ApplicationRecord
+class Report < ApplicationRecord
   include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
     prefix: nil,
     suffix: " (Copy)",
-    include_children: ["Comment"],
-    exclude_children: nil
+    include_children: nil,
+    exclude_children: ["Comment"]
   )
 
   belongs_to :workspace
@@ -12,7 +12,6 @@ class Page < ApplicationRecord
   validates :title, presence: true
   validates :slug, presence: true, uniqueness: { scope: :workspace_id }
   validates :summary, presence: true
-  validates :body, presence: true
 
   before_validation :ensure_slug
 
@@ -24,7 +23,7 @@ class Page < ApplicationRecord
   private
 
   def ensure_slug
-    base_slug = slug.presence || title.to_s.parameterize.presence || "page"
+    base_slug = slug.presence || title.to_s.parameterize.presence || "report"
     self.slug = unique_slug_for(base_slug)
   end
 

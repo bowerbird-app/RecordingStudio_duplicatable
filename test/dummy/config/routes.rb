@@ -9,7 +9,8 @@ Rails.application.routes.draw do
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  get "pages/:slug", to: "home#show", as: :page
+  get "guides/:slug", to: "guides#show", as: :guide
   post "pages/:slug/duplicate", to: "home#duplicate_page", as: :duplicate_page
+  post "reports/:slug/duplicate", to: "home#duplicate_report", as: :duplicate_report
   root "home#index"
 end

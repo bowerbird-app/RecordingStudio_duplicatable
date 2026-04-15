@@ -54,80 +54,97 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "Built-in capabilities remain disabled"
-    assert_includes initializer_source, 'config.recordable_types = ["Workspace", "Page"]'
+    assert_includes initializer_source, 'config.recordable_types = ["Workspace", "Page", "Report", "Comment"]'
     refute_includes initializer_source, "config.features."
   end
 
-  def test_dummy_readme_describes_page_demo
+  def test_dummy_readme_describes_recordable_demo
     readme_path = File.expand_path("dummy/README.md", __dir__)
     readme_source = File.read(readme_path)
 
-    assert_includes readme_source, "Page"
-    assert_includes readme_source, "/pages/setup"
-    assert_includes readme_source, "simple page-card duplication demo"
-    refute_includes readme_source, "/up"
+    assert_includes readme_source, "Page`, `Report`, and `Comment`"
+    assert_includes readme_source, "/guides/setup"
+    assert_includes readme_source, "included vs excluded child comment copying"
+    refute_includes readme_source, "/pages/setup"
   end
 
-  def test_dummy_home_page_mentions_page_demo
+  def test_dummy_home_page_mentions_pages_and_reports_demo
     view_path = File.expand_path("dummy/app/views/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
     assert_includes view_source, "Duplicatable Demo"
-    assert_includes view_source, "This is a demo of the duplication functionality"
-    assert_includes view_source, "Page"
-    assert_includes view_source, "Duplicate"
-    assert_includes view_source, "style: :danger"
-    refute_includes view_source, "Health check"
-    refute_includes view_source, "Recording Studio mount"
-    refute_includes view_source, "style: :error"
+    assert_includes view_source, "Pages duplicate with their comment recordings"
+    assert_includes view_source, "Comments duplicate too"
+    assert_includes view_source, "Comments are excluded"
+    assert_includes view_source, "duplicate_report_path"
+    refute_includes view_source, "style: :danger"
   end
 
-  def test_dummy_show_page_mentions_api_docs_card
-    view_path = File.expand_path("dummy/app/views/home/show.html.erb", __dir__)
+  def test_dummy_recordable_card_mentions_comment_counts
+    view_path = File.expand_path("dummy/app/views/home/_recordable_card.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, "Duplicatable API"
-    assert_includes view_source, "Example"
-    assert_includes view_source, "FlatPack::Card::Component"
+    assert_includes view_source, "recordable.comments.size"
+    assert_includes view_source, 'text: "Duplicate"'
+    assert_includes view_source, "text: recordable_type_label"
   end
 
-  def test_dummy_home_controller_uses_page_duplication_service
+  def test_static_guides_are_separate_from_recordable_demo
+    controller_path = File.expand_path("dummy/app/controllers/guides_controller.rb", __dir__)
+    controller_source = File.read(controller_path)
+    view_path = File.expand_path("dummy/app/views/guides/show.html.erb", __dir__)
+    view_source = File.read(view_path)
+
+    assert_includes controller_source, "GUIDE_CONTENT"
+    assert_includes controller_source, '"setup"'
+    assert_includes controller_source, '"methods"'
+    assert_includes view_source, "<table"
+    assert_includes view_source, "code_sample"
+  end
+
+  def test_dummy_home_controller_uses_page_and_report_duplication_service
     controller_path = File.expand_path("dummy/app/controllers/home_controller.rb", __dir__)
     controller_source = File.read(controller_path)
 
     assert_includes controller_source, "RecordingStudioDuplicatable::Services::DuplicationService.call"
     assert_includes controller_source, "duplicate_page"
-    assert_includes controller_source, "Page.find_by!(slug: params[:slug])"
+    assert_includes controller_source, "duplicate_report"
+    assert_includes controller_source, "Report.find_by!(slug: params[:slug])"
   end
 
-  def test_dummy_page_model_enables_duplicatable_capability
-    model_path = File.expand_path("dummy/app/models/page.rb", __dir__)
-    model_source = File.read(model_path)
+  def test_dummy_page_and_report_models_configure_child_duplication_rules
+    page_model_path = File.expand_path("dummy/app/models/page.rb", __dir__)
+    page_model_source = File.read(page_model_path)
+    report_model_path = File.expand_path("dummy/app/models/report.rb", __dir__)
+    report_model_source = File.read(report_model_path)
+    comment_model_path = File.expand_path("dummy/app/models/comment.rb", __dir__)
+    comment_model_source = File.read(comment_model_path)
 
-    assert_includes model_source, "RecordingStudioDuplicatable::Capabilities::Duplicatable.with"
-    assert_includes model_source, "belongs_to :workspace"
-    assert_includes model_source, "before_validation :ensure_slug"
+    assert_includes page_model_source, 'include_children: ["Comment"]'
+    assert_includes report_model_source, 'exclude_children: ["Comment"]'
+    assert_includes page_model_source, "has_many :comments, as: :commentable"
+    assert_includes report_model_source, "has_many :comments, as: :commentable"
+    assert_includes comment_model_source, "belongs_to :commentable, polymorphic: true"
   end
 
-  def test_dummy_routes_include_page_docs_and_duplication
+  def test_dummy_routes_include_guides_and_report_duplication
     routes_path = File.expand_path("dummy/config/routes.rb", __dir__)
     routes_source = File.read(routes_path)
 
-    assert_includes routes_source, 'get "pages/:slug"'
+    assert_includes routes_source, 'get "guides/:slug"'
     assert_includes routes_source, 'post "pages/:slug/duplicate"'
-    refute_includes routes_source, 'post "duplicate_workspace"'
+    assert_includes routes_source, 'post "reports/:slug/duplicate"'
+    refute_includes routes_source, 'get "pages/:slug"'
   end
 
-  def test_dummy_sidebar_uses_duplicatable_navigation
+  def test_dummy_sidebar_uses_static_guide_navigation
     sidebar_path = File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__)
     sidebar_source = File.read(sidebar_path)
 
-    assert_includes sidebar_source, 'title: "Duplicatable"'
-    assert_includes sidebar_source, 'label: "Setup"'
-    assert_includes sidebar_source, 'label: "Use"'
-    assert_includes sidebar_source, 'label: "Methods"'
-    refute_includes sidebar_source, 'label: "Health"'
-    refute_includes sidebar_source, 'label: "Recording Studio"'
+    assert_includes sidebar_source, 'href: guide_path("setup")'
+    assert_includes sidebar_source, 'href: guide_path("use")'
+    assert_includes sidebar_source, 'href: guide_path("methods")'
+    refute_includes sidebar_source, "page_path("
   end
 
   def test_dummy_top_nav_removes_old_title_text
@@ -144,6 +161,16 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes top_nav_source, "<% nav.center do %>"
     assert_operator top_nav_source.index("<% nav.center do %>"), :<,
                     top_nav_source.index("<% nav.right do %>")
+  end
+
+  def test_dummy_seeds_create_pages_reports_and_comment_recordings
+    seeds_path = File.expand_path("dummy/db/seeds.rb", __dir__)
+    seeds_source = File.read(seeds_path)
+
+    assert_includes seeds_source, "DEMO_PAGES"
+    assert_includes seeds_source, "DEMO_REPORTS"
+    assert_includes seeds_source, "ensure_comment_recordings!"
+    assert_includes seeds_source, "parent_recording_id: parent_recording.id"
   end
 
   def test_engine_home_page_uses_flatpack_components

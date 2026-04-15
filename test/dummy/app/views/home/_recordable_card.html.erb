@@ -1,0 +1,51 @@
+<%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+  <% card.header do %>
+    <%= render FlatPack::PageTitle::Component.new(
+      title: recordable.title,
+      subtitle: recordable.summary,
+      variant: :h3,
+      class: "mb-0 pb-0"
+    ) %>
+  <% end %>
+
+  <% card.body do %>
+    <div class="space-y-4 text-sm text-[var(--surface-content-color)]">
+      <div class="flex flex-wrap gap-2">
+        <%= render FlatPack::Badge::Component.new(text: recordable_type_label, style: :info, size: :sm) %>
+        <%= render FlatPack::Badge::Component.new(
+          text: duplicate_state ? "Duplicate" : "Seeded demo record",
+          style: duplicate_state ? :warning : :success,
+          size: :sm
+        ) %>
+      </div>
+
+      <% if recordable.respond_to?(:body) %>
+        <p><%= recordable.body.truncate(140) %></p>
+      <% end %>
+
+      <dl class="space-y-2 text-xs text-[var(--surface-muted-content-color)]">
+        <div>
+          <dt class="font-medium text-[var(--surface-content-color)]">Slug</dt>
+          <dd><%= recordable.slug %></dd>
+        </div>
+        <div>
+          <dt class="font-medium text-[var(--surface-content-color)]">Comments</dt>
+          <dd><%= recordable.comments.size %></dd>
+        </div>
+        <div>
+          <dt class="font-medium text-[var(--surface-content-color)]">Child duplication</dt>
+          <dd><%= child_copy_label %></dd>
+        </div>
+      </dl>
+
+      <%= form_with url: duplicate_path, method: :post, local: true do %>
+        <%= render FlatPack::Button::Component.new(
+          text: "Duplicate",
+          style: :primary,
+          size: :sm,
+          type: "submit"
+        ) %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

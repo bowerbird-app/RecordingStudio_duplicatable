@@ -2,55 +2,46 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-PAGE_DEFINITIONS = [
+DEMO_PAGES = [
   {
-    slug: "setup",
-    title: "Setup",
-    summary: "Add the capability to a recordable and choose your default duplication options.",
-    body: <<~TEXT,
-      Include the duplicatable capability in the recordable you want to copy in place.
-
-      For this dummy app, Page is the focused recordable type. The addon turns on the capability for that type and stores any per-type options with Recording Studio.
-
-      Reach for the capability module when you want the model itself to opt into duplication.
-    TEXT
-    code_sample: <<~RUBY
-      class Page < ApplicationRecord
-        include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
-          prefix: nil,
-          suffix: " (Copy)",
-          include_children: nil,
-          exclude_children: nil
-        )
-      end
-    RUBY
+    slug: "launch-plan",
+    title: "Launch Plan",
+    summary: "A demo page whose comments should duplicate with it.",
+    body: "Track the launch checklist, content approvals, and final release notes in one recordable page.",
+    comments: [
+      { author_name: "Avery", body: "Final copy is ready for review." },
+      { author_name: "Parker", body: "Please keep the hero image in the duplicate too." }
+    ]
   },
   {
-    slug: "use",
-    title: "Use",
-    summary: "Call the service with a page recording and the current actor to create a duplicate.",
-    body: <<~TEXT,
-      Duplicate from a controller or service once you have the Recording Studio recording for the recordable you want to copy.
+    slug: "feature-brief",
+    title: "Feature Brief",
+    summary: "Another demo page that shows child comment copying.",
+    body: "Capture the problem statement, acceptance notes, and rollout details for the new feature.",
+    comments: [
+      { author_name: "Quinn", body: "This duplicate should keep the stakeholder notes." },
+      { author_name: "Riley", body: "Please preserve the nested recording structure." }
+    ]
+  }
+].freeze
 
-      The dummy app keeps a recording for each seeded Page, then sends that recording to the duplication service when you press Duplicate on a card.
-    TEXT
-    code_sample: <<~RUBY
-      result = RecordingStudioDuplicatable::Services::DuplicationService.call(
-        recording: page_recording,
-        actor: current_user
-      )
-    RUBY
+DEMO_REPORTS = [
+  {
+    slug: "weekly-kpis",
+    title: "Weekly KPI Report",
+    summary: "A demo report whose comments should be excluded from duplication.",
+    comments: [
+      { author_name: "Jordan", body: "These observations stay with the original report." },
+      { author_name: "Sky", body: "The duplicate should start with zero comments." }
+    ]
   },
   {
-    slug: "methods",
-    title: "Methods",
-    summary: "Review the main API entry points exposed by the duplicatable addon.",
-    body: <<~TEXT,
-      The addon exposes a small surface area.
-
-      Use the capability module to opt into duplication, use duplicate_in_place! when you already have a recording instance, and use the service object for controller-friendly success and failure handling.
-    TEXT
-    code_sample: nil
+    slug: "incident-review",
+    title: "Incident Review",
+    summary: "Another report that demonstrates excluded child recordings.",
+    comments: [
+      { author_name: "Morgan", body: "Keep the follow-up notes attached only to the source report." }
+    ]
   }
 ].freeze
 
@@ -74,18 +65,57 @@ RecordingStudio::Recording.unscoped.find_or_create_by!(
   recordable: access
 )
 
-PAGE_DEFINITIONS.each do |attributes|
+def ensure_comment_recordings!(root_recording:, parent_recording:, recordable:, comments:)
+  comments.each do |comment_attributes|
+    comment = recordable.comments.find_or_initialize_by(author_name: comment_attributes[:author_name], body: comment_attributes[:body])
+    comment.save!
+
+    RecordingStudio::Recording.unscoped.find_or_create_by!(
+      recordable: comment,
+      root_recording_id: root_recording.id,
+      parent_recording_id: parent_recording.id
+    )
+  end
+end
+
+DEMO_PAGES.each do |attributes|
   page = workspace.pages.find_or_initialize_by(slug: attributes[:slug])
-  page.assign_attributes(attributes)
+  page.assign_attributes(attributes.except(:comments))
   page.save!
 
-  RecordingStudio::Recording.unscoped.find_or_create_by!(
+  page_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
     recordable: page,
     root_recording_id: root_recording.id,
     parent_recording_id: root_recording.id
+  )
+
+  ensure_comment_recordings!(
+    root_recording: root_recording,
+    parent_recording: page_recording,
+    recordable: page,
+    comments: attributes[:comments]
+  )
+end
+
+DEMO_REPORTS.each do |attributes|
+  report = workspace.reports.find_or_initialize_by(slug: attributes[:slug])
+  report.assign_attributes(attributes.except(:comments))
+  report.save!
+
+  report_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
+    recordable: report,
+    root_recording_id: root_recording.id,
+    parent_recording_id: root_recording.id
+  )
+
+  ensure_comment_recordings!(
+    root_recording: root_recording,
+    parent_recording: report_recording,
+    recordable: report,
+    comments: attributes[:comments]
   )
 end
 
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
-puts "Seeded: #{workspace.pages.count} demo pages"
+puts "Seeded: #{workspace.pages.count} demo pages, #{workspace.reports.count} demo reports, #{Comment.count} demo comments"

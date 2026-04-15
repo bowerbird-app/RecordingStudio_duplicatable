@@ -6,10 +6,10 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- A seeded `Workspace` root recording with child `Page` recordables
+- A seeded `Workspace` root recording with child `Page`, `Report`, and `Comment` recordables
 - FlatPack layout integration and Tailwind source scanning
-- A simple page-card duplication demo on the home page
-- Sidebar-linked setup, use, and methods guides for the addon
+- A page/report duplication demo that shows included vs excluded child comment copying
+- Sidebar-linked static guides for setup, use, and methods
 
 ## Quick Start
 
@@ -26,12 +26,12 @@ Then open the app and sign in with:
 
 ## Useful Routes
 
-- `/` - seeded `Page` cards with a real duplicate action
-- `/pages/setup` - how to opt a recordable into duplication
-- `/pages/use` - how to call the duplication service
-- `/pages/methods` - the addon API surface explained
+- `/` - seeded `Page` and `Report` cards with duplicate actions
+- `/guides/setup` - how to opt a recordable into duplication
+- `/guides/use` - how to call the duplication service
+- `/guides/methods` - the addon API surface explained
 - `/users/sign_in` - Devise sign-in page
 
 ## Why This App Exists
 
-Use this app to verify the real addon integration in a host application. If authentication, layout wiring, asset sources, or the page duplication flow break here, the addon likely needs adjustment before release.
+Use this app to verify the real addon integration in a host application. If authentication, layout wiring, asset sources, or the recordable duplication flow break here, the addon likely needs adjustment before release.

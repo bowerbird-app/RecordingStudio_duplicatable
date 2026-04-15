@@ -1,7 +1,7 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Duplicatable Demo",
-    subtitle: "This is a demo of the duplication functionality",
+    subtitle: "Pages duplicate with their comment recordings. Reports duplicate without comment recordings, using only the addon API configuration.",
     variant: :h1
   ) %>
 
@@ -15,33 +15,56 @@
     <%= render FlatPack::Alert::Component.new(
       title: "Duplication error",
       description: flash[:alert],
-      style: :danger
+      style: :error
     ) %>
   <% end %>
 
-  <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-    <% @pages.each do |page| %>
-      <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
-        <% card.body do %>
-          <div class="flex flex-col items-start gap-2">
-            <h3 class="text-lg font-semibold text-(--surface-content-color)"><%= page.title %></h3>
+  <div class="grid gap-6 xl:grid-cols-2">
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Pages",
+          subtitle: "Configured with `include_children: [\"Comment\"]` so duplicate page recordings also copy their child comments.",
+          variant: :h2,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
 
-            <%= render FlatPack::Badge::Component.new(
-              text: "Page",
-              style: :info,
-              size: :sm
-            ) %>
+      <% card.body do %>
+        <div class="grid gap-4 md:grid-cols-2">
+          <% @pages.each do |page| %>
+            <%= render "recordable_card",
+              recordable: page,
+              recordable_type_label: "Page",
+              duplicate_path: duplicate_page_path(page.slug),
+              child_copy_label: "Comments duplicate too",
+              duplicate_state: duplicate_recordable?(page) %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
 
-            <%= form_with url: duplicate_page_path(page.slug), method: :post, local: true do %>
-              <%= render FlatPack::Button::Component.new(
-                text: "Duplicate",
-                style: :default,
-                size: :sm,
-                type: "submit"
-              ) %>
-            <% end %>
-          </div>
-        <% end %>
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Reports",
+          subtitle: "Configured with `exclude_children: [\"Comment\"]` so duplicate reports leave their child comments behind.",
+          variant: :h2,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.body do %>
+        <div class="grid gap-4 md:grid-cols-2">
+          <% @reports.each do |report| %>
+            <%= render "recordable_card",
+              recordable: report,
+              recordable_type_label: "Report",
+              duplicate_path: duplicate_report_path(report.slug),
+              child_copy_label: "Comments are excluded",
+              duplicate_state: duplicate_recordable?(report) %>
+          <% end %>
+        </div>
       <% end %>
     <% end %>
   </div>
