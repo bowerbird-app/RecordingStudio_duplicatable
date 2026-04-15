@@ -2,13 +2,14 @@ class GuidesController < ApplicationController
   GUIDE_CONTENT = {
     "setup" => {
       title: "Setup",
-      subtitle: "Mount the engine, keep your current actor available, and opt recordables into duplication.",
+      subtitle: "Mount the engine to use the built-in duplication route and controller, keep your current actor available, and opt recordables into duplication.",
       sections: [
         {
-          title: "Mount and actor setup",
-          subtitle: "The built-in duplicate endpoint uses the mounted engine route plus your existing Recording Studio actor resolver.",
+          anchor: "mount-and-actor-setup",
+          title: "Setup route and controller",
+          subtitle: "Mount the engine to use the gem-provided duplication route and controller with your existing Recording Studio actor resolver.",
           code_block: {
-            title: "Routes and actor setup",
+            title: "Built-in route and controller",
             language: "ruby",
             code: <<~RUBY
               mount RecordingStudioDuplicatable::Engine, at: "/recording_studio_duplicatable"
@@ -20,7 +21,7 @@ class GuidesController < ApplicationController
           }
         },
         {
-          title: "Capability",
+          title: "Add capability to recordable",
           anchor: "capability",
           subtitle: "Include the addon with the child-copy options you want.",
           code_block: {
@@ -52,18 +53,38 @@ class GuidesController < ApplicationController
         }
       ]
     },
+    "approach" => {
+      title: "Approach",
+      subtitle: "The gem keeps duplication deliberately narrow: duplicate the recording in place, keep the original recordable, and configure child-copy rules where the capability is declared.",
+      sections: [
+        {
+          title: "General approach",
+          subtitle: "Use the built-in flow when you want a simple in-place duplicate and predictable child-copy behavior.",
+          list: {
+            ordered: true,
+            items: [
+              "Duplicate is deliberately simple. Move or copy workflows belong in other Recording Studio addon gems.",
+              "After duplication the default behavior is to refresh the current page. A prefix or suffix can be added to distinguish the new recording.",
+              "Duplication copies the recording, not the recordable. The duplicate points to the existing recordable.",
+              "Control of what child items are included in duplication lives in this gem through the capability options."
+            ]
+          }
+        }
+      ]
+    },
     "use" => {
       title: "Use",
-      subtitle: "How to duplicate something with the built-in route, plus the custom option when you need it.",
+      subtitle: "How to duplicate something with the built-in route or your own host-app route and controller.",
       sections: [
         {
           anchor: "built-in-route",
           title: "Built-in route",
-          subtitle: "Post to the mounted engine when you want a simple duplicate button or link.",
+          subtitle: "Post to the mounted engine when you want a simple duplicate button or link; access is checked automatically.",
           code_block: {
             title: "Simple button",
             language: "erb",
             code: <<~ERB
+              <%# The built-in controller redirects back after duplication, so the current page reloads by default. %>
               <%= button_to "Duplicate",
                 recording_studio_duplicatable.duplicate_recording_path(recording_id: page_recording.id),
                 method: :post %>
@@ -71,41 +92,32 @@ class GuidesController < ApplicationController
           }
         },
         {
-          anchor: "duplicate-link",
-          title: "Host app link",
-          subtitle: "Add your own POST route and controller action when you want a UI link for duplication.",
+          anchor: "custom-route-and-controller",
+          title: "Custom route and controller",
+          subtitle: "Add your own POST route and controller action when you want to control the path, redirect, or response.",
           code_block: {
-            title: "Host app ERB example",
-            language: "erb",
-            code: <<~ERB
-              <%= link_to "Duplicate page",
-                  duplicate_page_path(page.slug),
-                  data: { turbo_method: :post } %>
-            ERB
-          }
-        },
-        {
-          title: "What gets copied",
-          subtitle: "The dummy app shows the difference between included and excluded child recordings.",
-          table: {
-            data: [
-              {recordable: "Page", child_behavior: "Comments are duplicated"},
-              {recordable: "Report", child_behavior: "Comments are excluded"},
-              {recordable: "Folder", child_behavior: "Nested folders and comments are duplicated"}
-            ]
-          }
-        },
-        {
-          title: "Custom controller (optional)",
-          subtitle: "Use the service directly when you want custom redirects or non-browser responses.",
-          code_block: {
-            title: "Service object",
+            title: "Host app route and controller",
             language: "ruby",
             code: <<~RUBY
-              result = RecordingStudioDuplicatable::Services::DuplicationService.call(
-                recording: page_recording,
-                actor: current_user
-              )
+              post "/pages/:slug/duplicate", to: "pages#duplicate", as: :duplicate_page
+
+              class PagesController < ApplicationController
+                def duplicate
+                  page = Page.find_by!(slug: params[:slug])
+                  recording = RecordingStudio::Recording.find_by!(recordable: page)
+
+                  result = RecordingStudioDuplicatable::Services::DuplicationService.call(
+                    recording: recording,
+                    actor: Current.actor
+                  )
+
+                  result.on_success do |duplicate_recording|
+                    redirect_to page_path(duplicate_recording.recordable.slug), notice: "Page duplicated"
+                  end.on_failure do |error|
+                    redirect_to page_path(page.slug), alert: error.message
+                  end
+                end
+              end
             RUBY
           }
         }
@@ -141,17 +153,6 @@ class GuidesController < ApplicationController
                 purpose: "Use the wrapped Result object in controllers and services"
               }
             ]
-          }
-        },
-        {
-          title: "Direct recording call",
-          subtitle: "Call duplication directly when you already have the recording object and want full control in your own code.",
-          code_block: {
-            title: "Recording API",
-            language: "ruby",
-            code: <<~RUBY
-              duplicate = recording.duplicate_in_place!(actor: current_user)
-            RUBY
           }
         }
       ]

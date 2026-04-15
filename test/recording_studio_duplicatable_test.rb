@@ -72,6 +72,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes readme_source, "Page`, `Report`, `Folder`, and `Comment`"
     assert_includes readme_source, "/guides/setup"
+    assert_includes readme_source, "/guides/approach"
     assert_includes readme_source, "gem-provided duplicate route"
     assert_includes readme_source, "included vs excluded child copying"
     refute_includes readme_source, "/pages/setup"
@@ -111,41 +112,129 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes controller_source, "GUIDE_CONTENT"
     assert_includes controller_source, '"setup"'
+    assert_includes controller_source, '"approach"'
     assert_includes controller_source, '"methods"'
-    assert_includes controller_source, 'anchor: "duplicate-link"'
+    assert_includes controller_source, 'anchor: "mount-and-actor-setup"'
     assert_includes controller_source, 'anchor: "capability"'
-    assert_includes controller_source, 'title: "Mount and actor setup"'
-    assert_includes controller_source, 'title: "Capability"'
+    assert_includes controller_source, 'title: "Setup route and controller"'
+    assert_includes controller_source, 'title: "Built-in route and controller"'
+    assert_includes controller_source, 'title: "Add capability to recordable"'
+    assert_includes controller_source, 'title: "Approach"'
+    assert_includes controller_source, 'title: "General approach"'
+    assert_includes(
+      controller_source,
+      "subtitle: \"The gem keeps duplication deliberately narrow: duplicate the " \
+      "recording in place, keep the original recordable, and configure " \
+      "child-copy rules where the capability is declared.\""
+    )
+    assert_includes(
+      controller_source,
+      'subtitle: "Use the built-in flow when you want a simple in-place ' \
+      'duplicate and predictable child-copy behavior."'
+    )
+    assert_includes(
+      controller_source,
+      "Duplicate is deliberately simple. Move or copy workflows belong in other " \
+      "Recording Studio addon gems."
+    )
+    assert_includes(
+      controller_source,
+      "After duplication the default behavior is to refresh the current page. " \
+      "A prefix or suffix can be added to distinguish the new recording."
+    )
+    assert_includes(
+      controller_source,
+      "Duplication copies the recording, not the recordable. The duplicate points " \
+      "to the existing recordable."
+    )
+    assert_includes(
+      controller_source,
+      "Control of what child items are included in duplication lives in this gem " \
+      "through the capability options."
+    )
     assert_includes controller_source, 'title: "Built-in route"'
-    assert_includes controller_source, 'title: "Host app link"'
-    assert_includes controller_source, 'title: "Host app ERB example"'
+    assert_includes(
+      controller_source,
+      'subtitle: "Post to the mounted engine when you want a simple duplicate ' \
+      'button or link; access is checked automatically."'
+    )
+    assert_includes controller_source, 'anchor: "custom-route-and-controller"'
+    assert_includes controller_source, 'title: "Custom route and controller"'
+    assert_includes controller_source, 'title: "Host app route and controller"'
     assert_includes controller_source, 'title: "Simple button"'
     assert_includes(
       controller_source,
-      'subtitle: "Add your own POST route and controller action when you want a UI link for duplication."'
+      "The built-in controller redirects back after duplication, so the current page reloads by default."
     )
-    assert_includes controller_source, "duplicate_page_path(page.slug)"
-    assert_includes controller_source, "data: { turbo_method: :post }"
-    assert_includes controller_source, 'title: "Options"'
-    assert_includes controller_source, 'title: "What gets copied"'
-    assert_includes controller_source, "Comments are duplicated"
-    assert_includes controller_source, "Comments are excluded"
-    assert_includes controller_source, "Nested folders and comments are duplicated"
-    assert_operator controller_source.index('"use"'), :<, controller_source.index('title: "Built-in route"')
-    assert_operator controller_source.rindex('"methods"'), :>, controller_source.index('title: "Built-in route"')
     assert_includes(
       controller_source,
-      'subtitle: "How to duplicate something with the built-in route, plus the custom option when you need it."'
+      'subtitle: "Add your own POST route and controller action when you want ' \
+      'to control the path, redirect, or response."'
+    )
+    assert_includes(
+      controller_source,
+      'post "/pages/:slug/duplicate", to: "pages#duplicate", as: :duplicate_page'
+    )
+    assert_includes controller_source, "class PagesController < ApplicationController"
+    assert_includes controller_source, "page = Page.find_by!(slug: params[:slug])"
+    assert_includes(
+      controller_source,
+      "recording = RecordingStudio::Recording.find_by!(recordable: page)"
+    )
+    assert_includes controller_source, "RecordingStudioDuplicatable::Services::DuplicationService.call"
+    assert_includes(
+      controller_source,
+      "redirect_to page_path(duplicate_recording.recordable.slug), notice: " \
+      '"Page duplicated"'
+    )
+    assert_includes controller_source, 'title: "Options"'
+    assert_operator(
+      controller_source.index("use"),
+      :<,
+      controller_source.index('title: "Built-in route"')
+    )
+    assert_operator(
+      controller_source.index('"approach"'),
+      :<,
+      controller_source.index('"use"')
+    )
+    assert_operator(
+      controller_source.rindex('"methods"'),
+      :>,
+      controller_source.index('title: "Built-in route"')
+    )
+    assert_includes(
+      controller_source,
+      'subtitle: "How to duplicate something with the built-in route or your own host-app route and controller."'
+    )
+    assert_includes(
+      controller_source,
+      "subtitle: \"Mount the engine to use the built-in duplication route and " \
+      "controller, keep your current actor available, and opt recordables " \
+      "into duplication.\""
+    )
+    assert_includes(
+      controller_source,
+      "subtitle: \"Mount the engine to use the gem-provided duplication route " \
+      "and controller with your existing Recording Studio actor resolver.\""
     )
     assert_includes controller_source, "duplicate_recording_path"
-    assert_includes controller_source, 'title: "Custom controller (optional)"'
-    assert_includes controller_source, 'title: "Direct recording call"'
+    refute_includes controller_source, 'title: "Host app link"'
+    refute_includes controller_source, 'title: "What gets copied"'
+    refute_includes controller_source, 'title: "Custom controller (optional)"'
+    refute_includes controller_source, 'title: "Direct recording call"'
     refute_includes controller_source, 'title: "2. Register the recordable type"'
     assert_includes view_source, "FlatPack::SectionTitle::Component"
     assert_includes view_source, "section[:anchor].present?"
-    assert_includes view_source, "section[:title].present? || section[:subtitle].present?"
+    assert_includes(
+      view_source,
+      "section[:title].present? || section[:subtitle].present?"
+    )
     assert_includes view_source, "anchor_link: true"
     assert_includes view_source, "FlatPack::Table::Component"
+    assert_includes view_source, "section[:list].present?"
+    assert_includes view_source, "section[:list][:ordered]"
+    assert_includes view_source, '<ol class="<%= list_classes.join(" ") %>">'
     assert_includes view_source, "FlatPack::CodeBlock::Component"
   end
 
@@ -273,6 +362,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     sidebar_source = File.read(sidebar_path)
 
     assert_includes sidebar_source, 'href: guide_path("setup")'
+    assert_includes sidebar_source, 'href: guide_path("approach")'
     assert_includes sidebar_source, 'href: guide_path("use")'
     assert_includes sidebar_source, 'href: guide_path("methods")'
     refute_includes sidebar_source, "page_path("

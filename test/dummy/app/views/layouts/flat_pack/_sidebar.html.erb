@@ -22,6 +22,12 @@
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Approach",
+        href: guide_path("approach"),
+        icon: :folder
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
         label: "Use",
         href: guide_path("use"),
         icon: :folder

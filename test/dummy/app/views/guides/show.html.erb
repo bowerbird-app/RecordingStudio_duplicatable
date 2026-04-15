@@ -23,6 +23,25 @@
         <% end %>
       <% end %>
 
+      <% if section[:list].present? %>
+        <% list_classes = ["space-y-3 text-sm leading-6"] %>
+        <% if section[:list][:ordered] %>
+          <% list_classes << "list-decimal pl-5" %>
+          <ol class="<%= list_classes.join(" ") %>">
+            <% section[:list][:items].each do |item| %>
+              <li><%= item %></li>
+            <% end %>
+          </ol>
+        <% else %>
+          <% list_classes << "list-disc pl-5" %>
+          <ul class="<%= list_classes.join(" ") %>">
+            <% section[:list][:items].each do |item| %>
+              <li><%= item %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      <% end %>
+
       <% if section[:code_block].present? %>
         <%= render FlatPack::CodeBlock::Component.new(
           title: section[:code_block][:title],

@@ -10,7 +10,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 - The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
 - FlatPack layout integration and Tailwind source scanning
 - A page/report/folder duplication demo that posts to the gem-provided duplicate route and shows included vs excluded child copying
-- Sidebar-linked static guides for setup, use, and methods
+- Sidebar-linked static guides for setup, approach, use, and methods
 
 ## Quick Start
 
@@ -32,6 +32,7 @@ Then open the app and sign in with:
 - `/reports/:slug` - inspect a seeded report and its child recordings
 - `/folders/:slug` - inspect a seeded folder and its nested child recordings
 - `/guides/setup` - how to mount the engine, provide the current actor, and opt a recordable into duplication
+- `/guides/approach` - the addon's deliberately narrow duplication approach and default behaviors
 - `/guides/use` - how to use the built-in duplicate route or the optional service object
 - `/guides/methods` - the built-in route, service, and recording APIs explained
 - `/users/sign_in` - Devise sign-in page
