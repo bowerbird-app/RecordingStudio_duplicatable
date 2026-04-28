@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateRecordingStudioAccesses < ActiveRecord::Migration[7.1]
+class CreateRecordingStudioAccesses < ActiveRecord::Migration[8.1]
   def change
     create_table :recording_studio_accesses, id: :uuid do |t|
       t.string :actor_type, null: false

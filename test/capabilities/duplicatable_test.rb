@@ -71,6 +71,11 @@ unless defined?(RecordingStudio)
   end
 end
 
+unless defined?(RecordingStudioAccessible)
+  module RecordingStudioAccessible
+  end
+end
+
 require "test_helper"
 
 # ---------------------------------------------------------------------------
@@ -269,6 +274,27 @@ module RecordingStudioDuplicatable
             recording.duplicate_in_place!(actor: :user)
           end
         end
+      end
+
+      def test_raises_missing_dependency_error_when_accessible_addon_is_not_loaded
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Original")
+        )
+
+        original_accessible = RecordingStudioAccessible
+        Object.send(:remove_const, :RecordingStudioAccessible)
+
+        error = assert_raises(RecordingStudioDuplicatable::MissingDependencyError) do
+          recording.duplicate_in_place!(actor: :user)
+        end
+
+        assert_equal(
+          "recording_studio_accessible must be installed and loaded before using " \
+          "RecordingStudioDuplicatable access checks",
+          error.message
+        )
+      ensure
+        Object.const_set(:RecordingStudioAccessible, original_accessible)
       end
 
       def test_uses_parent_recording_for_access_check_when_present

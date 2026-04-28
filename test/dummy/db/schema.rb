@@ -18,21 +18,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_015320) do
   create_table "comments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "author_name", null: false
     t.text "body", null: false
-    t.string "commentable_type", null: false
     t.uuid "commentable_id", null: false
+    t.string "commentable_type", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable"
   end
 
   create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "workspace_id", null: false
-    t.uuid "parent_folder_id"
-    t.string "name", null: false
-    t.string "slug", null: false
-    t.text "description"
     t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.uuid "parent_folder_id"
+    t.string "slug", null: false
     t.datetime "updated_at", null: false
+    t.uuid "workspace_id", null: false
     t.index ["parent_folder_id"], name: "index_folders_on_parent_folder_id"
     t.index ["workspace_id", "slug"], name: "index_folders_on_workspace_id_and_slug", unique: true
     t.index ["workspace_id"], name: "index_folders_on_workspace_id"
@@ -116,12 +116,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_015320) do
   end
 
   create_table "reports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "workspace_id", null: false
-    t.string "title", null: false
+    t.datetime "created_at", null: false
     t.string "slug", null: false
     t.string "summary", null: false
-    t.datetime "created_at", null: false
+    t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.uuid "workspace_id", null: false
     t.index ["workspace_id", "slug"], name: "index_reports_on_workspace_id_and_slug", unique: true
     t.index ["workspace_id"], name: "index_reports_on_workspace_id"
   end

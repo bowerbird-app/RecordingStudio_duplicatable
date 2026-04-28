@@ -126,7 +126,7 @@ module RecordingStudioDuplicatable
             locked.send(:assert_capability!, :duplicatable)
 
             check_target = locked.parent_recording || locked
-            unless RecordingStudio::Services::AccessCheck.allowed?(
+            unless RecordingStudioDuplicatable.access_check_service!.allowed?(
               actor: actor, recording: check_target, role: :edit
             )
               raise RecordingStudio::AccessDenied, "Actor does not have :edit access for duplication"

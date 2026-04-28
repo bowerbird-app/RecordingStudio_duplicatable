@@ -9,25 +9,33 @@
 - Duplicates a recording in place under the same parent
 - Renames the duplicate with configurable prefix/suffix rules
 - Recursively duplicates descendant recordings when child copying is enabled
-- Preserves Recording Studio access checks and parent/root recording relationships
+- Uses Recording Studio Accessible for `:edit` access checks while preserving parent/root recording relationships
 - Ships with a built-in duplication controller and route for simple buttons/links
 - Exposes a small controller-friendly `DuplicationService`
 
 ## Installation
 
-Add the gem from this repository to your host app:
+Add Recording Studio core, Recording Studio Accessible, and this addon to your host app:
 
 ```ruby
+gem "recording_studio"
+gem "recording_studio_accessible"
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
 Then run the installer if you want the initializer, YAML config, mount, and Tailwind source hints:
 
 ```bash
+bundle install
+bin/rails generate recording_studio_accessible:install
+bin/rails generate recording_studio_accessible:migrations
+bin/rails db:migrate
 bin/rails generate recording_studio_duplicatable:install
 ```
 
 The installer mounts the engine so host app views can use the built-in duplicate endpoint.
+Install and configure `recording_studio_accessible` before using duplication so `RecordingStudio::Services::AccessCheck` comes from the extracted addon instead of Recording Studio core.
+If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
 
 ## Opting a model into duplication
 
@@ -91,7 +99,7 @@ The built-in controller:
 - resolves the actor from your existing Recording Studio actor setup
 - falls back to `Current.actor` when needed
 - passes optional `Current.impersonator`
-- relies on the existing duplication API, which performs the standard Recording Studio `:edit` access check
+- relies on the existing duplication API, which performs the standard Recording Studio Accessible-backed `:edit` access check
 - redirects back with a notice or alert
 
 Make sure your host app keeps Recording Studio configured with the current actor, for example:
@@ -130,7 +138,7 @@ The lower-level recording and service APIs remain available for apps that want c
 ## Behavior notes
 
 - Duplication is wrapped in a transaction with row locking
-- The actor must have Recording Studio `:edit` access
+- The actor must have Recording Studio Accessible-backed `:edit` access
 - The capability must be enabled for the recordable type
 - Child-copy filters apply recursively through the descendant tree
 - Post-duplication callbacks and hooks run after the transaction completes
@@ -141,6 +149,8 @@ The dummy app in `test/dummy/` demonstrates:
 
 - Devise authentication
 - `Current.actor` wiring
+- explicit `recording_studio_accessible` installation for access models and checks
+- the required Recording Studio Accessible install/migration flow before duplication is used
 - root `Workspace` recording setup
 - cards that post to the gem-provided duplicate endpoint
 - the resulting duplicated workspace recordings in the UI

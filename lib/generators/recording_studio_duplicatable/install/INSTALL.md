@@ -10,9 +10,11 @@ If you use Tailwind CSS:
 To use the engine:
 1. Start your Rails server
 2. Visit http://localhost:3000/recording_studio_duplicatable
-3. Render duplicate buttons with the built-in route helper, for example:
+3. Install and configure `recording_studio_accessible` before using duplication.
+4. Install Recording Studio Accessible migrations and run `bin/rails db:migrate` before using duplication.
+5. Render duplicate buttons with the built-in route helper, for example:
    `recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id)`
-4. Make sure your host app still provides the current actor through Recording Studio,
+6. Make sure your host app still provides the current actor through Recording Studio,
    for example `config.actor = -> { Current.actor }`
 
 ===============================================================================
