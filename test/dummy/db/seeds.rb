@@ -3,7 +3,7 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 unless defined?(RecordingStudioAccessible::Engine)
-  raise 'recording_studio_accessible must be installed before seeding dummy app access data. ' \
+  raise 'recording_studio_accessible must be installed before seeding. ' \
         'Run bundle install in test/dummy after adding the gem.'
 end
 
