@@ -10,10 +10,47 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_17_233016) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_15_015320) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
+
+  create_table "comments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "author_name", null: false
+    t.text "body", null: false
+    t.string "commentable_type", null: false
+    t.uuid "commentable_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable"
+  end
+
+  create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "workspace_id", null: false
+    t.uuid "parent_folder_id"
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["parent_folder_id"], name: "index_folders_on_parent_folder_id"
+    t.index ["workspace_id", "slug"], name: "index_folders_on_workspace_id_and_slug", unique: true
+    t.index ["workspace_id"], name: "index_folders_on_workspace_id"
+  end
+
+  create_table "pages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "body", null: false
+    t.text "code_sample"
+    t.datetime "created_at", null: false
+    t.boolean "published", default: true, null: false
+    t.string "slug", null: false
+    t.string "summary", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "workspace_id", null: false
+    t.index ["workspace_id", "slug"], name: "index_pages_on_workspace_id_and_slug", unique: true
+    t.index ["workspace_id"], name: "index_pages_on_workspace_id"
+  end
 
   create_table "recording_studio_access_boundaries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -78,6 +115,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_17_233016) do
     t.index ["root_recording_id"], name: "index_rs_recordings_on_root_recording"
   end
 
+  create_table "reports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "workspace_id", null: false
+    t.string "title", null: false
+    t.string "slug", null: false
+    t.string "summary", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workspace_id", "slug"], name: "index_reports_on_workspace_id_and_slug", unique: true
+    t.index ["workspace_id"], name: "index_reports_on_workspace_id"
+  end
+
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -96,8 +144,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_17_233016) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "folders", "folders", column: "parent_folder_id"
+  add_foreign_key "folders", "workspaces"
+  add_foreign_key "pages", "workspaces"
   add_foreign_key "recording_studio_device_sessions", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
+  add_foreign_key "reports", "workspaces"
 end

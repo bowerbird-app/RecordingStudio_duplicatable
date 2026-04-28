@@ -4,22 +4,21 @@ require "test_helper"
 
 class ConfigurationTest < Minitest::Test
   def setup
-    @configuration = GemTemplate::Configuration.new
+    @configuration = RecordingStudioDuplicatable::Configuration.new
   end
 
   def test_merge_updates_known_attributes
-    @configuration.merge!(api_key: "abc123", timeout: 9, enable_feature_x: true)
+    @configuration.merge!(duplication_prefix: "[copy] ", duplication_suffix: " [dup]")
 
-    assert_equal "abc123", @configuration.api_key
-    assert_equal 9, @configuration.timeout
-    assert_equal true, @configuration.enable_feature_x
+    assert_equal "[copy] ", @configuration.duplication_prefix
+    assert_equal " [dup]", @configuration.duplication_suffix
   end
 
   def test_merge_ignores_unknown_keys
-    @configuration.merge!(unknown_key: "ignored", timeout: 7)
+    @configuration.merge!(unknown_key: "ignored", duplication_suffix: " (duplicate)")
 
     refute_respond_to @configuration, :unknown_key
-    assert_equal 7, @configuration.timeout
+    assert_equal " (duplicate)", @configuration.duplication_suffix
   end
 
   def test_merge_with_non_enumerable_is_noop
@@ -27,10 +26,19 @@ class ConfigurationTest < Minitest::Test
 
     @configuration.merge!(nil)
 
-    assert_nil @configuration.api_key if original[:api_key].nil?
-    assert_equal original[:api_key], @configuration.api_key unless original[:api_key].nil?
-    assert_equal original[:timeout], @configuration.timeout
-    assert_equal original[:enable_feature_x], @configuration.enable_feature_x
+    assert_nil @configuration.duplication_prefix if original[:duplication_prefix].nil?
+    unless original[:duplication_prefix].nil?
+      assert_equal original[:duplication_prefix],
+                   @configuration.duplication_prefix
+    end
+    assert_equal original[:duplication_suffix], @configuration.duplication_suffix
+    assert_nil @configuration.duplication_rename_attribute if original[:duplication_rename_attribute].nil?
+    return if original[:duplication_rename_attribute].nil?
+
+    assert_equal(
+      original[:duplication_rename_attribute],
+      @configuration.duplication_rename_attribute
+    )
   end
 
   def test_to_h_reports_registered_hook_counts
@@ -45,8 +53,8 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_configure_without_block_is_safe
-    GemTemplate.configure
+    RecordingStudioDuplicatable.configure
 
-    assert_kind_of GemTemplate::Configuration, GemTemplate.configuration
+    assert_kind_of RecordingStudioDuplicatable::Configuration, RecordingStudioDuplicatable.configuration
   end
 end

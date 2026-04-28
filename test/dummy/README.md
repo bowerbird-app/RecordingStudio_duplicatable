@@ -1,14 +1,16 @@
 # Dummy App
 
-This Rails app exists to validate the Recording Studio addon template in a real host application.
+This Rails app exists to validate the Recording Studio duplicatable addon in a real host application.
 
 ## What It Covers
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- Root workspace and root recording setup
+- A seeded `Workspace` root recording with child `Page`, `Report`, `Folder`, and `Comment` recordables
+- The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
 - FlatPack layout integration and Tailwind source scanning
-- Mounted `RecordingStudio::Engine` route behavior inside a host app
+- A page/report/folder duplication demo that posts to the gem-provided duplicate route and shows included vs excluded child copying
+- Sidebar-linked static guides for setup, approach, use, and methods
 
 ## Quick Start
 
@@ -25,11 +27,16 @@ Then open the app and sign in with:
 
 ## Useful Routes
 
-- `/` - dummy app home page and template guidance
-- `/recording_studio` - mounted Recording Studio engine
+- `/` - seeded `Page`, `Report`, and `Folder` cards with duplicate actions that post to the mounted engine
+- `/pages/:slug` - inspect a seeded page and its child recordings
+- `/reports/:slug` - inspect a seeded report and its child recordings
+- `/folders/:slug` - inspect a seeded folder and its nested child recordings
+- `/guides/setup` - how to mount the engine, provide the current actor, and opt a recordable into duplication
+- `/guides/approach` - the addon's deliberately narrow duplication approach and default behaviors
+- `/guides/use` - how to use the built-in duplicate route or the optional service object
+- `/guides/methods` - the built-in route, service, and recording APIs explained
 - `/users/sign_in` - Devise sign-in page
-- `/up` - Rails health check
 
 ## Why This App Exists
 
-Use this app to verify the generated addon experience before renaming the gem or copying patterns into another host app. If a layout, route, asset source, or Recording Studio initializer change breaks here, the template likely needs adjustment before reuse.
+Use this app to verify the real addon integration in a host application. If authentication, layout wiring, asset sources, or the recordable duplication flow break here, the addon likely needs adjustment before release.

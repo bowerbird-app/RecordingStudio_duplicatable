@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
-GemTemplate::Engine.routes.draw do
+RecordingStudioDuplicatable::Engine.routes.draw do
+  post "recordings/:recording_id/duplicate", to: "duplications#create", as: :duplicate_recording
   root "home#index"
 end

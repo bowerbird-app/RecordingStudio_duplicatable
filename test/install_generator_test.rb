@@ -3,7 +3,7 @@
 require "test_helper"
 require "fileutils"
 require "tmpdir"
-require "generators/gem_template/install/install_generator"
+require "generators/recording_studio_duplicatable/install/install_generator"
 
 class InstallGeneratorTest < Minitest::Test
   def with_temp_app
@@ -14,7 +14,7 @@ class InstallGeneratorTest < Minitest::Test
   end
 
   def build_generator(destination_root, options = {})
-    GemTemplate::Generators::InstallGenerator.new(
+    RecordingStudioDuplicatable::Generators::InstallGenerator.new(
       [],
       options,
       destination_root: destination_root
@@ -29,7 +29,7 @@ class InstallGeneratorTest < Minitest::Test
       generator.mount_engine
     end
 
-    assert_equal ["mount GemTemplate::Engine, at: \"/addons/recording\""], routes
+    assert_equal ["mount RecordingStudioDuplicatable::Engine, at: \"/addons/recording\""], routes
   end
 
   def test_add_tailwind_source_injects_engine_and_flatpack_sources
@@ -55,8 +55,8 @@ class InstallGeneratorTest < Minitest::Test
       css_path = File.join(dir, "app/assets/tailwind/application.css")
       File.write(css_path, <<~CSS)
         @import "tailwindcss";
-        @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
-        @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";
+        @source "../../vendor/bundle/**/recording_studio_duplicatable/app/views/**/*.erb";
+        @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_duplicatable-*/app/views/**/*.erb";
         @source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
         @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
       CSS
@@ -75,6 +75,32 @@ class InstallGeneratorTest < Minitest::Test
     end
   end
 
+  def test_initializer_template_mentions_builtin_duplicate_route_and_actor_setup
+    initializer_template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_duplicatable/install/templates/" \
+        "recording_studio_duplicatable_initializer.rb",
+        __dir__
+      )
+    )
+
+    assert_includes initializer_template, "config.actor = -> { Current.actor }"
+    assert_includes initializer_template, "duplicate_recording_path"
+  end
+
+  def test_install_docs_mention_builtin_duplicate_endpoint
+    install_template = File.read(
+      File.expand_path(
+        "../lib/generators/recording_studio_duplicatable/install/templates/INSTALL.md",
+        __dir__
+      )
+    )
+
+    assert_includes install_template, "built-in duplicate endpoint"
+    assert_includes install_template, "duplicate_recording_path"
+    assert_includes install_template, "config.actor = -> { Current.actor }"
+  end
+
   private
 
   def assert_tailwind_sources_present(css)
@@ -91,8 +117,9 @@ class InstallGeneratorTest < Minitest::Test
 
   def tailwind_source_lines
     [
-      '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";',
-      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";',
+      '@source "../../vendor/bundle/**/recording_studio_duplicatable/app/views/**/*.erb";',
+      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+      'recording_studio_duplicatable-*/app/views/**/*.erb";',
       '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
     ]

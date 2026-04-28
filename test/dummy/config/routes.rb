@@ -5,17 +5,14 @@ Rails.application.routes.draw do
   # Keep legacy links working by redirecting the base path to the app home.
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
-
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  mount RecordingStudioDuplicatable::Engine, at: "/recording_studio_duplicatable"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
+  get "guides/:slug", to: "guides#show", as: :guide
+  get "pages/:slug", to: "home#show_page", as: :page
+  get "reports/:slug", to: "home#show_report", as: :report
+  get "folders/:slug", to: "home#show_folder", as: :folder
   root "home#index"
 end

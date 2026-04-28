@@ -1,0 +1,108 @@
+<div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-12">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "RecordingStudio Duplicatable",
+    subtitle: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables.",
+    variant: :h1
+  ) %>
+
+  <div class="flex flex-wrap gap-2">
+    <%= render FlatPack::Badge::Component.new(text: "Engine mounted", style: :success, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: "FlatPack enabled", style: :info, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(text: "Recursive duplication", style: :warning, size: :sm) %>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+          <%= render FlatPack::PageTitle::Component.new(
+            title: "What's working",
+            subtitle: "Core addon capabilities already wired in.",
+            variant: :h3,
+            class: "mb-0 pb-0"
+          ) %>
+      <% end %>
+
+      <% card.body do %>
+          <ul class="space-y-3 text-sm leading-6">
+            <li>Rails engine routes are mounted and responding.</li>
+            <li>PostgreSQL UUID-oriented migrations are included in the engine.</li>
+            <li>Tailwind sources can be wired into a host app through the install generator.</li>
+            <li>The dummy app exercises authentication, FlatPack layouts, Recording Studio setup, and live duplication.</li>
+          </ul>
+      <% end %>
+    <% end %>
+
+    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+      <% card.header do %>
+          <%= render FlatPack::PageTitle::Component.new(
+            title: "How to use it",
+            subtitle: "The standard path for enabling duplication in a host app.",
+            variant: :h3,
+            class: "mb-0 pb-0"
+          ) %>
+      <% end %>
+
+        <% card.body do %>
+          <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
+          <li>Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount.</li>
+          <li>Opt the desired recordable types into <code>RecordingStudioDuplicatable::Capabilities::Duplicatable</code>.</li>
+          <li>Configure Recording Studio recordable types and capability options in the host app initializer.</li>
+          <li>Use the dummy app to validate recursive duplication, asset scanning, and authentication flows.</li>
+          </ol>
+        <% end %>
+    <% end %>
+
+    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "FlatPack usage",
+          subtitle: "This page itself now uses FlatPack components for its primary UI structure.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.body do %>
+        <p class="text-sm leading-6 text-(--surface-content-color)">
+          Use FlatPack cards, buttons, badges, inputs, and layout primitives as the default path for addon UI. Keep raw HTML for simple semantic content only.
+        </p>
+      <% end %>
+
+      <% card.footer do %>
+        <%= link_to "View FlatPack documentation",
+                    "https://github.com/bowerbird-app/flatpack",
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    class: "inline-flex" do %>
+          <%= render FlatPack::Button::Component.new(
+            text: "View FlatPack documentation",
+            style: :primary,
+            size: :md
+          ) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Install flow",
+          subtitle: "What the host app generator path covers.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.body do %>
+        <ul class="space-y-3 text-sm leading-6">
+          <li>Add the gem to your host app and run <code>bundle install</code>.</li>
+          <li>Run <code>rails generate recording_studio_duplicatable:install</code> to mount the engine and add configuration.</li>
+          <li>Run <code>rails generate recording_studio_duplicatable:migrations</code> to copy engine migrations into the host app.</li>
+          <li>Rebuild Tailwind if needed with <code>bin/rails tailwindcss:build</code>.</li>
+        </ul>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+

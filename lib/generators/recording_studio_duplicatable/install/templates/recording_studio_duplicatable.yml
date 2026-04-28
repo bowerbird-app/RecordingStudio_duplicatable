@@ -1,0 +1,9 @@
+development:
+  duplication_prefix:
+  duplication_suffix: " (Copy)"
+  duplication_rename_attribute:
+
+production:
+  duplication_prefix:
+  duplication_suffix: " (Copy)"
+  duplication_rename_attribute:

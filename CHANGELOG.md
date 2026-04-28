@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Focused the repository and documentation on the Recording Studio duplicatable addon
+- Updated duplication to recursively copy descendant recordings when child copying is enabled
+- Removed template-only example service and placeholder configuration settings
+
 ## [0.1.0] - 2025-12-04
 
 ### Added
@@ -20,5 +25,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/gem_template/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/bowerbird-app/gem_template/releases/tag/v0.1.0
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/releases/tag/v0.1.0

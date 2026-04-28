@@ -4,7 +4,7 @@ require "test_helper"
 
 class HooksTest < Minitest::Test
   def setup
-    @hooks = GemTemplate::Hooks.new
+    @hooks = RecordingStudioDuplicatable::Hooks.new
   end
 
   def teardown
@@ -229,7 +229,7 @@ class HooksTest < Minitest::Test
     @hooks.raise_on_error = true
     @hooks.after_initialize { raise "test error" }
 
-    assert_raises(GemTemplate::Hooks::HookError) do
+    assert_raises(RecordingStudioDuplicatable::Hooks::HookError) do
       @hooks.run(:after_initialize)
     end
   end
@@ -261,25 +261,67 @@ class HooksTest < Minitest::Test
   # === Class Method Tests ===
 
   def test_class_run_delegates_to_configuration
-    GemTemplate.configuration.hooks
+    RecordingStudioDuplicatable.configuration.hooks
     called = false
 
-    GemTemplate.configuration.hooks.after_initialize { called = true }
-    GemTemplate::Hooks.run(:after_initialize)
+    RecordingStudioDuplicatable.configuration.hooks.after_initialize { called = true }
+    RecordingStudioDuplicatable::Hooks.run(:after_initialize)
 
     assert called
   ensure
-    GemTemplate.configuration.hooks.clear!
+    RecordingStudioDuplicatable.configuration.hooks.clear!
   end
 
   def test_class_trigger_is_alias_for_run
     called = false
-    GemTemplate.configuration.hooks.on(:custom_event) { called = true }
+    RecordingStudioDuplicatable.configuration.hooks.on(:custom_event) { called = true }
 
-    GemTemplate::Hooks.trigger(:custom_event)
+    RecordingStudioDuplicatable::Hooks.trigger(:custom_event)
 
     assert called
   ensure
-    GemTemplate.configuration.hooks.clear!
+    RecordingStudioDuplicatable.configuration.hooks.clear!
+  end
+
+  def test_execute_hook_falls_back_to_to_proc
+    result = nil
+    # A handler that responds to to_proc but not call
+    handler = Object.new
+    handler.define_singleton_method(:respond_to?) do |method, include_private = false|
+      method.to_sym == :to_proc ? true : super(method, include_private)
+    end
+    handler.define_singleton_method(:to_proc) { -> { result = :called_via_to_proc } }
+    @hooks.before_initialize(handler)
+    @hooks.run(:before_initialize)
+    assert_equal :called_via_to_proc, result
+  end
+
+  def test_log_hook_error_writes_to_rails_logger_when_defined
+    @hooks.raise_on_error = false
+    logger_errors = []
+    fake_logger = Object.new
+    fake_logger.define_singleton_method(:error) { |msg| logger_errors << msg }
+
+    # Stub Rails.logger instead of replacing the constant
+    Rails.stub(:logger, fake_logger) do
+      @hooks.on(:error_event) { raise "intentional" }
+      @hooks.run(:error_event)
+    end
+
+    assert(logger_errors.any? { |m| m.include?("intentional") })
+  end
+
+  def test_class_run_around_delegates_to_configuration_hooks
+    called = false
+    RecordingStudioDuplicatable.configuration.hooks.on(:around_event) do |_ctx, blk|
+      called = true
+      blk.call
+    end
+
+    RecordingStudioDuplicatable::Hooks.run_around(:around_event, self) { :inner }
+
+    assert called
+  ensure
+    RecordingStudioDuplicatable.configuration.hooks.clear!
   end
 end

@@ -1,131 +1,170 @@
-# GemTemplate
+# RecordingStudio Duplicatable
 
-Internal template for building Rails engine addons on top of RecordingStudio.
+`RecordingStudio Duplicatable` is a Rails engine addon that adds a simple, opt-in duplication capability to Recording Studio recordables.
 
-## What's Included
+## What it does
 
-- **RecordingStudio** gem installed and configured
-- **Devise** authentication with a pre-seeded admin user
-- **Workspace** root recording set up following RecordingStudio's Quick Start pattern
-- **FlatPack** UI component library for all views
-- **Dummy app** (`test/dummy/`) with a working login screen and FlatPack default sidebar layout for authenticated pages
+- Registers a `:duplicatable` capability with Recording Studio
+- Lets recordable models opt in explicitly
+- Duplicates a recording in place under the same parent
+- Renames the duplicate with configurable prefix/suffix rules
+- Recursively duplicates descendant recordings when child copying is enabled
+- Preserves Recording Studio access checks and parent/root recording relationships
+- Ships with a built-in duplication controller and route for simple buttons/links
+- Exposes a small controller-friendly `DuplicationService`
 
-## Quick Start
+## Installation
 
-### GitHub Codespaces (Recommended)
-
-1. Click **Code** → **Codespaces** → **Create codespace**
-2. Wait for setup to complete
-3. Run:
-   ```bash
-   cd test/dummy
-   bin/rails db:setup
-   bin/dev
-   ```
-4. Open port 3000 — you'll see the login screen
-
-The dummy app already includes FlatPack generator output (`flat_pack:install` and default sidebar layout scaffold) so authenticated pages render with the FlatPack sidebar shell by default.
-
-### Login Credentials
-
-| Field    | Value             |
-|----------|-------------------|
-| Email    | admin@admin.com   |
-| Password | Password          |
-
-The login form is prefilled with these credentials for fast access.
-
-## Architecture
-
-### Root Recording Pattern
-
-This template follows RecordingStudio's root recording pattern:
-
-- **Workspace** is the top-level recordable
-- A root `RecordingStudio::Recording` wraps the Workspace
-- The admin user has root-level admin access via `RecordingStudio::Access`
-- `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
-
-### Extending RecordingStudio
-
-To add new recordable types:
-
-1. Create your model (e.g., `Page`, `Comment`)
-2. Register it in `config/initializers/recording_studio.rb`:
-   ```ruby
-   RecordingStudio.configure do |config|
-     config.recordable_types = ["Workspace", "YourNewType"]
-   end
-   ```
-3. Leave optional behavior off by default, then opt into capabilities on the specific recordable models that need them:
-   ```ruby
-   class YourNewType < ApplicationRecord
-     include RecordingStudio::Capabilities::Movable.to("Workspace")
-     include RecordingStudio::Capabilities::Copyable.to("Workspace")
-   end
-   ```
-4. If you want per-device root persistence, wire it explicitly in your controller layer:
-   ```ruby
-   class ApplicationController < ActionController::Base
-     include RecordingStudio::Concerns::DeviceSessionConcern
-   end
-   ```
-5. Create recordings under the root:
-   ```ruby
-   root_recording.record(YourNewType) do |record|
-     record.title = "Example"
-   end
-   ```
-
-### Capabilities
-
-This template uses the current RecordingStudio approach: built-in capabilities are off by default and are enabled per recordable type by including the relevant module on the model.
-
-- `movable`
-- `copyable`
-
-Device session persistence is separate from capabilities. It is enabled only when you include `RecordingStudio::Concerns::DeviceSessionConcern` in your controller layer.
-
-Enable behavior intentionally where it belongs:
+Add the gem from this repository to your host app:
 
 ```ruby
-class RecordingStudioPage < ApplicationRecord
-  include RecordingStudio::Capabilities::Movable.to("Workspace")
-  include RecordingStudio::Capabilities::Copyable.to("Workspace")
-end
+gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
+```
 
-class ApplicationController < ActionController::Base
-  include RecordingStudio::Concerns::DeviceSessionConcern
+Then run the installer if you want the initializer, YAML config, mount, and Tailwind source hints:
+
+```bash
+bin/rails generate recording_studio_duplicatable:install
+```
+
+The installer mounts the engine so host app views can use the built-in duplicate endpoint.
+
+## Opting a model into duplication
+
+Use the capability directly:
+
+```ruby
+class Workspace < ApplicationRecord
+  include RecordingStudioDuplicatable::Capabilities::Duplicatable
 end
 ```
 
-### FlatPack UI Components
+Or configure per-type overrides:
 
-All views use FlatPack ViewComponents. Available components include:
+```ruby
+class Workspace < ApplicationRecord
+  include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
+    prefix: nil,
+    suffix: " (Copy)",
+    include_children: nil,
+    exclude_children: nil
+  )
+end
+```
 
-- `FlatPack::Button::Component` — Buttons (`:primary`, `:secondary`, `:ghost`)
-- `FlatPack::Card::Component` — Cards (`:default`, `:elevated`, `:outlined`)
-- `FlatPack::Alert::Component` — Alerts (`:success`, `:error`, `:warning`, `:info`)
-- `FlatPack::Badge::Component` — Status badges
-- `FlatPack::Table::Component` — Data tables
-- `FlatPack::TextInput::Component`, `EmailInput`, `PasswordInput` — Form inputs
-- `FlatPack::Breadcrumb::Component` — Navigation breadcrumbs
-- `FlatPack::Navbar::Component` — Navigation sidebar
+## Configuration
 
-See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full documentation.
+Global defaults:
 
-## Tech Stack
+```ruby
+RecordingStudioDuplicatable.configure do |config|
+  config.duplication_prefix = nil
+  config.duplication_suffix = " (Copy)"
+  config.duplication_rename_attribute = nil
+end
+```
 
-| Component       | Version |
-|-----------------|---------|
-| Ruby            | 3.3+    |
-| Rails           | 8.1+    |
-| PostgreSQL      | 16      |
-| TailwindCSS     | 4       |
-| RecordingStudio | v0.1.0-alpha (pinned in `test/dummy/Gemfile`) |
-| FlatPack        | GitHub source (`bowerbird-app/flatpack`) |
-| Devise          | latest  |
+Available options:
 
-## Documentation
+| Option | Description |
+|---|---|
+| `duplication_prefix` | Prefix added to a duplicate name/title |
+| `duplication_suffix` | Suffix added to a duplicate name/title |
+| `duplication_rename_attribute` | Force the rename attribute instead of auto-detecting `name`/`title` |
+| `include_children` | Only duplicate descendants of these recordable types |
+| `exclude_children` | Duplicate descendants except these recordable types |
 
-The original gem template documentation is preserved in `docs/gem_template/` as architectural reference material. Use it as background on the engine conventions; the README and dummy app are the source of truth for the Recording Studio addon workflow.
+## Usage
+
+### Built-in controller and route
+
+Once the engine is mounted, host app views can post directly to the gem:
+
+```erb
+<%= button_to "Duplicate",
+  recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id),
+  method: :post %>
+```
+
+The built-in controller:
+
+- resolves the actor from your existing Recording Studio actor setup
+- falls back to `Current.actor` when needed
+- passes optional `Current.impersonator`
+- relies on the existing duplication API, which performs the standard Recording Studio `:edit` access check
+- redirects back with a notice or alert
+
+Make sure your host app keeps Recording Studio configured with the current actor, for example:
+
+```ruby
+RecordingStudio.configure do |config|
+  config.actor = -> { Current.actor }
+end
+```
+
+The engine controller inherits from your host app `ApplicationController` when one is present, so existing authentication and current-actor callbacks continue to apply.
+
+### Direct recording API
+
+Duplicate from a recording when you want custom controller behavior:
+
+```ruby
+new_recording = recording.duplicate_in_place!(
+  actor: current_user
+)
+```
+
+### Service object
+
+Or use the service object in your own controller/service:
+
+```ruby
+result = RecordingStudioDuplicatable::Services::DuplicationService.call(
+  recording: recording,
+  actor: current_user
+)
+```
+
+The lower-level recording and service APIs remain available for apps that want custom redirects, response formats, or extra side effects.
+
+## Behavior notes
+
+- Duplication is wrapped in a transaction with row locking
+- The actor must have Recording Studio `:edit` access
+- The capability must be enabled for the recordable type
+- Child-copy filters apply recursively through the descendant tree
+- Post-duplication callbacks and hooks run after the transaction completes
+
+## Dummy app
+
+The dummy app in `test/dummy/` demonstrates:
+
+- Devise authentication
+- `Current.actor` wiring
+- root `Workspace` recording setup
+- cards that post to the gem-provided duplicate endpoint
+- the resulting duplicated workspace recordings in the UI
+
+Run it with:
+
+```bash
+cd test/dummy
+bundle install
+bin/rails db:setup
+bin/dev
+```
+
+Default login:
+
+- `admin@admin.com`
+- `Password`
+
+## Development
+
+Run the main validation commands from the repository root:
+
+```bash
+bundle install
+bundle exec rake test
+bundle exec rubocop
+```

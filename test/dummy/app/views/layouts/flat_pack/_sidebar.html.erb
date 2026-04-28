@@ -2,31 +2,42 @@
   <% sidebar.header do %>
     <%= render FlatPack::Sidebar::Header::Component.new(
       brand_abbr: "RS",
-      title: "Addon Template",
-      subtitle: "Recording Studio"
+      title: "Duplicatable",
+      subtitle: "Demo"
     ) %>
   <% end %>
 
   <% sidebar.items do %>
-    <nav class="py-4 space-y-1" aria-label="Main navigation">
+    <nav class="space-y-1 py-4" aria-label="Main navigation">
       <%= render FlatPack::Sidebar::Item::Component.new(
         label: "Home",
-        href: "/",
+        href: root_path,
         icon: :home
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Recording Studio",
-        href: "/recording_studio",
+        label: "Setup",
+        href: guide_path("setup"),
         icon: :folder
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
-        label: "Health",
-        href: "/up",
-        icon: :activity
+        label: "Approach",
+        href: guide_path("approach"),
+        icon: :folder
       ) %>
 
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Use",
+        href: guide_path("use"),
+        icon: :folder
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Methods",
+        href: guide_path("methods"),
+        icon: :folder
+      ) %>
     </nav>
   <% end %>
 
