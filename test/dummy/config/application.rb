@@ -18,6 +18,10 @@ require "action_cable/engine"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+unless Gem.loaded_specs.key?("recording_studio_accessible")
+  raise "Dummy app requires recording_studio_accessible for explicit access behavior"
+end
+
 module Dummy
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

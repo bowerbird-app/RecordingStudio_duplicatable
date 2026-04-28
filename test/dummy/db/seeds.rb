@@ -2,6 +2,10 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
+unless defined?(RecordingStudioAccessible::Engine)
+  raise "recording_studio_accessible must be installed before seeding dummy app access data"
+end
+
 # Create the admin user
 user = User.find_or_create_by!(email: "admin@admin.com") do |u|
   u.password = "Password"

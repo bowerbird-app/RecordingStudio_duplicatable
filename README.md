@@ -5,6 +5,7 @@ Internal template for building Rails engine addons on top of RecordingStudio.
 ## What's Included
 
 - **RecordingStudio** gem installed and configured
+- **RecordingStudio Accessible** installed explicitly when the dummy app needs access control behavior
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace** root recording set up following RecordingStudio's Quick Start pattern
 - **FlatPack** UI component library for all views
@@ -43,7 +44,7 @@ This template follows RecordingStudio's root recording pattern:
 
 - **Workspace** is the top-level recordable
 - A root `RecordingStudio::Recording` wraps the Workspace
-- The admin user has root-level admin access via `RecordingStudio::Access`
+- The admin user has root-level admin access via `RecordingStudio::Access`, provided explicitly by `recording_studio_accessible`
 - `Current.actor` is set from `current_user` (Devise) in `ApplicationController`
 
 ### Extending RecordingStudio
@@ -86,6 +87,33 @@ This template uses the current RecordingStudio approach: built-in capabilities a
 
 Device session persistence is separate from capabilities. It is enabled only when you include `RecordingStudio::Concerns::DeviceSessionConcern` in your controller layer.
 
+Access control is also separate. If your host app needs `RecordingStudio::Access`, `RecordingStudio::AccessBoundary`, or the mounted access-management UI, install `recording_studio_accessible` explicitly:
+
+```ruby
+gem "recording_studio"
+gem "recording_studio_accessible"
+```
+
+Then install its configuration and migrations intentionally instead of assuming core RecordingStudio provides them:
+
+```bash
+bin/rails generate recording_studio_accessible:install
+bin/rails generate recording_studio_accessible:migrations
+bin/rails db:migrate
+```
+
+Then mount the addon and opt recordables in where direct access placements should be allowed:
+
+```ruby
+mount RecordingStudioAccessible::Engine, at: "/recording_studio_accessible"
+
+class Workspace < ApplicationRecord
+  include RecordingStudioAccessible::AllowsAccessibleChildren
+
+  recording_studio_accessible_children :access, :boundary
+end
+```
+
 Enable behavior intentionally where it belongs:
 
 ```ruby
@@ -123,6 +151,7 @@ See the [FlatPack README](https://github.com/bowerbird-app/flatpack) for full do
 | PostgreSQL      | 16      |
 | TailwindCSS     | 4       |
 | RecordingStudio | v0.1.0-alpha (pinned in `test/dummy/Gemfile`) |
+| RecordingStudio Accessible | GitHub source (`bowerbird-app/RecordingStudio_accessible`) |
 | FlatPack        | GitHub source (`bowerbird-app/flatpack`) |
 | Devise          | latest  |
 

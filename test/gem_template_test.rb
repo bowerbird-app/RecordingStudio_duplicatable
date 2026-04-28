@@ -34,6 +34,30 @@ class GemTemplateTest < Minitest::Test
 
     assert_includes readme_source, "This Rails app exists to validate the Recording Studio addon template"
     assert_includes readme_source, "/recording_studio"
+    assert_includes readme_source, "/recording_studio_accessible"
+  end
+
+  def test_dummy_app_configures_accessible_addon_explicitly
+    gemfile_path = File.expand_path("dummy/Gemfile", __dir__)
+    gemfile_source = File.read(gemfile_path)
+    assert_includes gemfile_source, %(gem "recording_studio_accessible")
+
+    application_path = File.expand_path("dummy/config/application.rb", __dir__)
+    application_source = File.read(application_path)
+    assert_includes application_source, %(Gem.loaded_specs.key?("recording_studio_accessible"))
+
+    routes_path = File.expand_path("dummy/config/routes.rb", __dir__)
+    routes_source = File.read(routes_path)
+    assert_includes routes_source, "mount RecordingStudioAccessible::Engine"
+
+    workspace_path = File.expand_path("dummy/app/models/workspace.rb", __dir__)
+    workspace_source = File.read(workspace_path)
+    assert_includes workspace_source, "RecordingStudioAccessible::AllowsAccessibleChildren"
+    assert_includes workspace_source, "recording_studio_accessible_children :access, :boundary"
+
+    seeds_path = File.expand_path("dummy/db/seeds.rb", __dir__)
+    seeds_source = File.read(seeds_path)
+    assert_includes seeds_source, "RecordingStudioAccessible::Engine"
   end
 
   def test_dummy_home_page_mentions_template_workflow
