@@ -5,7 +5,7 @@ Internal template for building Rails engine addons on top of RecordingStudio.
 ## What's Included
 
 - **RecordingStudio** gem installed and configured
-- **RecordingStudio Accessible** installed explicitly when the dummy app needs access control behavior
+- **recording_studio_accessible** installed explicitly when the dummy app needs access control behavior
 - **Devise** authentication with a pre-seeded admin user
 - **Workspace** root recording set up following RecordingStudio's Quick Start pattern
 - **FlatPack** UI component library for all views
