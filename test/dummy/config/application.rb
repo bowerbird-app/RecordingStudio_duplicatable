@@ -19,7 +19,8 @@ require "action_cable/engine"
 Bundler.require(*Rails.groups)
 
 unless Gem.loaded_specs.key?("recording_studio_accessible")
-  raise "Dummy app requires recording_studio_accessible for explicit access behavior"
+  raise 'Dummy app requires recording_studio_accessible for explicit access behavior. ' \
+        'Add gem "recording_studio_accessible" to test/dummy/Gemfile and run bundle install.'
 end
 
 module Dummy
