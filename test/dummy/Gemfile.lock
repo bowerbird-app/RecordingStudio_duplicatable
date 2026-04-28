@@ -30,6 +30,7 @@ PATH
   specs:
     recording_studio_duplicatable (0.1.0)
       rails (~> 8.1.0)
+      recording_studio_accessible (>= 0.1.0)
 
 GEM
   remote: https://rubygems.org/

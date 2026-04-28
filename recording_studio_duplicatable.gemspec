@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.description = "A Rails engine addon that provides an opt-in duplicatable capability for " \
                      "Recording Studio recordables, including recursive descendant duplication"
   spec.license     = "MIT"
-  spec.required_ruby_version = ">= 3.2.0"
+  spec.required_ruby_version = ">= 3.3.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/bowerbird-app/RecordingStudio_duplicatable"
