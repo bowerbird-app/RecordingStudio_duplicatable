@@ -37,7 +37,7 @@ class GemTemplateTest < Minitest::Test
     assert_includes readme_source, "/recording_studio_accessible"
   end
 
-  def test_dummy_app_configures_accessible_addon_explicitly
+  def test_dummy_app_configures_accessible_engine_explicitly
     gemfile_path = File.expand_path("dummy/Gemfile", __dir__)
     gemfile_source = File.read(gemfile_path)
     assert_includes gemfile_source, %(gem "recording_studio_accessible")
