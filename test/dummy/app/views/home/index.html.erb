@@ -1,7 +1,7 @@
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: @workspace&.name || "Recording Studio addon template",
-    subtitle: "Use this dummy app to validate authentication, root recording setup, and addon UI wiring before you rename the engine.",
+    subtitle: "Use this dummy app to validate authentication, root recording setup, Recording Studio core wiring, and explicit recording_studio_accessible addon wiring before you rename the engine.",
     variant: :h1
   ) %>
 
@@ -28,7 +28,7 @@
             Register your recordable types in <code>test/dummy/config/initializers/recording_studio.rb</code> and add capabilities only where they are needed.
           </li>
           <li>
-            Use this dummy app to check layout, authentication, Tailwind sources, and root recording behavior before shipping the engine.
+            Use this dummy app to check layout, authentication, Tailwind sources, root recording behavior, and the separate <code>recording_studio_accessible</code> mount before shipping the engine.
           </li>
         </ol>
       <% end %>
@@ -67,7 +67,7 @@
         <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
             title: "Useful routes",
-            subtitle: "Quick links for checking the mounted engine and local app shell.",
+            subtitle: "Quick links for checking the local app shell, the Recording Studio core engine, and the recording_studio_accessible addon.",
             variant: :h3,
             class: "mb-0 pb-0"
           ) %>
@@ -76,7 +76,8 @@
         <% card.body do %>
           <div class="space-y-3 text-sm">
             <p><strong>App home:</strong> <code>/</code></p>
-            <p><strong>Recording Studio mount:</strong> <code>/recording_studio</code></p>
+            <p><strong>Recording Studio core:</strong> <code>/recording_studio</code></p>
+            <p><strong>recording_studio_accessible addon:</strong> <code>/recording_studio_accessible</code></p>
             <p><strong>Health check:</strong> <code>/up</code></p>
           </div>
         <% end %>

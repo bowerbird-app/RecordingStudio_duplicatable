@@ -66,7 +66,9 @@ class GemTemplateTest < Minitest::Test
 
     assert_includes view_source, "Template workflow"
     assert_includes view_source, "Workspace state"
-    assert_includes view_source, "Recording Studio mount"
+    assert_includes view_source, "recording_studio_accessible"
+    assert_includes view_source, "/recording_studio_accessible"
+    assert_includes view_source, "Recording Studio core"
   end
 
   def test_engine_home_page_uses_flatpack_components
