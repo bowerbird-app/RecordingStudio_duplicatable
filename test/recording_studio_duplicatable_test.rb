@@ -62,7 +62,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "Built-in capabilities remain disabled"
-    assert_includes initializer_source, 'config.recordable_types = ["Workspace", "Page", "Report", "Folder", "Comment"]'
+    assert_match(
+      /config\.recordable_types = \[\s*"Workspace", "Page", "Report", "Folder", "Comment"\s*\]/,
+      initializer_source
+    )
     refute_includes initializer_source, "config.features."
   end
 
@@ -333,9 +336,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     comment_model_path = File.expand_path("dummy/app/models/comment.rb", __dir__)
     comment_model_source = File.read(comment_model_path)
 
-    assert_includes page_model_source, 'include_children: ["Comment"]'
-    assert_includes report_model_source, 'exclude_children: ["Comment"]'
-    assert_includes folder_model_source, 'include_children: ["Folder", "Comment"]'
+    assert_match(/include_children: \[\s*"Comment"\s*\]/, page_model_source)
+    assert_match(/exclude_children: \[\s*"Comment"\s*\]/, report_model_source)
+    assert_match(/include_children: \[\s*"Folder", "Comment"\s*\]/, folder_model_source)
     assert_includes page_model_source, "has_many :comments, as: :commentable"
     assert_includes report_model_source, "has_many :comments, as: :commentable"
     assert_includes folder_model_source, "belongs_to :parent_folder, class_name: \"Folder\", optional: true"

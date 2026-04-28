@@ -87,7 +87,7 @@ class HomeController < ApplicationController
   end
 
   def recording_key(recordable)
-    [recordable.class.name, recordable.id]
+    [ recordable.class.name, recordable.id ]
   end
 
   def recording_for(recordable)

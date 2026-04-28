@@ -3,7 +3,7 @@ class Report < ApplicationRecord
     prefix: nil,
     suffix: " (Copy)",
     include_children: nil,
-    exclude_children: ["Comment"]
+    exclude_children: [ "Comment" ]
   )
 
   belongs_to :workspace

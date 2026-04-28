@@ -12,6 +12,6 @@ class CreatePages < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :pages, [:workspace_id, :slug], unique: true
+    add_index :pages, [ :workspace_id, :slug ], unique: true
   end
 end

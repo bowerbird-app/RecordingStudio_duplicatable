@@ -2,7 +2,7 @@ class Page < ApplicationRecord
   include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
     prefix: nil,
     suffix: " (Copy)",
-    include_children: ["Comment"],
+    include_children: [ "Comment" ],
     exclude_children: nil
   )
 

@@ -44,10 +44,10 @@ class GuidesController < ApplicationController
           subtitle: "Use include/exclude options to control child duplication.",
           table: {
             data: [
-              {option: "prefix", purpose: "Prepends text to the duplicate title or name"},
-              {option: "suffix", purpose: "Appends text to the duplicate title or name"},
-              {option: "include_children", purpose: "Copies only the listed child recording types"},
-              {option: "exclude_children", purpose: "Skips the listed child recording types"}
+              { option: "prefix", purpose: "Prepends text to the duplicate title or name" },
+              { option: "suffix", purpose: "Appends text to the duplicate title or name" },
+              { option: "include_children", purpose: "Copies only the listed child recording types" },
+              { option: "exclude_children", purpose: "Skips the listed child recording types" }
             ]
           }
         }

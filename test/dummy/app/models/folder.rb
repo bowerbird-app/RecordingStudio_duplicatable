@@ -2,7 +2,7 @@ class Folder < ApplicationRecord
   include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
     prefix: nil,
     suffix: " (Copy)",
-    include_children: ["Folder", "Comment"],
+    include_children: [ "Folder", "Comment" ],
     exclude_children: nil
   )
 
