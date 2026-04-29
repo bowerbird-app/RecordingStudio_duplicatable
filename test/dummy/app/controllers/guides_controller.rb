@@ -2,8 +2,22 @@ class GuidesController < ApplicationController
   GUIDE_CONTENT = {
     "setup" => {
       title: "Setup",
-      subtitle: "Mount the engine to use the built-in duplication route and controller, keep your current actor available, and opt recordables into duplication.",
+      subtitle: "Install Recording Studio Accessible first, apply its migrations, then mount the engine, keep your current actor available, and opt recordables into duplication.",
       sections: [
+        {
+          anchor: "accessible-install",
+          title: "Install Recording Studio Accessible first",
+          subtitle: "Duplication depends on Recording Studio Accessible for authorization, so install and migrate it before you use duplication.",
+          code_block: {
+            title: "Required access addon setup",
+            language: "bash",
+            code: <<~BASH
+              bin/rails generate recording_studio_accessible:install
+              bin/rails generate recording_studio_accessible:migrations
+              bin/rails db:migrate
+            BASH
+          }
+        },
         {
           anchor: "mount-and-actor-setup",
           title: "Setup route and controller",
@@ -79,7 +93,7 @@ class GuidesController < ApplicationController
         {
           anchor: "built-in-route",
           title: "Built-in route",
-          subtitle: "Post to the mounted engine when you want a simple duplicate button or link; access is checked automatically.",
+          subtitle: "Post to the mounted engine when you want a simple duplicate button or link; duplication authorization is handled by Recording Studio Accessible.",
           code_block: {
             title: "Simple button",
             language: "erb",

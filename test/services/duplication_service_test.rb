@@ -14,12 +14,6 @@ unless defined?(RecordingStudio)
       def assert_capability!(_name) = nil
     end
 
-    module Services
-      module AccessCheck
-        def self.allowed?(**) = true
-      end
-    end
-
     REGISTERED_CAPABILITIES  = {}
     ENABLED_CAPABILITIES     = Hash.new { |h, k| h[k] = [] }
     CAPABILITY_OPTIONS_STORE = {}
@@ -39,6 +33,11 @@ unless defined?(RecordingStudio)
       # Returns a minimal struct so callers get a non-nil new recording
       Struct.new(:id).new(SecureRandom.uuid)
     end
+  end
+end
+
+unless defined?(RecordingStudioAccessible)
+  module RecordingStudioAccessible
   end
 end
 

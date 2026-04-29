@@ -69,7 +69,7 @@
 
 3. **`test/dummy/db/seeds.rb`**
    - RecordingStudio::Recording API unchanged
-   - RecordingStudio::Access API unchanged
+   - `RecordingStudio::Access` now comes from the extracted `recording_studio_accessible` addon
    - Seeds execute successfully
 
 ### Breaking Changes
@@ -90,4 +90,3 @@ The RecordingStudio gem now provides device session tracking capabilities:
 - Ruby 3.3.6 was installed via rbenv to meet gem requirements
 - PostgreSQL running via Docker (port 5432)
 - All dependencies installed successfully
-

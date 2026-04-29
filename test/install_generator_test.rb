@@ -86,6 +86,10 @@ class InstallGeneratorTest < Minitest::Test
 
     assert_includes initializer_template, "config.actor = -> { Current.actor }"
     assert_includes initializer_template, "duplicate_recording_path"
+    assert_includes initializer_template, "recording_studio_accessible"
+    assert_includes initializer_template, "recording_studio_accessible:install"
+    assert_includes initializer_template, "recording_studio_accessible:migrations"
+    assert_includes initializer_template, "bin/rails db:migrate"
   end
 
   def test_install_docs_mention_builtin_duplicate_endpoint
@@ -99,6 +103,10 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes install_template, "built-in duplicate endpoint"
     assert_includes install_template, "duplicate_recording_path"
     assert_includes install_template, "config.actor = -> { Current.actor }"
+    assert_includes install_template, "recording_studio_accessible"
+    assert_includes install_template, "recording_studio_accessible:install"
+    assert_includes install_template, "recording_studio_accessible:migrations"
+    assert_includes install_template, "bin/rails db:migrate"
   end
 
   private

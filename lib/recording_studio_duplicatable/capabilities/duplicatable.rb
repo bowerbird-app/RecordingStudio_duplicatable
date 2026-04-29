@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+begin
+  require "recording_studio/capability"
+rescue LoadError
+  nil
+end
+
 module RecordingStudioDuplicatable
   class << self
     def register_recording_studio_capability!
@@ -126,7 +132,7 @@ module RecordingStudioDuplicatable
             locked.send(:assert_capability!, :duplicatable)
 
             check_target = locked.parent_recording || locked
-            unless RecordingStudio::Services::AccessCheck.allowed?(
+            unless RecordingStudioDuplicatable.authorized?(
               actor: actor, recording: check_target, role: :edit
             )
               raise RecordingStudio::AccessDenied, "Actor does not have :edit access for duplication"

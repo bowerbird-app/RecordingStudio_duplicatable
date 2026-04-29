@@ -30,6 +30,13 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     refute_nil ::RecordingStudioDuplicatable::VERSION
   end
 
+  def test_duplicatable_capability_requires_recording_studio_capability_support
+    capability_path = File.expand_path("../lib/recording_studio_duplicatable/capabilities/duplicatable.rb", __dir__)
+    capability_source = File.read(capability_path)
+
+    assert_includes capability_source, 'require "recording_studio/capability"'
+  end
+
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioDuplicatable::Engine
   end
@@ -78,6 +85,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "/guides/approach"
     assert_includes readme_source, "gem-provided duplicate route"
     assert_includes readme_source, "included vs excluded child copying"
+    assert_includes readme_source, "recording_studio_accessible"
+    assert_includes readme_source, "install Recording Studio Accessible"
     refute_includes readme_source, "/pages/setup"
   end
 
@@ -87,10 +96,12 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes view_source, "Duplicatable Demo"
     assert_includes view_source, "FlatPack::SectionTitle::Component"
+    assert_includes view_source, "style: :danger"
     assert_includes view_source, "duplicate_recording_path_for(page)"
     assert_includes view_source, "duplicate_recording_path_for(report)"
     assert_includes view_source, "duplicate_recording_path_for(folder)"
     assert_includes view_source, "built-in duplication endpoint"
+    refute_includes view_source, "style: :error"
     refute_includes view_source, "xl:grid-cols-2"
   end
 
@@ -117,11 +128,15 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, '"setup"'
     assert_includes controller_source, '"approach"'
     assert_includes controller_source, '"methods"'
+    assert_includes controller_source, 'anchor: "accessible-install"'
     assert_includes controller_source, 'anchor: "mount-and-actor-setup"'
     assert_includes controller_source, 'anchor: "capability"'
+    assert_includes controller_source, 'title: "Install Recording Studio Accessible first"'
     assert_includes controller_source, 'title: "Setup route and controller"'
     assert_includes controller_source, 'title: "Built-in route and controller"'
     assert_includes controller_source, 'title: "Add capability to recordable"'
+    assert_includes controller_source, "recording_studio_accessible:migrations"
+    assert_includes controller_source, "bin/rails db:migrate"
     assert_includes controller_source, 'title: "Approach"'
     assert_includes controller_source, 'title: "General approach"'
     assert_includes(
@@ -159,7 +174,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes(
       controller_source,
       'subtitle: "Post to the mounted engine when you want a simple duplicate ' \
-      'button or link; access is checked automatically."'
+      'button or link; duplication authorization is handled by Recording Studio Accessible."'
     )
     assert_includes controller_source, 'anchor: "custom-route-and-controller"'
     assert_includes controller_source, 'title: "Custom route and controller"'
@@ -212,9 +227,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     )
     assert_includes(
       controller_source,
-      "subtitle: \"Mount the engine to use the built-in duplication route and " \
-      "controller, keep your current actor available, and opt recordables " \
-      "into duplication.\""
+      "subtitle: \"Install Recording Studio Accessible first, apply its " \
+      "migrations, then mount the engine, keep your current actor available, " \
+      "and opt recordables into duplication.\""
     )
     assert_includes(
       controller_source,
@@ -430,11 +445,21 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     readme_path = File.expand_path("../README.md", __dir__)
     readme_source = File.read(readme_path)
 
+    assert_includes readme_source, "recording_studio_accessible:install"
+    assert_includes readme_source, "recording_studio_accessible:migrations"
+    assert_includes readme_source, "bin/rails db:migrate"
     assert_includes readme_source, "duplicate_recording_path(recording_id: recording.id)"
     assert_includes readme_source, "config.actor = -> { Current.actor }"
     assert_includes readme_source, "DuplicationService.call"
     assert_includes readme_source, "duplicate_in_place!"
     assert_includes readme_source, "host app `ApplicationController`"
+  end
+
+  def test_gemspec_declares_recording_studio_accessible_runtime_dependency
+    gemspec_path = File.expand_path("../recording_studio_duplicatable.gemspec", __dir__)
+    gemspec_source = File.read(gemspec_path)
+
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible"'
   end
 
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint
