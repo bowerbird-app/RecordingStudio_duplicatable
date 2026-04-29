@@ -30,6 +30,13 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     refute_nil ::RecordingStudioDuplicatable::VERSION
   end
 
+  def test_duplicatable_capability_requires_recording_studio_capability_support
+    capability_path = File.expand_path("../lib/recording_studio_duplicatable/capabilities/duplicatable.rb", __dir__)
+    capability_source = File.read(capability_path)
+
+    assert_includes capability_source, 'require "recording_studio/capability"'
+  end
+
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioDuplicatable::Engine
   end
@@ -89,10 +96,12 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes view_source, "Duplicatable Demo"
     assert_includes view_source, "FlatPack::SectionTitle::Component"
+    assert_includes view_source, "style: :danger"
     assert_includes view_source, "duplicate_recording_path_for(page)"
     assert_includes view_source, "duplicate_recording_path_for(report)"
     assert_includes view_source, "duplicate_recording_path_for(folder)"
     assert_includes view_source, "built-in duplication endpoint"
+    refute_includes view_source, "style: :error"
     refute_includes view_source, "xl:grid-cols-2"
   end
 
@@ -165,7 +174,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes(
       controller_source,
       'subtitle: "Post to the mounted engine when you want a simple duplicate ' \
-      'button or link; access is checked through Recording Studio Accessible."'
+      'button or link; duplication authorization is handled by Recording Studio Accessible."'
     )
     assert_includes controller_source, 'anchor: "custom-route-and-controller"'
     assert_includes controller_source, 'title: "Custom route and controller"'

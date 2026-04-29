@@ -7,7 +7,7 @@ class GuidesController < ApplicationController
         {
           anchor: "accessible-install",
           title: "Install Recording Studio Accessible first",
-          subtitle: "Duplication depends on Recording Studio Accessible for access checks, so install and migrate it before you use duplication.",
+          subtitle: "Duplication depends on Recording Studio Accessible for authorization, so install and migrate it before you use duplication.",
           code_block: {
             title: "Required access addon setup",
             language: "bash",
@@ -93,7 +93,7 @@ class GuidesController < ApplicationController
         {
           anchor: "built-in-route",
           title: "Built-in route",
-          subtitle: "Post to the mounted engine when you want a simple duplicate button or link; access is checked through Recording Studio Accessible.",
+          subtitle: "Post to the mounted engine when you want a simple duplicate button or link; duplication authorization is handled by Recording Studio Accessible.",
           code_block: {
             title: "Simple button",
             language: "erb",

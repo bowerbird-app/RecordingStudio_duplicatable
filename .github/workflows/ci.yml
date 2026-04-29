@@ -55,10 +55,22 @@ jobs:
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_duplicatable_test
 
+    - name: Build dummy app Tailwind CSS
+      run: bundle exec rails tailwindcss:build RAILS_ENV=test
+      working-directory: test/dummy
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_duplicatable_test
+
     - name: Run RuboCop
       run: bundle exec rubocop
 
-    - name: Run tests
+    - name: Run gem tests
       run: bundle exec rake app:test
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_duplicatable_test
+
+    - name: Run dummy app tests
+      run: bundle exec rails test
+      working-directory: test/dummy
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_duplicatable_test

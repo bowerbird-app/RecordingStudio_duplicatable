@@ -3,7 +3,7 @@
 RecordingStudioDuplicatable.configure do |config|
   # The built-in duplication endpoint uses your Recording Studio actor resolver.
   # Install recording_studio_accessible alongside this addon so duplication
-  # access checks come from RecordingStudio::Services::AccessCheck there.
+  # authorization comes from Recording Studio Accessible.
   # Before using duplication in a host app, run:
   #   bin/rails generate recording_studio_accessible:install
   #   bin/rails generate recording_studio_accessible:migrations

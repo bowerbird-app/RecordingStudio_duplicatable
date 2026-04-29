@@ -24,8 +24,7 @@ unless defined?(RecordingStudio)
     module Services
       module AccessCheck
         def self.allowed?(**)
-          # Overridden per-test via AccessCheck.stub(:allowed?, ...) or by
-          # swapping the implementation below.
+          # Overridden per-test via the duplicatable authorization adapter.
           true
         end
       end
@@ -73,6 +72,11 @@ end
 
 unless defined?(RecordingStudioAccessible)
   module RecordingStudioAccessible
+    module Compatibility
+      def self.access_check_owned_by_addon?
+        true
+      end
+    end
   end
 end
 
@@ -187,6 +191,7 @@ module RecordingStudioDuplicatable
         RecordingStudioDuplicatable.configuration.duplication_prefix           = nil
         RecordingStudioDuplicatable.configuration.duplication_suffix           = " (Copy)"
         RecordingStudioDuplicatable.configuration.duplication_rename_attribute = nil
+        RecordingStudioDuplicatable.configuration.authorization_resolver       = nil
       end
 
       # -------------------------------------------------------------------
@@ -269,7 +274,7 @@ module RecordingStudioDuplicatable
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
 
-        RecordingStudio::Services::AccessCheck.stub(:allowed?, false) do
+        RecordingStudioDuplicatable.stub(:authorized?, false) do
           assert_raises(RecordingStudio::AccessDenied) do
             recording.duplicate_in_place!(actor: :user)
           end
@@ -289,15 +294,33 @@ module RecordingStudioDuplicatable
         end
 
         assert_equal(
-          "recording_studio_accessible must be installed and loaded before using " \
-          "RecordingStudioDuplicatable access checks",
+          "recording_studio_accessible must be installed, loaded, and provide " \
+          "authorization for RecordingStudioDuplicatable before duplication can run",
           error.message
         )
       ensure
         Object.const_set(:RecordingStudioAccessible, original_accessible)
       end
 
-      def test_uses_parent_recording_for_access_check_when_present
+      def test_raises_missing_dependency_error_when_accessible_does_not_own_access_check
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Original")
+        )
+
+        RecordingStudioAccessible::Compatibility.stub(:access_check_owned_by_addon?, false) do
+          error = assert_raises(RecordingStudioDuplicatable::MissingDependencyError) do
+            recording.duplicate_in_place!(actor: :user)
+          end
+
+          assert_equal(
+            "recording_studio_accessible must be installed, loaded, and provide " \
+            "authorization for RecordingStudioDuplicatable before duplication can run",
+            error.message
+          )
+        end
+      end
+
+      def test_uses_parent_recording_for_authorization_when_present
         parent = FakeRecording.new(id: 99)
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original"),
@@ -305,8 +328,8 @@ module RecordingStudioDuplicatable
         )
 
         checked_recording = nil
-        RecordingStudio::Services::AccessCheck.stub(
-          :allowed?,
+        RecordingStudioDuplicatable.stub(
+          :authorized?,
           lambda { |**kwargs|
             checked_recording = kwargs[:recording]
             true
@@ -318,14 +341,14 @@ module RecordingStudioDuplicatable
         assert_equal parent, checked_recording
       end
 
-      def test_uses_self_for_access_check_when_no_parent
+      def test_uses_self_for_authorization_when_no_parent
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
 
         checked_recording = nil
-        RecordingStudio::Services::AccessCheck.stub(
-          :allowed?,
+        RecordingStudioDuplicatable.stub(
+          :authorized?,
           lambda { |**kwargs|
             checked_recording = kwargs[:recording]
             true
@@ -335,6 +358,25 @@ module RecordingStudioDuplicatable
         end
 
         assert_equal recording, checked_recording
+      end
+
+      def test_uses_configured_authorization_resolver_when_present
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Original")
+        )
+        calls = []
+
+        RecordingStudioDuplicatable.configuration.authorization_resolver = lambda do |**kwargs|
+          calls << kwargs
+          true
+        end
+
+        recording.duplicate_in_place!(actor: :user)
+
+        assert_equal 1, calls.length
+        assert_equal :user, calls.first[:actor]
+        assert_equal :edit, calls.first[:role]
+        assert_equal recording, calls.first[:recording]
       end
 
       # -------------------------------------------------------------------

@@ -6,7 +6,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- explicit `recording_studio_accessible` wiring for access models and `AccessCheck`
+- explicit `recording_studio_accessible` setup for duplication authorization
 - the required Recording Studio Accessible install/migration flow before duplication is used
 - A seeded `Workspace` root recording with child `Page`, `Report`, `Folder`, and `Comment` recordables
 - The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
