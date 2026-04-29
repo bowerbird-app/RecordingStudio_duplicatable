@@ -447,6 +447,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
+    assert_includes readme_source, "RecordingStudioAccessible.authorized?"
     assert_includes readme_source, "bin/rails db:migrate"
     assert_includes readme_source, "duplicate_recording_path(recording_id: recording.id)"
     assert_includes readme_source, "config.actor = -> { Current.actor }"
