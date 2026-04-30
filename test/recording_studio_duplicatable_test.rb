@@ -59,9 +59,34 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     layout_path = File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__)
     assert File.exist?(layout_path)
 
+    layout_source = File.read(layout_path)
+    assert_includes layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
+    assert_includes layout_source, 'stylesheet_link_tag "tailwind"'
+
     application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
     controller_source = File.read(application_controller_path)
     assert_includes controller_source, "flat_pack_sidebar"
+  end
+
+  def test_dummy_app_matches_flatpack_install_contract_basics
+    application_layout_path = File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__)
+    application_layout_source = File.read(application_layout_path)
+    importmap_path = File.expand_path("dummy/config/importmap.rb", __dir__)
+    importmap_source = File.read(importmap_path)
+    controllers_index_path = File.expand_path("dummy/app/javascript/controllers/index.js", __dir__)
+    controllers_index_source = File.read(controllers_index_path)
+    tailwind_path = File.expand_path("dummy/app/assets/stylesheets/application.tailwind.css", __dir__)
+    tailwind_source = File.read(tailwind_path)
+
+    assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
+    assert_includes importmap_source, "flat_pack/tiptap"
+    assert_includes importmap_source, 'pin "flat_pack/heroicons"'
+    assert_includes controllers_index_source, 'lazyLoadControllersFrom("controllers", application)'
+    refute_includes controllers_index_source, "eagerLoadControllersFrom"
+    assert_includes tailwind_source, "@source"
+    assert_includes tailwind_source, "app/components"
+    assert_includes tailwind_source, "--color-fp-primary"
+    assert_includes tailwind_source, "--color-primary: var(--color-fp-primary);"
   end
 
   def test_recording_studio_capabilities_are_off_by_default
@@ -454,6 +479,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     readme_path = File.expand_path("../README.md", __dir__)
     readme_source = File.read(readme_path)
 
+    assert_includes readme_source, "flat_pack ~> 0.1.33"
+    assert_includes readme_source, "bin/rails generate flat_pack:install"
+    assert_includes readme_source, "bin/rake flat_pack:verify_install"
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
@@ -479,6 +507,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_path = File.expand_path("../recording_studio_duplicatable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
+    assert_includes gemspec_source, 'spec.add_dependency "flat_pack"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible"'
   end
 

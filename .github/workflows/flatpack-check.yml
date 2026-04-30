@@ -1,0 +1,30 @@
+name: Flatpack Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  flatpack-check:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Install dummy app dependencies
+        run: bundle install
+        working-directory: test/dummy
+
+      - name: Run Flatpack check
+        run: bundle exec rake flat_pack:verify_install
+        working-directory: test/dummy
