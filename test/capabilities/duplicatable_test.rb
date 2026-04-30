@@ -21,15 +21,6 @@ unless defined?(RecordingStudio)
       end
     end
 
-    module Services
-      module AccessCheck
-        def self.allowed?(**)
-          # Overridden per-test via the duplicatable authorization adapter.
-          true
-        end
-      end
-    end
-
     REGISTERED_CAPABILITIES   = {}
     ENABLED_CAPABILITIES      = Hash.new { |h, k| h[k] = [] }
     CAPABILITY_OPTIONS_STORE  = {}
@@ -72,10 +63,13 @@ end
 
 unless defined?(RecordingStudioAccessible)
   module RecordingStudioAccessible
-    module Compatibility
-      def self.access_check_owned_by_addon?
-        true
-      end
+  end
+end
+
+unless RecordingStudioAccessible.respond_to?(:authorized?)
+  module RecordingStudioAccessible
+    def self.authorized?(**)
+      true
     end
   end
 end
@@ -294,30 +288,51 @@ module RecordingStudioDuplicatable
         end
 
         assert_equal(
-          "recording_studio_accessible must be installed, loaded, and provide " \
-          "authorization for RecordingStudioDuplicatable before duplication can run",
+          "recording_studio_accessible must be installed and loaded so " \
+          "RecordingStudioDuplicatable can authorize duplication through " \
+          "RecordingStudioAccessible.authorized?",
           error.message
         )
       ensure
         Object.const_set(:RecordingStudioAccessible, original_accessible)
       end
 
-      def test_raises_missing_dependency_error_when_accessible_does_not_own_access_check
+      def test_raises_missing_dependency_error_when_accessible_does_not_expose_authorized_api
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
 
-        RecordingStudioAccessible::Compatibility.stub(:access_check_owned_by_addon?, false) do
-          error = assert_raises(RecordingStudioDuplicatable::MissingDependencyError) do
-            recording.duplicate_in_place!(actor: :user)
-          end
+        singleton_class = class << RecordingStudioAccessible; self; end
+        original_authorized = RecordingStudioAccessible.method(:authorized?)
 
-          assert_equal(
-            "recording_studio_accessible must be installed, loaded, and provide " \
-            "authorization for RecordingStudioDuplicatable before duplication can run",
-            error.message
-          )
+        singleton_class.send(:remove_method, :authorized?)
+
+        error = assert_raises(RecordingStudioDuplicatable::MissingDependencyError) do
+          recording.duplicate_in_place!(actor: :user)
         end
+
+        assert_equal(
+          "recording_studio_accessible must be installed and loaded so " \
+          "RecordingStudioDuplicatable can authorize duplication through " \
+          "RecordingStudioAccessible.authorized?",
+          error.message
+        )
+      ensure
+        singleton_class.define_method(:authorized?, original_authorized)
+      end
+
+      def test_default_authorization_delegates_to_recording_studio_accessible_public_api
+        calls = []
+
+        result = RecordingStudioAccessible.stub(:authorized?, lambda { |**kwargs|
+          calls << kwargs
+          true
+        }) do
+          RecordingStudioDuplicatable.authorized?(actor: :user, recording: :recording, role: :edit)
+        end
+
+        assert_equal true, result
+        assert_equal [{ actor: :user, recording: :recording, role: :edit }], calls
       end
 
       def test_uses_parent_recording_for_authorization_when_present

@@ -69,7 +69,7 @@
 
 3. **`test/dummy/db/seeds.rb`**
    - RecordingStudio::Recording API unchanged
-   - `RecordingStudio::Access` now comes from the extracted `recording_studio_accessible` addon
+   - Duplication authorization now delegates through `RecordingStudioAccessible.authorized?` from the extracted `recording_studio_accessible` addon
    - Seeds execute successfully
 
 ### Breaking Changes

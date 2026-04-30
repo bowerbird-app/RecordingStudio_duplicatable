@@ -2,12 +2,12 @@ class GuidesController < ApplicationController
   GUIDE_CONTENT = {
     "setup" => {
       title: "Setup",
-      subtitle: "Install Recording Studio Accessible first, apply its migrations, then mount the engine, keep your current actor available, and opt recordables into duplication.",
+      subtitle: "Install Recording Studio Accessible first, apply its migrations, then mount the engine, keep your current actor available, and let duplication authorize through RecordingStudioAccessible.authorized?.",
       sections: [
         {
           anchor: "accessible-install",
           title: "Install Recording Studio Accessible first",
-          subtitle: "Duplication depends on Recording Studio Accessible for authorization, so install and migrate it before you use duplication.",
+          subtitle: "Duplication depends on RecordingStudioAccessible.authorized?, so install and migrate Recording Studio Accessible before you use duplication.",
           code_block: {
             title: "Required access addon setup",
             language: "bash",
@@ -93,7 +93,7 @@ class GuidesController < ApplicationController
         {
           anchor: "built-in-route",
           title: "Built-in route",
-          subtitle: "Post to the mounted engine when you want a simple duplicate button or link; duplication authorization is handled by Recording Studio Accessible.",
+          subtitle: "Post to the mounted engine when you want a simple duplicate button or link; duplication authorization is handled by RecordingStudioAccessible.authorized?.",
           code_block: {
             title: "Simple button",
             language: "erb",

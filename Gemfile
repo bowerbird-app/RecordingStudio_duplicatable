@@ -8,7 +8,7 @@ gemspec
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v0.1.0-alpha"
 gem "recording_studio_accessible",
     github: "bowerbird-app/RecordingStudio_accessible",
-    ref: "8a0e854249367c44ec882d9cf7190831faf9854c"
+    ref: "442afc0d91ee42e59b201a9ce963931ed1faa2e6"
 
 gem "puma"
 gem "sprockets-rails"

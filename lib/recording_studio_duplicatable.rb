@@ -41,52 +41,22 @@ module RecordingStudioDuplicatable
     end
 
     def accessible_authorization_available?
-      return false unless defined?(RecordingStudioAccessible)
-      return false unless access_check_service_available?
-
-      accessible_owns_access_check_service?
+      defined?(RecordingStudioAccessible) && RecordingStudioAccessible.respond_to?(:authorized?)
     end
 
     def accessible_authorization_allowed?(actor:, recording:, role:)
-      RecordingStudio::Services::AccessCheck.allowed?(
+      RecordingStudioAccessible.authorized?(
         actor: actor,
         recording: recording,
         role: role
       )
     end
 
-    def accessible_owns_access_check_service?
-      compatibility = nil
-
-      if RecordingStudioAccessible.const_defined?(:Compatibility, false)
-        compatibility = RecordingStudioAccessible.const_get(:Compatibility)
-      end
-
-      return compatibility.access_check_owned_by_addon? if compatibility.respond_to?(:access_check_owned_by_addon?)
-
-      access_check_source_locations.any? do |path|
-        path.include?("/recording_studio_accessible/") || path.include?("\\recording_studio_accessible\\")
-      end
-    end
-
-    def access_check_service_available?
-      defined?(RecordingStudio::Services::AccessCheck) &&
-        RecordingStudio::Services::AccessCheck.respond_to?(:allowed?)
-    end
-
-    def access_check_source_locations
-      [
-        RecordingStudio::Services::AccessCheck.method(:allowed?).source_location&.first,
-        RecordingStudio::Services::AccessCheck.instance_method(:perform).source_location&.first
-      ].compact
-    rescue NameError
-      []
-    end
-
     def raise_accessible_missing_dependency!
       raise MissingDependencyError,
-            "recording_studio_accessible must be installed, loaded, and provide " \
-            "authorization for RecordingStudioDuplicatable before duplication can run"
+            "recording_studio_accessible must be installed and loaded so " \
+            "RecordingStudioDuplicatable can authorize duplication through " \
+            "RecordingStudioAccessible.authorized?"
     end
   end
 end

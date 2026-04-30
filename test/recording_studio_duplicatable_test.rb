@@ -86,7 +86,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "gem-provided duplicate route"
     assert_includes readme_source, "included vs excluded child copying"
     assert_includes readme_source, "recording_studio_accessible"
+    assert_includes readme_source, "RecordingStudioAccessible.authorized?"
     assert_includes readme_source, "install Recording Studio Accessible"
+    refute_includes readme_source, "RecordingStudio::Services::AccessCheck"
     refute_includes readme_source, "/pages/setup"
   end
 
@@ -174,7 +176,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes(
       controller_source,
       'subtitle: "Post to the mounted engine when you want a simple duplicate ' \
-      'button or link; duplication authorization is handled by Recording Studio Accessible."'
+      'button or link; duplication authorization is handled by RecordingStudioAccessible.authorized?."'
     )
     assert_includes controller_source, 'anchor: "custom-route-and-controller"'
     assert_includes controller_source, 'title: "Custom route and controller"'
@@ -229,14 +231,21 @@ class RecordingStudioDuplicatableTest < Minitest::Test
       controller_source,
       "subtitle: \"Install Recording Studio Accessible first, apply its " \
       "migrations, then mount the engine, keep your current actor available, " \
-      "and opt recordables into duplication.\""
+      "and let duplication authorize through RecordingStudioAccessible.authorized?.\""
     )
     assert_includes(
       controller_source,
       "subtitle: \"Mount the engine to use the gem-provided duplication route " \
       "and controller with your existing Recording Studio actor resolver.\""
     )
+    assert_includes(
+      controller_source,
+      "subtitle: \"Duplication depends on " \
+      "RecordingStudioAccessible.authorized?, so install and migrate " \
+      "Recording Studio Accessible before you use duplication.\""
+    )
     assert_includes controller_source, "duplicate_recording_path"
+    refute_includes controller_source, "RecordingStudio::Services::AccessCheck"
     refute_includes controller_source, 'title: "Host app link"'
     refute_includes controller_source, 'title: "What gets copied"'
     refute_includes controller_source, 'title: "Custom controller (optional)"'
@@ -447,12 +456,23 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
+    assert_includes readme_source, "RecordingStudioAccessible.authorized?"
     assert_includes readme_source, "bin/rails db:migrate"
     assert_includes readme_source, "duplicate_recording_path(recording_id: recording.id)"
     assert_includes readme_source, "config.actor = -> { Current.actor }"
     assert_includes readme_source, "DuplicationService.call"
     assert_includes readme_source, "duplicate_in_place!"
     assert_includes readme_source, "host app `ApplicationController`"
+    refute_includes readme_source, "RecordingStudio::Services::AccessCheck"
+    refute_includes readme_source, "AccessCheck.allowed?"
+  end
+
+  def test_update_summary_documents_recording_studio_accessible_authorization_api
+    update_summary_path = File.expand_path("../UPDATE_SUMMARY.md", __dir__)
+    update_summary_source = File.read(update_summary_path)
+
+    assert_includes update_summary_source, "RecordingStudioAccessible.authorized?"
+    refute_includes update_summary_source, "RecordingStudio::Services::AccessCheck"
   end
 
   def test_gemspec_declares_recording_studio_accessible_runtime_dependency
