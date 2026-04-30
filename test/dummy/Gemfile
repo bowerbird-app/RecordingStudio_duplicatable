@@ -6,7 +6,7 @@ gem "recording_studio_duplicatable", path: "../.."
 # RecordingStudio engine
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", branch: "copilot/remove-access-control-features"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible",
-                                   ref: "8a0e854249367c44ec882d9cf7190831faf9854c"
+                                   ref: "442afc0d91ee42e59b201a9ce963931ed1faa2e6"
 
 # Devise authentication
 gem "devise"

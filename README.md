@@ -34,7 +34,7 @@ bin/rails generate recording_studio_duplicatable:install
 ```
 
 The installer mounts the engine so host app views can use the built-in duplicate endpoint.
-Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?`.
+Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?` from the extracted access addon.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
 
 ## Opting a model into duplication
@@ -149,7 +149,7 @@ The dummy app in `test/dummy/` demonstrates:
 
 - Devise authentication
 - `Current.actor` wiring
-- explicit `recording_studio_accessible` installation for access models and checks
+- explicit `recording_studio_accessible` installation for the extracted access addon and its `RecordingStudioAccessible.authorized?` authorization API
 - the required Recording Studio Accessible install/migration flow before duplication is used
 - root `Workspace` recording setup
 - cards that post to the gem-provided duplicate endpoint

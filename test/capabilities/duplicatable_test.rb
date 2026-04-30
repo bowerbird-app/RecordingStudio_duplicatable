@@ -303,11 +303,7 @@ module RecordingStudioDuplicatable
         )
 
         singleton_class = class << RecordingStudioAccessible; self; end
-        original_authorized = nil
-
-        if RecordingStudioAccessible.respond_to?(:authorized?)
-          original_authorized = RecordingStudioAccessible.method(:authorized?)
-        end
+        original_authorized = RecordingStudioAccessible.method(:authorized?)
 
         singleton_class.send(:remove_method, :authorized?)
 
@@ -322,7 +318,7 @@ module RecordingStudioDuplicatable
           error.message
         )
       ensure
-        singleton_class.define_method(:authorized?, original_authorized) if original_authorized
+        singleton_class.define_method(:authorized?, original_authorized)
       end
 
       def test_default_authorization_delegates_to_recording_studio_accessible_public_api
