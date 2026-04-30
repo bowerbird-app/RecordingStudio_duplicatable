@@ -33,36 +33,17 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-
-    - name: Validate private gem token
-      run: |
-        if [[ -z "$BOWERBIRD_ORG_CI_TOKEN" ]]; then
-          echo "BOWERBIRD_ORG_CI_TOKEN is not available to this workflow." >&2
-          exit 1
-        fi
-      env:
-        BOWERBIRD_ORG_CI_TOKEN: ${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
-
-    - name: Configure GitHub auth for private gems
-      run: git config --global url."https://${BOWERBIRD_ORG_CI_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-      env:
-        BOWERBIRD_ORG_CI_TOKEN: ${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
     
     - name: Set up Ruby ${{ matrix.ruby-version }}
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true
-      env:
-        BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
     
     - name: Install dummy app dependencies
       run: bundle install
       working-directory: test/dummy
       env:
-        BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_duplicatable_test
     
     - name: Run database migrations
