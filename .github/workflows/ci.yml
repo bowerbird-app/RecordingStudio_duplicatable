@@ -7,6 +7,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      BOWERBIRD_ORG_CI_TOKEN: ${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
+      BUNDLE_GITHUB__COM: ${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}:x-oauth-basic
     
     permissions:
       contents: read
@@ -33,20 +36,22 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+
+    - name: Configure GitHub auth for private gems
+      run: git config --global url."https://${BOWERBIRD_ORG_CI_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
     
     - name: Set up Ruby ${{ matrix.ruby-version }}
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true
-      env:
-        BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
     
     - name: Install dummy app dependencies
       run: bundle install
       working-directory: test/dummy
       env:
-        BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_duplicatable_test
     
     - name: Run database migrations

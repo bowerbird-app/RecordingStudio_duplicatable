@@ -6,7 +6,8 @@ on:
     branches: [main]
 
 env:
-  BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
+  BOWERBIRD_ORG_CI_TOKEN: ${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
+  BUNDLE_GITHUB__COM: ${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}:x-oauth-basic
 
 jobs:
   flatpack-check:
@@ -17,6 +18,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configure GitHub auth for private gems
+        run: git config --global url."https://${BOWERBIRD_ORG_CI_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
