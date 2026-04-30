@@ -23,6 +23,8 @@ gem "recording_studio_accessible"
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
+`recording_studio_duplicatable` now depends on `flat_pack ~> 0.1.33` for its shipped UI views, so `bundle install` will also bring FlatPack into the host app.
+
 Then run the installer if you want the initializer, YAML config, mount, and Tailwind source hints:
 
 ```bash
@@ -30,12 +32,16 @@ bundle install
 bin/rails generate recording_studio_accessible:install
 bin/rails generate recording_studio_accessible:migrations
 bin/rails db:migrate
+bin/rails generate flat_pack:install
+bin/rake flat_pack:contract
+bin/rake flat_pack:verify_install
 bin/rails generate recording_studio_duplicatable:install
 ```
 
 The installer mounts the engine so host app views can use the built-in duplicate endpoint.
 Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?` from the extracted access addon.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
+If FlatPack is already installed in the host app, rerun `bin/rake flat_pack:verify_install` after the bundle update to confirm the Tailwind, importmap, and Stimulus wiring still matches the installed gem.
 
 ## Opting a model into duplication
 
@@ -160,6 +166,7 @@ Run it with:
 ```bash
 cd test/dummy
 bundle install
+bundle exec rake flat_pack:verify_install
 bin/rails db:setup
 bin/dev
 ```

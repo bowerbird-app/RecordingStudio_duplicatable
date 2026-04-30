@@ -101,6 +101,8 @@ class InstallGeneratorTest < Minitest::Test
       )
     )
 
+    assert_includes install_template, "flat_pack:install"
+    assert_includes install_template, "flat_pack:verify_install"
     assert_includes install_template, "built-in duplicate endpoint"
     assert_includes install_template, "duplicate_recording_path"
     assert_includes install_template, "config.actor = -> { Current.actor }"

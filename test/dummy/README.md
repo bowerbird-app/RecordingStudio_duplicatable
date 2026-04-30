@@ -18,6 +18,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 
 ```bash
 bundle install
+bundle exec rake flat_pack:verify_install
 bin/rails db:setup
 bin/dev
 ```
