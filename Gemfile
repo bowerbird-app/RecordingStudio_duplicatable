@@ -21,6 +21,7 @@ group :development, :test do
 end
 
 group :development do
+  gem "flatpack-checker", github: "bowerbird-app/flatpack-checker", require: false
   gem "rubocop", require: false
   gem "rubocop-rails", require: false
 end
