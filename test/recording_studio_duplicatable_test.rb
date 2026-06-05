@@ -151,7 +151,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes(
       controller_source,
       "subtitle: \"The gem keeps duplication deliberately narrow: duplicate the " \
-      "recording in place, keep the original recordable, and configure " \
+      "recording and recordable in place, and configure " \
       "child-copy rules where the capability is declared.\""
     )
     assert_includes(
@@ -171,8 +171,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     )
     assert_includes(
       controller_source,
-      "Duplication copies the recording, not the recordable. The duplicate points " \
-      "to the existing recordable."
+      "Duplication copies the recordable and creates a new recording for that duplicate."
     )
     assert_includes(
       controller_source,
@@ -214,6 +213,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
       "redirect_to page_path(duplicate_recording.recordable.slug), notice: " \
       '"Page duplicated"'
     )
+    assert_includes controller_source, "redirect_to page_path(page.slug), alert: error"
     assert_includes controller_source, 'title: "Options"'
     assert_operator(
       controller_source.index("use"),

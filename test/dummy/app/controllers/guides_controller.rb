@@ -74,7 +74,7 @@ class GuidesController < ApplicationController
     },
     "approach" => {
       title: "Approach",
-      subtitle: "The gem keeps duplication deliberately narrow: duplicate the recording in place, keep the original recordable, and configure child-copy rules where the capability is declared.",
+      subtitle: "The gem keeps duplication deliberately narrow: duplicate the recording and recordable in place, and configure child-copy rules where the capability is declared.",
       sections: [
         {
           title: "General approach",
@@ -84,7 +84,7 @@ class GuidesController < ApplicationController
             items: [
               "Duplicate is deliberately simple. Move or copy workflows belong in other Recording Studio addon gems.",
               "After duplication the default behavior is to refresh the current page. A prefix or suffix can be added to distinguish the new recording.",
-              "Duplication copies the recording, not the recordable. The duplicate points to the existing recordable.",
+              "Duplication copies the recordable and creates a new recording for that duplicate.",
               "Control of what child items are included in duplication lives in this gem through the capability options."
             ]
           }
@@ -133,7 +133,7 @@ class GuidesController < ApplicationController
                   result.on_success do |duplicate_recording|
                     redirect_to page_path(duplicate_recording.recordable.slug), notice: "Page duplicated"
                   end.on_failure do |error|
-                    redirect_to page_path(page.slug), alert: error.message
+                    redirect_to page_path(page.slug), alert: error
                   end
                 end
               end
