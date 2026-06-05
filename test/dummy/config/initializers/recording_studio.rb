@@ -6,6 +6,7 @@ RecordingStudio.configure do |config|
 
   # Actor resolver for events when no actor is explicitly supplied
   config.actor = -> { Current.actor }
+  config.impersonator = -> { Current.impersonator }
 
   # Emit ActiveSupport::Notifications events
   config.event_notifications_enabled = true
@@ -13,8 +14,8 @@ RecordingStudio.configure do |config|
   # Idempotency behavior for log_event!
   config.idempotency_mode = :return_existing # or :raise
 
-  # Include child recordings by default when trashing/restoring
-  config.include_children = false
+  # Require each configured recordable to declare its root/parent rules.
+  config.require_recordable_declarations = true
 
   # Recordable duplication strategy for revisions
   config.recordable_dup_strategy = :dup

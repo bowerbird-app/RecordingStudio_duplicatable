@@ -1,6 +1,177 @@
 {
   "Unit Tests": {
-    "coverage": {},
-    "timestamp": 1777422239
+    "coverage": {
+      "/workspace/test/dummy/app/controllers/application_controller.rb": {
+        "lines": [
+          1,
+          null,
+          1,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          1,
+          1,
+          null,
+          1,
+          null,
+          1,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          null
+        ],
+        "branches": {
+          "[:if, 0, 16, 4, 16, 60]": {
+            "[:then, 1, 16, 25, 16, 38]": 0,
+            "[:else, 2, 16, 41, 16, 60]": 0
+          }
+        }
+      },
+      "/workspace/test/dummy/app/controllers/home_controller.rb": {
+        "lines": [
+          1,
+          1,
+          null,
+          null,
+          1,
+          0,
+          0,
+          0,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          null,
+          1,
+          null,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          null,
+          null,
+          1,
+          3,
+          2,
+          null,
+          null,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          0,
+          null,
+          0,
+          null,
+          0,
+          null,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          null,
+          1,
+          0,
+          null,
+          0,
+          null,
+          null
+        ],
+        "branches": {
+          "[:\"&.\", 0, 33, 30, 33, 58]": {
+            "[:then, 1, 33, 30, 33, 58]": 0,
+            "[:else, 2, 33, 30, 33, 58]": 0
+          },
+          "[:unless, 3, 47, 4, 47, 38]": {
+            "[:else, 4, 47, 4, 47, 38]": 0,
+            "[:then, 5, 47, 4, 47, 12]": 0
+          },
+          "[:\"&.\", 6, 49, 4, 49, 47]": {
+            "[:then, 7, 49, 4, 49, 47]": 0,
+            "[:else, 8, 49, 4, 49, 47]": 0
+          },
+          "[:\"&.\", 9, 49, 4, 49, 53]": {
+            "[:then, 10, 49, 4, 49, 53]": 0,
+            "[:else, 11, 49, 4, 49, 53]": 0
+          },
+          "[:unless, 12, 54, 4, 54, 27]": {
+            "[:else, 13, 54, 4, 54, 27]": 0,
+            "[:then, 14, 54, 4, 54, 10]": 0
+          },
+          "[:case, 15, 72, 4, 79, 7]": {
+            "[:when, 16, 74, 6, 74, 48]": 0,
+            "[:when, 17, 76, 6, 76, 50]": 0,
+            "[:when, 18, 78, 6, 78, 50]": 0,
+            "[:else, 19, 72, 4, 79, 7]": 0
+          },
+          "[:unless, 20, 84, 4, 84, 28]": {
+            "[:else, 21, 84, 4, 84, 28]": 0,
+            "[:then, 22, 84, 4, 84, 16]": 0
+          },
+          "[:unless, 23, 94, 4, 94, 36]": {
+            "[:else, 24, 94, 4, 94, 36]": 0,
+            "[:then, 25, 94, 4, 94, 10]": 0
+          }
+        }
+      }
+    },
+    "timestamp": 1780639477
   }
 }

@@ -127,8 +127,10 @@ class EngineTest < Minitest::Test
 
     assert_equal(
       RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods,
-      recording_studio.registered_capabilities[:duplicatable]
+      recording_studio.registered_capabilities[:duplicatable][:mod]
     )
+    assert_equal "recording_studio_duplicatable",
+                 recording_studio.registered_capabilities[:duplicatable][:source]
     assert_includes recording_class.included_modules,
                     RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
   end
@@ -204,12 +206,14 @@ class EngineTest < Minitest::Test
       define_singleton_method(:registered_capabilities) { @registered_capabilities }
       const_set(:Recording, recording_class)
 
-      define_singleton_method(:register_capability) do |name, mod|
-        @registered_capabilities[name.to_sym] = mod
+      define_singleton_method(:register_capability) do |name, mod = nil, **options|
+        @registered_capabilities[name.to_sym] = { mod: mod, **options }
       end
 
       define_singleton_method(:apply_capabilities!) do
-        @registered_capabilities.each_value do |mod|
+        @registered_capabilities.each_value do |registration|
+          mod = registration[:mod]
+          next unless mod
           next if const_get(:Recording).included_modules.include?(mod)
 
           const_get(:Recording).include(mod)

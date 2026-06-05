@@ -8,7 +8,6 @@
 # ---------------------------------------------------------------------------
 unless defined?(RecordingStudio)
   module RecordingStudio
-    class AccessDenied < StandardError; end
     class CapabilityDisabled < StandardError; end
 
     # Minimal stub for RecordingStudio::Capability.
@@ -48,8 +47,8 @@ unless defined?(RecordingStudio)
       )
     end
 
-    def self.register_capability(name, mod)
-      REGISTERED_CAPABILITIES[name] = mod
+    def self.register_capability(name, mod = nil, **)
+      REGISTERED_CAPABILITIES[name] = { mod: mod, ** }
     end
 
     def self.reset!
@@ -75,6 +74,44 @@ unless RecordingStudioAccessible.respond_to?(:authorized?)
 end
 
 require "test_helper"
+
+module RecordingStudio
+  REGISTERED_CAPABILITIES   = {} unless const_defined?(:REGISTERED_CAPABILITIES)
+  ENABLED_CAPABILITIES      = Hash.new { |h, k| h[k] = [] } unless const_defined?(:ENABLED_CAPABILITIES)
+  CAPABILITY_OPTIONS_STORE  = {} unless const_defined?(:CAPABILITY_OPTIONS_STORE)
+
+  def self.enable_capability(name, on:)
+    ENABLED_CAPABILITIES[name] << recordable_type_name(on)
+  end
+
+  def self.set_capability_options(name, on:, **opts)
+    CAPABILITY_OPTIONS_STORE[[name, recordable_type_name(on)]] = opts
+  end
+
+  def self.capability_options(name, for_type:)
+    CAPABILITY_OPTIONS_STORE[[name, for_type]]
+  end
+
+  def self.record!(**kwargs)
+    FakeEvent.new(
+      recording: FakeRecording.new(
+        recordable: kwargs[:recordable],
+        recordable_type: kwargs[:recordable]&.class&.name,
+        root_recording: kwargs[:root_recording],
+        parent_recording: kwargs[:parent_recording]
+      )
+    )
+  end
+
+  def self.register_capability(name, mod = nil, **)
+    REGISTERED_CAPABILITIES[name] = { mod: mod, ** }
+  end
+
+  def self.reset!
+    ENABLED_CAPABILITIES.clear
+    CAPABILITY_OPTIONS_STORE.clear
+  end
+end
 
 # ---------------------------------------------------------------------------
 # Fake Recording — a plain Ruby object that stands in for
@@ -182,10 +219,11 @@ module RecordingStudioDuplicatable
     class DuplicatableTest < Minitest::Test
       def setup
         RecordingStudio.reset!
+        RecordingStudioDuplicatable.register_recording_studio_capability!
         RecordingStudioDuplicatable.configuration.duplication_prefix           = nil
         RecordingStudioDuplicatable.configuration.duplication_suffix           = " (Copy)"
         RecordingStudioDuplicatable.configuration.duplication_rename_attribute = nil
-        RecordingStudioDuplicatable.configuration.authorization_resolver       = nil
+        RecordingStudioDuplicatable.configuration.authorization_resolver       = ->(**) { true }
       end
 
       # -------------------------------------------------------------------
@@ -269,13 +307,53 @@ module RecordingStudioDuplicatable
         )
 
         RecordingStudioDuplicatable.stub(:authorized?, false) do
-          assert_raises(RecordingStudio::AccessDenied) do
+          assert_raises(RecordingStudioDuplicatable::AccessDenied) do
             recording.duplicate_in_place!(actor: :user)
           end
         end
       end
 
+      def test_child_duplication_authorizes_source_and_parent_recordings
+        parent = FakeRecording.new(id: 10, recordable: NamedRecordable.new(id: 10, name: "Parent"))
+        recording = FakeRecording.new(
+          id: 11,
+          recordable: NamedRecordable.new(id: 11, name: "Child"),
+          parent_recording: parent
+        )
+        authorized_targets = []
+
+        RecordingStudioDuplicatable.stub(:authorized?, lambda { |recording:, **|
+          authorized_targets << recording
+          true
+        }) do
+          recording.duplicate_in_place!(actor: :user)
+        end
+
+        assert_equal [recording, parent], authorized_targets
+      end
+
+      def test_recursive_child_duplication_fails_when_descendant_edit_is_denied
+        child = FakeRecording.new(
+          id: 20,
+          recordable: NamedRecordable.new(id: 20, name: "Restricted Child"),
+          recordable_type: "NamedRecordable"
+        )
+        source = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          child_recordings: [child]
+        )
+
+        RecordingStudioDuplicatable.stub(:authorized?, lambda { |recording:, **|
+          recording != child
+        }) do
+          assert_raises(RecordingStudioDuplicatable::AccessDenied) do
+            source.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
+          end
+        end
+      end
+
       def test_raises_missing_dependency_error_when_accessible_addon_is_not_loaded
+        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
@@ -298,6 +376,7 @@ module RecordingStudioDuplicatable
       end
 
       def test_raises_missing_dependency_error_when_accessible_does_not_expose_authorized_api
+        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
@@ -322,6 +401,7 @@ module RecordingStudioDuplicatable
       end
 
       def test_default_authorization_delegates_to_recording_studio_accessible_public_api
+        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         calls = []
 
         result = RecordingStudioAccessible.stub(:authorized?, lambda { |**kwargs|
@@ -786,8 +866,10 @@ module RecordingStudioDuplicatable
       def test_capability_is_registered_with_recording_studio
         assert_equal(
           RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods,
-          RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable]
+          RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable][:mod]
         )
+        assert_equal "recording_studio_duplicatable",
+                     RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable][:source]
       end
 
       # -------------------------------------------------------------------

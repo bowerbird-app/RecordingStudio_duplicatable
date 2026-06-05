@@ -5,7 +5,6 @@
 # duplicatable_test.rb are reused when both test files run in the same process.
 unless defined?(RecordingStudio)
   module RecordingStudio
-    class AccessDenied < StandardError; end
     class CapabilityDisabled < StandardError; end
 
     module Capability
@@ -21,7 +20,7 @@ unless defined?(RecordingStudio)
     def self.enable_capability(name, on:) = ENABLED_CAPABILITIES[name] << on
     def self.set_capability_options(name, on:, **opts) = (CAPABILITY_OPTIONS_STORE[[name, on]] = opts)
     def self.capability_options(name, for_type:) = CAPABILITY_OPTIONS_STORE[[name, for_type]]
-    def self.register_capability(name, mod) = (REGISTERED_CAPABILITIES[name] = mod)
+    def self.register_capability(name, mod = nil, **) = (REGISTERED_CAPABILITIES[name] = { mod: mod, ** })
 
     def self.reset!
       REGISTERED_CAPABILITIES.clear
@@ -175,7 +174,7 @@ module RecordingStudioDuplicatable
       # -------------------------------------------------------------------
 
       def test_failure_on_access_denied
-        recording = StubRecording.new(raise_error: RecordingStudio::AccessDenied.new("denied"))
+        recording = StubRecording.new(raise_error: RecordingStudioDuplicatable::AccessDenied.new("denied"))
         result = DuplicationService.call(recording: recording, actor: @actor)
 
         assert result.failure?

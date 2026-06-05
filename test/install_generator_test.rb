@@ -4,6 +4,7 @@ require "test_helper"
 require "fileutils"
 require "tmpdir"
 require "generators/recording_studio_duplicatable/install/install_generator"
+require "generators/recording_studio_duplicatable/migrations/migrations_generator"
 
 class InstallGeneratorTest < Minitest::Test
   def with_temp_app
@@ -90,6 +91,10 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes initializer_template, "recording_studio_accessible:install"
     assert_includes initializer_template, "recording_studio_accessible:migrations"
     assert_includes initializer_template, "RecordingStudioAccessible.authorized?"
+    assert_includes initializer_template, "config.impersonator = -> { Current.impersonator }"
+    assert_includes initializer_template, "config.require_recordable_declarations = true"
+    assert_includes initializer_template, "recording_studio_recordable"
+    assert_includes initializer_template, "RecordingStudioAccessible.grant_access"
     assert_includes initializer_template, "bin/rails db:migrate"
   end
 
@@ -108,7 +113,25 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes install_template, "recording_studio_accessible:install"
     assert_includes install_template, "recording_studio_accessible:migrations"
     assert_includes install_template, "RecordingStudioAccessible.authorized?"
+    assert_includes install_template, "recording_studio_recordable"
+    assert_includes install_template, "RecordingStudioAccessible.grant_access"
     assert_includes install_template, "bin/rails db:migrate"
+  end
+
+  def test_migrations_generator_has_no_behavior_only_schema_to_copy
+    with_temp_app do |dir|
+      generator = RecordingStudioDuplicatable::Generators::MigrationsGenerator.new(
+        [],
+        {},
+        destination_root: dir
+      )
+
+      generator.stub(:say, nil) do
+        generator.copy_migrations
+      end
+
+      assert_empty Dir.glob(File.join(dir, "db/migrate/*.rb"))
+    end
   end
 
   private

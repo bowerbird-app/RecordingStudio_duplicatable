@@ -59,9 +59,43 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     layout_path = File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__)
     assert File.exist?(layout_path)
 
+    layout_source = File.read(layout_path)
+    assert_includes layout_source, 'data-theme="rounded"'
+    assert_includes layout_source, 'stylesheet_link_tag "tailwind"'
+
     application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
     controller_source = File.read(application_controller_path)
     assert_includes controller_source, "flat_pack_sidebar"
+  end
+
+  def test_dummy_app_stylesheets_link_flatpack_assets_and_remove_custom_theme_overrides
+    application_css_path = File.expand_path("dummy/app/assets/stylesheets/application.css", __dir__)
+    application_css_source = File.read(application_css_path)
+    application_layout_path = File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__)
+    application_layout_source = File.read(application_layout_path)
+    sidebar_layout_path = File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__)
+    sidebar_layout_source = File.read(sidebar_layout_path)
+    tailwind_css_path = File.expand_path("dummy/app/assets/tailwind/application.css", __dir__)
+    tailwind_css_source = File.read(tailwind_css_path)
+    dummy_gemfile_path = File.expand_path("dummy/Gemfile", __dir__)
+    dummy_gemfile_source = File.read(dummy_gemfile_path)
+
+    assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/variables"'
+    assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
+    assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/application"'
+    assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/variables"'
+    assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
+    assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/application"'
+    assert_includes dummy_gemfile_source, 'gem "tailwindcss-rails"'
+    assert_includes tailwind_css_source, '@import "tailwindcss";'
+    assert_includes tailwind_css_source, '@source "../../views";'
+    assert_includes \
+      tailwind_css_source,
+      '@source "../../../../../../usr/local/bundle/ruby/3.3.0/bundler/gems/flatpack-6f51848865fc/app/components";'
+    refute_includes application_css_source, "flat_pack/"
+    refute_includes tailwind_css_source, "@theme {"
+    refute_includes tailwind_css_source, "--color-fp-primary"
+    refute_includes tailwind_css_source, ":root {"
   end
 
   def test_recording_studio_capabilities_are_off_by_default
@@ -69,6 +103,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "Built-in capabilities remain disabled"
+    assert_includes initializer_source, "config.impersonator = -> { Current.impersonator }"
+    assert_includes initializer_source, "config.require_recordable_declarations = true"
+    refute_includes initializer_source, "config.include_children"
     assert_match(
       /config\.recordable_types = \[\s*"Workspace", "Page", "Report", "Folder", "Comment"\s*\]/,
       initializer_source
@@ -103,6 +140,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "duplicate_recording_path_for(report)"
     assert_includes view_source, "duplicate_recording_path_for(folder)"
     assert_includes view_source, "built-in duplication endpoint"
+    refute_includes view_source, 'class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"'
     refute_includes view_source, "style: :error"
     refute_includes view_source, "xl:grid-cols-2"
   end
@@ -139,12 +177,16 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, 'title: "Add capability to recordable"'
     assert_includes controller_source, "recording_studio_accessible:migrations"
     assert_includes controller_source, "bin/rails db:migrate"
+    assert_includes controller_source, "config.require_recordable_declarations = true"
+    assert_includes controller_source, "config.impersonator = -> { Current.impersonator }"
+    assert_includes controller_source, "recording_studio_recordable label: \"Page\""
+    assert_includes controller_source, "RecordingStudio.enable_capability(:accessible, on: self)"
     assert_includes controller_source, 'title: "Approach"'
     assert_includes controller_source, 'title: "General approach"'
     assert_includes(
       controller_source,
       "subtitle: \"The gem keeps duplication deliberately narrow: duplicate the " \
-      "recording in place, keep the original recordable, and configure " \
+      "recording and recordable in place, and configure " \
       "child-copy rules where the capability is declared.\""
     )
     assert_includes(
@@ -164,8 +206,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     )
     assert_includes(
       controller_source,
-      "Duplication copies the recording, not the recordable. The duplicate points " \
-      "to the existing recordable."
+      "Duplication copies the recordable and creates a new recording for that duplicate."
     )
     assert_includes(
       controller_source,
@@ -207,6 +248,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
       "redirect_to page_path(duplicate_recording.recordable.slug), notice: " \
       '"Page duplicated"'
     )
+    assert_includes controller_source, "redirect_to page_path(page.slug), alert: error"
     assert_includes controller_source, 'title: "Options"'
     assert_operator(
       controller_source.index("use"),
@@ -261,7 +303,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "FlatPack::Table::Component"
     assert_includes view_source, "section[:list].present?"
     assert_includes view_source, "section[:list][:ordered]"
-    assert_includes view_source, '<ol class="<%= list_classes.join(" ") %>">'
+    assert_includes view_source, '<ol style="margin: 0; padding-left: 1.25rem;">'
     assert_includes view_source, "FlatPack::CodeBlock::Component"
   end
 
@@ -351,6 +393,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
   end
 
   def test_dummy_page_report_and_folder_models_configure_child_duplication_rules
+    workspace_model_path = File.expand_path("dummy/app/models/workspace.rb", __dir__)
+    workspace_model_source = File.read(workspace_model_path)
     page_model_path = File.expand_path("dummy/app/models/page.rb", __dir__)
     page_model_source = File.read(page_model_path)
     report_model_path = File.expand_path("dummy/app/models/report.rb", __dir__)
@@ -360,6 +404,16 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     comment_model_path = File.expand_path("dummy/app/models/comment.rb", __dir__)
     comment_model_source = File.read(comment_model_path)
 
+    assert_includes workspace_model_source, 'recording_studio_recordable label: "Workspace", root: true'
+    assert_includes page_model_source, 'recording_studio_recordable label: "Page", root: false'
+    assert_includes report_model_source, 'recording_studio_recordable label: "Report", root: false'
+    assert_includes folder_model_source, 'recording_studio_recordable label: "Folder", root: false'
+    assert_includes comment_model_source, 'recording_studio_recordable label: "Comment", root: false'
+    assert_includes comment_model_source, 'allowed_parent_types: [ "Page", "Report", "Folder" ]'
+    [workspace_model_source, page_model_source, report_model_source, folder_model_source].each do |source|
+      assert_includes source, "RecordingStudio.enable_capability(:accessible, on: self)"
+    end
+    refute_includes comment_model_source, "RecordingStudio.enable_capability(:accessible"
     assert_match(/include_children: \[\s*"Comment"\s*\]/, page_model_source)
     assert_match(/exclude_children: \[\s*"Comment"\s*\]/, report_model_source)
     assert_match(/include_children: \[\s*"Folder", "Comment"\s*\]/, folder_model_source)
@@ -422,6 +476,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes seeds_source, "ensure_folder_recordings!"
     assert_includes seeds_source, "parent_folder: folder"
     assert_includes seeds_source, "parent_recording_id: parent_recording.id"
+    assert_includes seeds_source, "RecordingStudioAccessible.grant_access"
+    refute_includes seeds_source, "RecordingStudio::Access.find_or_create_by!"
   end
 
   def test_dummy_recordable_show_view_lists_children
@@ -448,6 +504,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "FlatPack::Button::Component"
     assert_includes view_source, "FlatPack::Badge::Component"
+    refute_includes view_source, "tailwindcss:build"
   end
 
   def test_readme_documents_builtin_duplication_endpoint_and_lower_level_apis
@@ -457,6 +514,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
+    assert_includes readme_source, "recording_studio/v3.0.0"
+    assert_includes readme_source, 'tag: "0.3.1"'
+    assert_includes readme_source, "recording_studio_recordable"
+    assert_includes readme_source, "RecordingStudioAccessible.grant_access"
     assert_includes readme_source, "bin/rails db:migrate"
     assert_includes readme_source, "duplicate_recording_path(recording_id: recording.id)"
     assert_includes readme_source, "config.actor = -> { Current.actor }"
@@ -479,7 +540,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_path = File.expand_path("../recording_studio_duplicatable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 3.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.3.1"'
   end
 
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint

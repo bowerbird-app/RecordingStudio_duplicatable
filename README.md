@@ -18,8 +18,8 @@
 Add Recording Studio core, Recording Studio Accessible, and this addon to your host app:
 
 ```ruby
-gem "recording_studio"
-gem "recording_studio_accessible"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "recording_studio/v3.0.0"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "0.3.1"
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
@@ -27,10 +27,12 @@ Then run the installer if you want the initializer, YAML config, mount, and Tail
 
 ```bash
 bundle install
+bin/rails generate recording_studio:install
+bin/rails generate recording_studio:migrations
 bin/rails generate recording_studio_accessible:install
 bin/rails generate recording_studio_accessible:migrations
-bin/rails db:migrate
 bin/rails generate recording_studio_duplicatable:install
+bin/rails db:migrate
 ```
 
 The installer mounts the engine so host app views can use the built-in duplicate endpoint.
@@ -43,6 +45,9 @@ Use the capability directly:
 
 ```ruby
 class Workspace < ApplicationRecord
+  recording_studio_recordable label: "Workspace", root: true
+  RecordingStudio.enable_capability(:accessible, on: self)
+
   include RecordingStudioDuplicatable::Capabilities::Duplicatable
 end
 ```
@@ -51,6 +56,9 @@ Or configure per-type overrides:
 
 ```ruby
 class Workspace < ApplicationRecord
+  recording_studio_recordable label: "Workspace", root: true
+  RecordingStudio.enable_capability(:accessible, on: self)
+
   include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
     prefix: nil,
     suffix: " (Copy)",
@@ -71,6 +79,11 @@ RecordingStudioDuplicatable.configure do |config|
   config.duplication_rename_attribute = nil
 end
 ```
+
+Recording Studio 3 requires every configured recordable to declare its hierarchy.
+Root recordables use `root: true`; child recordables use `root: false` with
+`allowed_parent_types`. Enable `:accessible` on recordables that should accept
+direct access grants from Recording Studio Accessible.
 
 Available options:
 
@@ -98,7 +111,8 @@ The built-in controller:
 
 - resolves the actor from your existing Recording Studio actor setup
 - falls back to `Current.actor` when needed
-- passes optional `Current.impersonator`
+- resolves the impersonator from your Recording Studio impersonator setup
+- falls back to `Current.impersonator` when needed
 - relies on the existing duplication API, which performs the standard `RecordingStudioAccessible.authorized?` duplication authorization check
 - redirects back with a notice or alert
 
@@ -107,6 +121,8 @@ Make sure your host app keeps Recording Studio configured with the current actor
 ```ruby
 RecordingStudio.configure do |config|
   config.actor = -> { Current.actor }
+  config.impersonator = -> { Current.impersonator }
+  config.require_recordable_declarations = true
 end
 ```
 
@@ -150,6 +166,7 @@ The dummy app in `test/dummy/` demonstrates:
 - Devise authentication
 - `Current.actor` wiring
 - explicit `recording_studio_accessible` installation for the extracted access addon and its `RecordingStudioAccessible.authorized?` authorization API
+- seed/setup access grants through `RecordingStudioAccessible.grant_access`
 - the required Recording Studio Accessible install/migration flow before duplication is used
 - root `Workspace` recording setup
 - cards that post to the gem-provided duplicate endpoint
