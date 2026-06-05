@@ -47,8 +47,8 @@ unless defined?(RecordingStudio)
       )
     end
 
-    def self.register_capability(name, mod = nil, **options)
-      REGISTERED_CAPABILITIES[name] = { mod: mod, **options }
+    def self.register_capability(name, mod = nil, **)
+      REGISTERED_CAPABILITIES[name] = { mod: mod, ** }
     end
 
     def self.reset!
@@ -74,6 +74,44 @@ unless RecordingStudioAccessible.respond_to?(:authorized?)
 end
 
 require "test_helper"
+
+module RecordingStudio
+  REGISTERED_CAPABILITIES   = {} unless const_defined?(:REGISTERED_CAPABILITIES)
+  ENABLED_CAPABILITIES      = Hash.new { |h, k| h[k] = [] } unless const_defined?(:ENABLED_CAPABILITIES)
+  CAPABILITY_OPTIONS_STORE  = {} unless const_defined?(:CAPABILITY_OPTIONS_STORE)
+
+  def self.enable_capability(name, on:)
+    ENABLED_CAPABILITIES[name] << recordable_type_name(on)
+  end
+
+  def self.set_capability_options(name, on:, **opts)
+    CAPABILITY_OPTIONS_STORE[[name, recordable_type_name(on)]] = opts
+  end
+
+  def self.capability_options(name, for_type:)
+    CAPABILITY_OPTIONS_STORE[[name, for_type]]
+  end
+
+  def self.record!(**kwargs)
+    FakeEvent.new(
+      recording: FakeRecording.new(
+        recordable: kwargs[:recordable],
+        recordable_type: kwargs[:recordable]&.class&.name,
+        root_recording: kwargs[:root_recording],
+        parent_recording: kwargs[:parent_recording]
+      )
+    )
+  end
+
+  def self.register_capability(name, mod = nil, **)
+    REGISTERED_CAPABILITIES[name] = { mod: mod, ** }
+  end
+
+  def self.reset!
+    ENABLED_CAPABILITIES.clear
+    CAPABILITY_OPTIONS_STORE.clear
+  end
+end
 
 # ---------------------------------------------------------------------------
 # Fake Recording — a plain Ruby object that stands in for
@@ -181,10 +219,11 @@ module RecordingStudioDuplicatable
     class DuplicatableTest < Minitest::Test
       def setup
         RecordingStudio.reset!
+        RecordingStudioDuplicatable.register_recording_studio_capability!
         RecordingStudioDuplicatable.configuration.duplication_prefix           = nil
         RecordingStudioDuplicatable.configuration.duplication_suffix           = " (Copy)"
         RecordingStudioDuplicatable.configuration.duplication_rename_attribute = nil
-        RecordingStudioDuplicatable.configuration.authorization_resolver       = nil
+        RecordingStudioDuplicatable.configuration.authorization_resolver       = ->(**) { true }
       end
 
       # -------------------------------------------------------------------
@@ -314,6 +353,7 @@ module RecordingStudioDuplicatable
       end
 
       def test_raises_missing_dependency_error_when_accessible_addon_is_not_loaded
+        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
@@ -336,6 +376,7 @@ module RecordingStudioDuplicatable
       end
 
       def test_raises_missing_dependency_error_when_accessible_does_not_expose_authorized_api
+        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
@@ -360,6 +401,7 @@ module RecordingStudioDuplicatable
       end
 
       def test_default_authorization_delegates_to_recording_studio_accessible_public_api
+        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         calls = []
 
         result = RecordingStudioAccessible.stub(:authorized?, lambda { |**kwargs|
