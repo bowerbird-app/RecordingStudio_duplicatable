@@ -6,6 +6,8 @@ require "rails/generators/active_record"
 module RecordingStudioDuplicatable
   module Generators
     # Generator to install RecordingStudioDuplicatable migrations into the host application.
+    # The addon is currently behavior-only, so this reports no migrations unless
+    # future releases add engine-owned schema.
     #
     # Usage:
     #   rails generate recording_studio_duplicatable:migrations
@@ -42,7 +44,7 @@ module RecordingStudioDuplicatable
 
         migration_files.each do |source_path|
           filename = File.basename(source_path)
-          # Extract migration name without timestamp (e.g., "create_recording_studio_duplicatable_pages.rb")
+          # Extract migration name without timestamp.
           migration_name = filename.sub(/^\d+_/, "")
 
           if options[:skip_existing] && migration_exists?(migration_name)

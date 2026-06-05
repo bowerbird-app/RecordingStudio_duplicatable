@@ -132,12 +132,7 @@ module RecordingStudioDuplicatable
 
             locked.send(:assert_capability!, :duplicatable)
 
-            check_target = locked.parent_recording || locked
-            unless RecordingStudioDuplicatable.authorized?(
-              actor: actor, recording: check_target, role: :edit
-            )
-              raise RecordingStudioDuplicatable::AccessDenied, "Actor does not have :edit access for duplication"
-            end
+            assert_duplication_authorized!(actor: actor, source_recording: locked)
 
             type_name = locked.recordable_type
             type_opts = RecordingStudio.capability_options(:duplicatable, for_type: type_name) || {}
@@ -222,6 +217,7 @@ module RecordingStudioDuplicatable
           filtered_child_recordings(source_recording.child_recordings,
                                     include_children: include_children,
                                     exclude_children: exclude_children).each do |child|
+            assert_duplication_authorized!(actor: actor, source_recording: child)
             dup_child = child.send(:duplicate_recordable, child.recordable)
             reparent_duplicate_recordable!(
               dup_child,
@@ -269,6 +265,15 @@ module RecordingStudioDuplicatable
 
         def normalized_recordable_types(types)
           Array(types).map { |type| type.is_a?(Class) ? type.name : type.to_s }
+        end
+
+        def assert_duplication_authorized!(actor:, source_recording:)
+          authorization_targets = [source_recording, source_recording.parent_recording].compact.uniq
+          return if authorization_targets.all? do |target|
+            RecordingStudioDuplicatable.authorized?(actor: actor, recording: target, role: :edit)
+          end
+
+          raise RecordingStudioDuplicatable::AccessDenied, "Actor does not have :edit access for duplication"
         end
 
         def reparent_duplicate_recordable!(duplicate_recordable, source_parent_recording:, new_parent_recording:)

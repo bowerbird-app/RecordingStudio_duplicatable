@@ -12,6 +12,20 @@ module RecordingStudioDuplicatable
     end
 
     def current_duplication_impersonator
+      resolve_recording_studio_impersonator || resolve_current_impersonator
+    end
+
+    def resolve_recording_studio_impersonator
+      return unless defined?(RecordingStudio)
+      return unless RecordingStudio.respond_to?(:configuration)
+
+      configuration = RecordingStudio.configuration
+      return unless configuration.respond_to?(:impersonator)
+
+      resolve_callable(configuration.impersonator)
+    end
+
+    def resolve_current_impersonator
       return unless defined?(Current)
       return unless Current.respond_to?(:impersonator)
 

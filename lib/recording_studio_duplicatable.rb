@@ -1,5 +1,17 @@
 # frozen_string_literal: true
 
+begin
+  require "recording_studio"
+rescue LoadError
+  nil
+end
+
+begin
+  require "recording_studio_accessible"
+rescue LoadError
+  nil
+end
+
 require "recording_studio_duplicatable/version"
 require "recording_studio_duplicatable/engine"
 require "recording_studio_duplicatable/configuration"
@@ -8,7 +20,8 @@ require "recording_studio_duplicatable/capabilities/duplicatable"
 require "recording_studio_duplicatable/services/duplication_service"
 
 module RecordingStudioDuplicatable
-  class AccessDenied < StandardError; end
+  access_denied_superclass = defined?(::RecordingStudio::AccessDenied) ? ::RecordingStudio::AccessDenied : StandardError
+  AccessDenied = Class.new(access_denied_superclass) unless const_defined?(:AccessDenied, false)
   class MissingDependencyError < StandardError; end
 
   class << self

@@ -20,7 +20,7 @@ unless defined?(RecordingStudio)
     def self.enable_capability(name, on:) = ENABLED_CAPABILITIES[name] << on
     def self.set_capability_options(name, on:, **opts) = (CAPABILITY_OPTIONS_STORE[[name, on]] = opts)
     def self.capability_options(name, for_type:) = CAPABILITY_OPTIONS_STORE[[name, for_type]]
-    def self.register_capability(name, mod = nil, **_options) = (REGISTERED_CAPABILITIES[name] = mod)
+    def self.register_capability(name, mod = nil, **options) = (REGISTERED_CAPABILITIES[name] = { mod: mod, **options })
 
     def self.reset!
       REGISTERED_CAPABILITIES.clear

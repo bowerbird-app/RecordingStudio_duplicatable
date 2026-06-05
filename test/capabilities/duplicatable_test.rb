@@ -274,6 +274,45 @@ module RecordingStudioDuplicatable
         end
       end
 
+      def test_child_duplication_authorizes_source_and_parent_recordings
+        parent = FakeRecording.new(id: 10, recordable: NamedRecordable.new(id: 10, name: "Parent"))
+        recording = FakeRecording.new(
+          id: 11,
+          recordable: NamedRecordable.new(id: 11, name: "Child"),
+          parent_recording: parent
+        )
+        authorized_targets = []
+
+        RecordingStudioDuplicatable.stub(:authorized?, lambda { |recording:, **|
+          authorized_targets << recording
+          true
+        }) do
+          recording.duplicate_in_place!(actor: :user)
+        end
+
+        assert_equal [recording, parent], authorized_targets
+      end
+
+      def test_recursive_child_duplication_fails_when_descendant_edit_is_denied
+        child = FakeRecording.new(
+          id: 20,
+          recordable: NamedRecordable.new(id: 20, name: "Restricted Child"),
+          recordable_type: "NamedRecordable"
+        )
+        source = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          child_recordings: [child]
+        )
+
+        RecordingStudioDuplicatable.stub(:authorized?, lambda { |recording:, **|
+          recording != child
+        }) do
+          assert_raises(RecordingStudioDuplicatable::AccessDenied) do
+            source.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
+          end
+        end
+      end
+
       def test_raises_missing_dependency_error_when_accessible_addon_is_not_loaded
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")

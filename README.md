@@ -27,10 +27,12 @@ Then run the installer if you want the initializer, YAML config, mount, and Tail
 
 ```bash
 bundle install
+bin/rails generate recording_studio:install
+bin/rails generate recording_studio:migrations
 bin/rails generate recording_studio_accessible:install
 bin/rails generate recording_studio_accessible:migrations
-bin/rails db:migrate
 bin/rails generate recording_studio_duplicatable:install
+bin/rails db:migrate
 ```
 
 The installer mounts the engine so host app views can use the built-in duplicate endpoint.
@@ -109,7 +111,8 @@ The built-in controller:
 
 - resolves the actor from your existing Recording Studio actor setup
 - falls back to `Current.actor` when needed
-- passes optional `Current.impersonator`
+- resolves the impersonator from your Recording Studio impersonator setup
+- falls back to `Current.impersonator` when needed
 - relies on the existing duplication API, which performs the standard `RecordingStudioAccessible.authorized?` duplication authorization check
 - redirects back with a notice or alert
 

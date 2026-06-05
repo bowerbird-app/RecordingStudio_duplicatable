@@ -37,10 +37,11 @@ module RecordingStudioDuplicatable
       )
     end
 
-    def test_create_uses_recording_studio_actor_resolver_and_current_impersonator
+    def test_create_uses_recording_studio_actor_and_impersonator_resolvers
       @recording_studio_configuration.actor = -> { :configured_actor }
+      @recording_studio_configuration.impersonator = -> { :configured_impersonator }
       Current.actor = :fallback_actor
-      Current.impersonator = :admin
+      Current.impersonator = :fallback_admin
       recording = build_recording(id: "rec-1", title: "Page (Copy)")
       install_recording_scope(recording)
       captured_args = nil
@@ -58,8 +59,30 @@ module RecordingStudioDuplicatable
 
       assert_redirected_to "/pages/example"
       assert_equal :configured_actor, captured_args[:actor]
-      assert_equal :admin, captured_args[:impersonator]
+      assert_equal :configured_impersonator, captured_args[:impersonator]
       assert_equal %(Created duplicate "Page (Copy)".), flash[:notice]
+    end
+
+    def test_create_falls_back_to_current_impersonator
+      @recording_studio_configuration.actor = -> { :configured_actor }
+      @recording_studio_configuration.impersonator = -> {}
+      Current.impersonator = :admin
+      recording = build_recording(id: "rec-impersonator", title: "Page (Copy)")
+      install_recording_scope(recording)
+      captured_impersonator = nil
+
+      RecordingStudioDuplicatable::Services::DuplicationService.stub(
+        :call,
+        lambda do |**kwargs|
+          captured_impersonator = kwargs[:impersonator]
+          success_result(recording)
+        end
+      ) do
+        post :create, params: { recording_id: "rec-impersonator" }
+      end
+
+      assert_redirected_to "/"
+      assert_equal :admin, captured_impersonator
     end
 
     def test_create_falls_back_to_current_actor
@@ -188,7 +211,7 @@ module RecordingStudioDuplicatable
     def setup_recording_studio
       @recording_studio_defined = Object.const_defined?(:RecordingStudio)
       @original_recording_studio = RecordingStudio if @recording_studio_defined
-      @recording_studio_configuration = Struct.new(:actor).new(-> {})
+      @recording_studio_configuration = Struct.new(:actor, :impersonator).new(-> {}, -> {})
       @recording_class = Class.new
 
       recording_studio = Module.new
