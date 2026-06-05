@@ -13,7 +13,8 @@ module RecordingStudioDuplicatable
 
       RecordingStudio.register_capability(
         :duplicatable,
-        RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
+        RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods,
+        source: "recording_studio_duplicatable"
       )
     end
 
@@ -117,7 +118,7 @@ module RecordingStudioDuplicatable
         # @yield [new_recording] Optional block called with the new Recording after creation
         # @return [RecordingStudio::Recording] The newly created recording
         # @raise [RecordingStudio::CapabilityDisabled] if :duplicatable is not enabled for this type
-        # @raise [RecordingStudio::AccessDenied] if the actor lacks :edit access
+        # @raise [RecordingStudioDuplicatable::AccessDenied] if the actor lacks :edit access
         def duplicate_in_place!(actor:, impersonator: nil, metadata: {},
                                 prefix: :default, suffix: :default,
                                 include_children: :default, exclude_children: :default,
@@ -135,7 +136,7 @@ module RecordingStudioDuplicatable
             unless RecordingStudioDuplicatable.authorized?(
               actor: actor, recording: check_target, role: :edit
             )
-              raise RecordingStudio::AccessDenied, "Actor does not have :edit access for duplication"
+              raise RecordingStudioDuplicatable::AccessDenied, "Actor does not have :edit access for duplication"
             end
 
             type_name = locked.recordable_type

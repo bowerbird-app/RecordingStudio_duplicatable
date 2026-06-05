@@ -30,6 +30,8 @@ class GuidesController < ApplicationController
 
               RecordingStudio.configure do |config|
                 config.actor = -> { Current.actor }
+                config.impersonator = -> { Current.impersonator }
+                config.require_recordable_declarations = true
               end
             RUBY
           }
@@ -43,6 +45,9 @@ class GuidesController < ApplicationController
             language: "ruby",
             code: <<~RUBY
               class Page < ApplicationRecord
+                recording_studio_recordable label: "Page", root: false, allowed_parent_types: ["Workspace"]
+                RecordingStudio.enable_capability(:accessible, on: self)
+
                 include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
                   prefix: nil,
                   suffix: " (Copy)",

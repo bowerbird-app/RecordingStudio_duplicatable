@@ -8,7 +8,6 @@
 # ---------------------------------------------------------------------------
 unless defined?(RecordingStudio)
   module RecordingStudio
-    class AccessDenied < StandardError; end
     class CapabilityDisabled < StandardError; end
 
     # Minimal stub for RecordingStudio::Capability.
@@ -48,8 +47,8 @@ unless defined?(RecordingStudio)
       )
     end
 
-    def self.register_capability(name, mod)
-      REGISTERED_CAPABILITIES[name] = mod
+    def self.register_capability(name, mod = nil, **options)
+      REGISTERED_CAPABILITIES[name] = { mod: mod, **options }
     end
 
     def self.reset!
@@ -269,7 +268,7 @@ module RecordingStudioDuplicatable
         )
 
         RecordingStudioDuplicatable.stub(:authorized?, false) do
-          assert_raises(RecordingStudio::AccessDenied) do
+          assert_raises(RecordingStudioDuplicatable::AccessDenied) do
             recording.duplicate_in_place!(actor: :user)
           end
         end
@@ -786,8 +785,10 @@ module RecordingStudioDuplicatable
       def test_capability_is_registered_with_recording_studio
         assert_equal(
           RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods,
-          RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable]
+          RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable][:mod]
         )
+        assert_equal "recording_studio_duplicatable",
+                     RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable][:source]
       end
 
       # -------------------------------------------------------------------

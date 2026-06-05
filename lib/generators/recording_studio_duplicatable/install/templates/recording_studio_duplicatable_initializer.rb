@@ -10,6 +10,10 @@ RecordingStudioDuplicatable.configure do |config|
   #   bin/rails db:migrate
   # In the host app, keep Recording Studio configured with something like:
   #   config.actor = -> { Current.actor }
+  #   config.impersonator = -> { Current.impersonator }
+  #   config.require_recordable_declarations = true
+  # Add recording_studio_recordable declarations to every configured recordable,
+  # and use RecordingStudioAccessible.grant_access for setup/seed grants.
   # and mount the engine so views can call:
   #   recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id)
   #

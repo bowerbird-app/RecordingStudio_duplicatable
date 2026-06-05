@@ -69,6 +69,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "Built-in capabilities remain disabled"
+    assert_includes initializer_source, "config.impersonator = -> { Current.impersonator }"
+    assert_includes initializer_source, "config.require_recordable_declarations = true"
+    refute_includes initializer_source, "config.include_children"
     assert_match(
       /config\.recordable_types = \[\s*"Workspace", "Page", "Report", "Folder", "Comment"\s*\]/,
       initializer_source
@@ -139,6 +142,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, 'title: "Add capability to recordable"'
     assert_includes controller_source, "recording_studio_accessible:migrations"
     assert_includes controller_source, "bin/rails db:migrate"
+    assert_includes controller_source, "config.require_recordable_declarations = true"
+    assert_includes controller_source, "config.impersonator = -> { Current.impersonator }"
+    assert_includes controller_source, "recording_studio_recordable label: \"Page\""
+    assert_includes controller_source, "RecordingStudio.enable_capability(:accessible, on: self)"
     assert_includes controller_source, 'title: "Approach"'
     assert_includes controller_source, 'title: "General approach"'
     assert_includes(
@@ -351,6 +358,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
   end
 
   def test_dummy_page_report_and_folder_models_configure_child_duplication_rules
+    workspace_model_path = File.expand_path("dummy/app/models/workspace.rb", __dir__)
+    workspace_model_source = File.read(workspace_model_path)
     page_model_path = File.expand_path("dummy/app/models/page.rb", __dir__)
     page_model_source = File.read(page_model_path)
     report_model_path = File.expand_path("dummy/app/models/report.rb", __dir__)
@@ -360,6 +369,16 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     comment_model_path = File.expand_path("dummy/app/models/comment.rb", __dir__)
     comment_model_source = File.read(comment_model_path)
 
+    assert_includes workspace_model_source, 'recording_studio_recordable label: "Workspace", root: true'
+    assert_includes page_model_source, 'recording_studio_recordable label: "Page", root: false'
+    assert_includes report_model_source, 'recording_studio_recordable label: "Report", root: false'
+    assert_includes folder_model_source, 'recording_studio_recordable label: "Folder", root: false'
+    assert_includes comment_model_source, 'recording_studio_recordable label: "Comment", root: false'
+    assert_includes comment_model_source, 'allowed_parent_types: [ "Page", "Report", "Folder" ]'
+    [workspace_model_source, page_model_source, report_model_source, folder_model_source].each do |source|
+      assert_includes source, "RecordingStudio.enable_capability(:accessible, on: self)"
+    end
+    refute_includes comment_model_source, "RecordingStudio.enable_capability(:accessible"
     assert_match(/include_children: \[\s*"Comment"\s*\]/, page_model_source)
     assert_match(/exclude_children: \[\s*"Comment"\s*\]/, report_model_source)
     assert_match(/include_children: \[\s*"Folder", "Comment"\s*\]/, folder_model_source)
@@ -422,6 +441,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes seeds_source, "ensure_folder_recordings!"
     assert_includes seeds_source, "parent_folder: folder"
     assert_includes seeds_source, "parent_recording_id: parent_recording.id"
+    assert_includes seeds_source, "RecordingStudioAccessible.grant_access"
+    refute_includes seeds_source, "RecordingStudio::Access.find_or_create_by!"
   end
 
   def test_dummy_recordable_show_view_lists_children
@@ -457,6 +478,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
+    assert_includes readme_source, "recording_studio/v3.0.0"
+    assert_includes readme_source, 'tag: "0.3.1"'
+    assert_includes readme_source, "recording_studio_recordable"
+    assert_includes readme_source, "RecordingStudioAccessible.grant_access"
     assert_includes readme_source, "bin/rails db:migrate"
     assert_includes readme_source, "duplicate_recording_path(recording_id: recording.id)"
     assert_includes readme_source, "config.actor = -> { Current.actor }"
@@ -479,7 +504,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_path = File.expand_path("../recording_studio_duplicatable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 3.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.3.1"'
   end
 
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint

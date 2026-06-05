@@ -8,6 +8,7 @@ require "recording_studio_duplicatable/capabilities/duplicatable"
 require "recording_studio_duplicatable/services/duplication_service"
 
 module RecordingStudioDuplicatable
+  class AccessDenied < StandardError; end
   class MissingDependencyError < StandardError; end
 
   class << self

@@ -12,5 +12,7 @@ Next steps:
 5. Run bin/rails tailwindcss:build if you use Tailwind CSS.
 6. Mount routes are added at the configured mount path, including the built-in duplicate endpoint.
 7. Keep Recording Studio configured with your current actor, for example `config.actor = -> { Current.actor }`.
-8. Render duplicate buttons with the mounted helper, for example:
+8. Add `recording_studio_recordable` declarations to every configured Recording Studio 3 recordable.
+9. Use `RecordingStudioAccessible.grant_access` for setup and seed access grants.
+10. Render duplicate buttons with the mounted helper, for example:
    `recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id)`

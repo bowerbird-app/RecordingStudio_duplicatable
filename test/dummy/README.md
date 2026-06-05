@@ -8,6 +8,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 - `Current.actor` wiring for Recording Studio events
 - explicit `recording_studio_accessible` setup so duplication authorization comes from `RecordingStudioAccessible.authorized?`
 - the required Recording Studio Accessible install/migration flow before duplication is used
+- Recording Studio 3 `recording_studio_recordable` declarations and `RecordingStudioAccessible.grant_access` seed grants
 - A seeded `Workspace` root recording with child `Page`, `Report`, `Folder`, and `Comment` recordables
 - The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
 - FlatPack layout integration and Tailwind source scanning
