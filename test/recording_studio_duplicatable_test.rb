@@ -59,9 +59,43 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     layout_path = File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__)
     assert File.exist?(layout_path)
 
+    layout_source = File.read(layout_path)
+    assert_includes layout_source, 'data-theme="rounded"'
+    assert_includes layout_source, 'stylesheet_link_tag "tailwind"'
+
     application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
     controller_source = File.read(application_controller_path)
     assert_includes controller_source, "flat_pack_sidebar"
+  end
+
+  def test_dummy_app_stylesheets_link_flatpack_assets_and_remove_custom_theme_overrides
+    application_css_path = File.expand_path("dummy/app/assets/stylesheets/application.css", __dir__)
+    application_css_source = File.read(application_css_path)
+    application_layout_path = File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__)
+    application_layout_source = File.read(application_layout_path)
+    sidebar_layout_path = File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__)
+    sidebar_layout_source = File.read(sidebar_layout_path)
+    tailwind_css_path = File.expand_path("dummy/app/assets/tailwind/application.css", __dir__)
+    tailwind_css_source = File.read(tailwind_css_path)
+    dummy_gemfile_path = File.expand_path("dummy/Gemfile", __dir__)
+    dummy_gemfile_source = File.read(dummy_gemfile_path)
+
+    assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/variables"'
+    assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
+    assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/application"'
+    assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/variables"'
+    assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
+    assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/application"'
+    assert_includes dummy_gemfile_source, 'gem "tailwindcss-rails"'
+    assert_includes tailwind_css_source, '@import "tailwindcss";'
+    assert_includes tailwind_css_source, '@source "../../views";'
+    assert_includes \
+      tailwind_css_source,
+      '@source "../../../../../../usr/local/bundle/ruby/3.3.0/bundler/gems/flatpack-6f51848865fc/app/components";'
+    refute_includes application_css_source, "flat_pack/"
+    refute_includes tailwind_css_source, "@theme {"
+    refute_includes tailwind_css_source, "--color-fp-primary"
+    refute_includes tailwind_css_source, ":root {"
   end
 
   def test_recording_studio_capabilities_are_off_by_default
@@ -106,6 +140,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "duplicate_recording_path_for(report)"
     assert_includes view_source, "duplicate_recording_path_for(folder)"
     assert_includes view_source, "built-in duplication endpoint"
+    refute_includes view_source, 'class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"'
     refute_includes view_source, "style: :error"
     refute_includes view_source, "xl:grid-cols-2"
   end
@@ -268,7 +303,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "FlatPack::Table::Component"
     assert_includes view_source, "section[:list].present?"
     assert_includes view_source, "section[:list][:ordered]"
-    assert_includes view_source, '<ol class="<%= list_classes.join(" ") %>">'
+    assert_includes view_source, '<ol style="margin: 0; padding-left: 1.25rem;">'
     assert_includes view_source, "FlatPack::CodeBlock::Component"
   end
 
@@ -469,6 +504,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "FlatPack::Button::Component"
     assert_includes view_source, "FlatPack::Badge::Component"
+    refute_includes view_source, "tailwindcss:build"
   end
 
   def test_readme_documents_builtin_duplication_endpoint_and_lower_level_apis

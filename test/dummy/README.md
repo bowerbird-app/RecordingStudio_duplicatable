@@ -11,7 +11,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 - Recording Studio 3 `recording_studio_recordable` declarations and `RecordingStudioAccessible.grant_access` seed grants
 - A seeded `Workspace` root recording with child `Page`, `Report`, `Folder`, and `Comment` recordables
 - The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
-- FlatPack layout integration and Tailwind source scanning
+- FlatPack layout integration with the Rounded theme and Tailwind-generated utility layer
 - A page/report/folder duplication demo that posts to the gem-provided duplicate route and shows included vs excluded child copying
 - Sidebar-linked static guides for setup, approach, use, and methods
 
@@ -42,4 +42,4 @@ Then open the app and sign in with:
 
 ## Why This App Exists
 
-Use this app to verify the real addon integration in a host application. If authentication, layout wiring, asset sources, or the recordable duplication flow break here, the addon likely needs adjustment before release.
+Use this app to verify the real addon integration in a host application. If authentication, layout wiring, Tailwind compilation, theme setup, or the recordable duplication flow break here, the addon likely needs adjustment before release.

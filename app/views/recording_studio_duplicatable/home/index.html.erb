@@ -1,32 +1,31 @@
-<div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-12">
+<div style="display: grid; gap: 1.5rem; padding: 1.5rem 0;">
   <%= render FlatPack::PageTitle::Component.new(
     title: "RecordingStudio Duplicatable",
     subtitle: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables.",
     variant: :h1
   ) %>
 
-  <div class="flex flex-wrap gap-2">
+  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
     <%= render FlatPack::Badge::Component.new(text: "Engine mounted", style: :success, size: :sm) %>
     <%= render FlatPack::Badge::Component.new(text: "FlatPack enabled", style: :info, size: :sm) %>
     <%= render FlatPack::Badge::Component.new(text: "Recursive duplication", style: :warning, size: :sm) %>
   </div>
 
-  <div class="grid gap-6 lg:grid-cols-2">
+  <div style="display: grid; gap: 1.5rem;">
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
             title: "What's working",
             subtitle: "Core addon capabilities already wired in.",
-            variant: :h3,
-            class: "mb-0 pb-0"
+            variant: :h3
           ) %>
       <% end %>
 
       <% card.body do %>
-          <ul class="space-y-3 text-sm leading-6">
+          <ul style="margin: 0; padding-left: 1.25rem;">
             <li>Rails engine routes are mounted and responding.</li>
             <li>The behavior-only engine does not add host application tables.</li>
-            <li>Tailwind sources can be wired into a host app through the install generator.</li>
+            <li>FlatPack now drives the dummy app styling directly, including the Rounded theme.</li>
             <li>The dummy app exercises authentication, FlatPack layouts, Recording Studio setup, and live duplication.</li>
           </ul>
       <% end %>
@@ -37,13 +36,12 @@
           <%= render FlatPack::PageTitle::Component.new(
             title: "How to use it",
             subtitle: "The standard path for enabling duplication in a host app.",
-            variant: :h3,
-            class: "mb-0 pb-0"
+            variant: :h3
           ) %>
       <% end %>
 
         <% card.body do %>
-          <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
+          <ol style="margin: 0; padding-left: 1.25rem;">
           <li>Install <code>recording_studio_accessible</code>, run its install + migration generators, and apply its migrations before using duplication.</li>
           <li>Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount.</li>
           <li>Opt the desired recordable types into <code>RecordingStudioDuplicatable::Capabilities::Duplicatable</code>.</li>
@@ -58,29 +56,23 @@
         <%= render FlatPack::PageTitle::Component.new(
           title: "FlatPack usage",
           subtitle: "This page itself now uses FlatPack components for its primary UI structure.",
-          variant: :h3,
-          class: "mb-0 pb-0"
+          variant: :h3
         ) %>
       <% end %>
 
       <% card.body do %>
-        <p class="text-sm leading-6 text-(--surface-content-color)">
+        <p>
           Use FlatPack cards, buttons, badges, inputs, and layout primitives as the default path for addon UI. Keep raw HTML for simple semantic content only.
         </p>
       <% end %>
 
       <% card.footer do %>
-        <%= link_to "View FlatPack documentation",
-                    "https://github.com/bowerbird-app/flatpack",
-                    target: "_blank",
-                    rel: "noopener noreferrer",
-                    class: "inline-flex" do %>
-          <%= render FlatPack::Button::Component.new(
-            text: "View FlatPack documentation",
-            style: :primary,
-            size: :md
-          ) %>
-        <% end %>
+        <%= render FlatPack::Button::Component.new(
+          text: "View FlatPack documentation",
+          style: :primary,
+          size: :md,
+          url: "https://github.com/bowerbird-app/flatpack"
+        ) %>
       <% end %>
     <% end %>
 
@@ -89,18 +81,17 @@
         <%= render FlatPack::PageTitle::Component.new(
           title: "Install flow",
           subtitle: "What the host app generator path covers.",
-          variant: :h3,
-          class: "mb-0 pb-0"
+          variant: :h3
         ) %>
       <% end %>
 
       <% card.body do %>
-        <ul class="space-y-3 text-sm leading-6">
+        <ul style="margin: 0; padding-left: 1.25rem;">
           <li>Add the gem to your host app and run <code>bundle install</code>.</li>
           <li>Run <code>rails generate recording_studio_accessible:install</code>, then <code>rails generate recording_studio_accessible:migrations</code>, then <code>bin/rails db:migrate</code>.</li>
           <li>Run <code>rails generate recording_studio_duplicatable:install</code> to mount the engine and add configuration.</li>
           <li>No RecordingStudio Duplicatable migrations are required; use the install generator for mount and configuration only.</li>
-          <li>Rebuild Tailwind if needed with <code>bin/rails tailwindcss:build</code>.</li>
+          <li>Verify your host app styles do not override the FlatPack tokens you want to keep.</li>
         </ul>
       <% end %>
     <% end %>

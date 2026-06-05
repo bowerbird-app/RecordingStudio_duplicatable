@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-full overflow-hidden overscroll-none">
+<html data-theme="rounded" style="height: 100%; overflow: hidden;">
   <head>
     <title><%= content_for(:title) || "Dummy" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -15,14 +15,15 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "flat_pack/variables", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "flat_pack/rich_text", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "flat_pack/application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="m-0 h-full overflow-hidden overscroll-none bg-[var(--surface-page-background-color)] text-[var(--surface-content-color)]">
+  <body style="margin: 0; height: 100%; overflow: hidden; background: var(--surface-page-background-color); color: var(--surface-content-color);">
     <%= render "layouts/icon_sprite" %>
 
     <%= render FlatPack::SidebarLayout::Component.new(side: :left, storage_key: "flat-pack-sidebar-layout") do |layout| %>
@@ -35,7 +36,7 @@
       <% end %>
 
       <% layout.main do %>
-        <main class="h-full overflow-auto p-6">
+        <main style="height: 100%; overflow: auto; padding: 1.5rem; box-sizing: border-box;">
           <%= yield %>
         </main>
       <% end %>

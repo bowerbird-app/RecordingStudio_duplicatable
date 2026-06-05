@@ -1,4 +1,4 @@
-<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+<div style="display: grid; gap: 1.5rem;">
   <%= render FlatPack::PageTitle::Component.new(
     title: @guide[:title],
     subtitle: @guide[:subtitle],
@@ -6,7 +6,7 @@
   ) %>
 
   <% @guide[:sections].each do |section| %>
-    <div<%= section[:anchor].present? ? %( id="#{section[:anchor]}") : "" %>>
+    <section<%= section[:anchor].present? ? %( id="#{section[:anchor]}") : "" %> style="display: grid; gap: 1rem;">
       <% if section[:title].present? || section[:subtitle].present? %>
         <%= render FlatPack::SectionTitle::Component.new(
           title: section[:title],
@@ -24,17 +24,14 @@
       <% end %>
 
       <% if section[:list].present? %>
-        <% list_classes = ["space-y-3 text-sm leading-6"] %>
         <% if section[:list][:ordered] %>
-          <% list_classes << "list-decimal pl-5" %>
-          <ol class="<%= list_classes.join(" ") %>">
+          <ol style="margin: 0; padding-left: 1.25rem;">
             <% section[:list][:items].each do |item| %>
               <li><%= item %></li>
             <% end %>
           </ol>
         <% else %>
-          <% list_classes << "list-disc pl-5" %>
-          <ul class="<%= list_classes.join(" ") %>">
+          <ul style="margin: 0; padding-left: 1.25rem;">
             <% section[:list][:items].each do |item| %>
               <li><%= item %></li>
             <% end %>
@@ -49,6 +46,6 @@
           language: section[:code_block][:language]
         ) %>
       <% end %>
-    </div>
+    </section>
   <% end %>
 </div>
