@@ -206,6 +206,7 @@ The dummy app in `test/dummy/` demonstrates:
 - root `Workspace` recording setup
 - cards that post to the gem-provided duplicate endpoint
 - the resulting duplicated workspace recordings in the UI
+- FlatPack layout plus Tailwind utilities, with gem sources linked through `tmp/tailwind_scan` so the CSS build is not tied to one Bundler path
 
 Run it with:
 

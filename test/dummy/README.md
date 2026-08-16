@@ -11,7 +11,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 - Recording Studio 3 `recording_studio_recordable` declarations and `RecordingStudioAccessible.grant_access` seed grants
 - A seeded `Workspace` root recording with child `Page`, `Report`, `Folder`, and `Comment` recordables
 - The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
-- FlatPack layout integration with the Rounded theme and Tailwind-generated utility layer
+- FlatPack layout integration with the Rounded theme and a Tailwind utility layer scanned through `tmp/tailwind_scan`
 - A page/report/folder duplication demo that posts to the gem-provided duplicate route and shows included vs excluded child copying
 - Sidebar-linked static guides for setup, approach, use, JSON API, and methods
 
@@ -27,6 +27,12 @@ Then open the app and sign in with:
 
 - Email: `admin@admin.com`
 - Password: `Password`
+
+## Styles
+
+The dummy app uses FlatPack components plus a Tailwind-generated utility layer. Tailwind v4 only emits classes it finds in scanned source files, so the dummy `@source`s `tmp/tailwind_scan/...` instead of a machine-specific Bundler path.
+
+`bin/dev` and `bin/rails tailwindcss:build` run `tailwind:link_gem_sources` first. That task symlinks the installed FlatPack components and Recording Studio views into `tmp/tailwind_scan/` so the CSS build works in Codespaces, local machines, and cloud agent VMs.
 
 ## Useful Routes
 

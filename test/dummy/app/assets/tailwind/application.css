@@ -4,10 +4,10 @@
 @source "../../views";
 
 /* Include RecordingStudio engine views for Tailwind CSS */
-@source "../../vendor/bundle/**/recording_studio/app/views";
+@source "../../../tmp/tailwind_scan/recording_studio/app/views";
 
 /* Scan FlatPack components for utility classes */
-@source "../../../../../../usr/local/bundle/ruby/3.3.0/bundler/gems/flatpack-6f51848865fc/app/components";
+@source "../../../tmp/tailwind_scan/flat_pack/app/components";
 
 /* Include this engine's views in the Tailwind build */
 @source "../../../../../app/views";

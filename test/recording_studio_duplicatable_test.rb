@@ -79,6 +79,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     tailwind_css_source = File.read(tailwind_css_path)
     dummy_gemfile_path = File.expand_path("dummy/Gemfile", __dir__)
     dummy_gemfile_source = File.read(dummy_gemfile_path)
+    dummy_rakefile_source = File.read(File.expand_path("dummy/Rakefile", __dir__))
+    tailwind_gem_sources_task = File.read(
+      File.expand_path("dummy/lib/tasks/tailwind_gem_sources.rake", __dir__)
+    )
 
     assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/variables"'
     assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
@@ -89,9 +93,13 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes dummy_gemfile_source, 'gem "tailwindcss-rails"'
     assert_includes tailwind_css_source, '@import "tailwindcss";'
     assert_includes tailwind_css_source, '@source "../../views";'
-    assert_includes \
-      tailwind_css_source,
-      '@source "../../../../../../usr/local/bundle/ruby/3.3.0/bundler/gems/flatpack-6f51848865fc/app/components";'
+    assert_includes tailwind_css_source, '@source "../../../tmp/tailwind_scan/flat_pack/app/components";'
+    assert_includes tailwind_css_source, '@source "../../../tmp/tailwind_scan/recording_studio/app/views";'
+    assert_includes dummy_rakefile_source, 'tailwindcss:build'
+    assert_includes dummy_rakefile_source, "tailwind:link_gem_sources"
+    assert_includes tailwind_gem_sources_task, "FlatPack::Engine.root.join(\"app/components\")"
+    assert_includes tailwind_gem_sources_task, "RecordingStudio::Engine.root.join(\"app/views\")"
+    refute_includes tailwind_css_source, "/usr/local/bundle/ruby/3.3.0/bundler/gems/flatpack-"
     refute_includes application_css_source, "flat_pack/"
     refute_includes tailwind_css_source, "@theme {"
     refute_includes tailwind_css_source, "--color-fp-primary"
@@ -128,6 +136,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
     assert_includes readme_source, "install Recording Studio Accessible"
+    assert_includes readme_source, "tailwind:link_gem_sources"
+    assert_includes readme_source, "tmp/tailwind_scan"
     refute_includes readme_source, "RecordingStudio::Services::AccessCheck"
     refute_includes readme_source, "/pages/setup"
   end

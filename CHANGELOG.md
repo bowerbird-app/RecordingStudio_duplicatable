@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional Recording Studio API member action for in-place duplication when `recording_studio_api` is installed
 - Host-app allowlist and version-profile documentation for the `duplicate` action
 
+### Fixed
+- Dummy Tailwind build scans FlatPack and Recording Studio through a portable `tmp/tailwind_scan` symlink instead of a Codespaces-only gem path
+
 ## [0.2.0] - 2026-06-05
 
 ### Changed
