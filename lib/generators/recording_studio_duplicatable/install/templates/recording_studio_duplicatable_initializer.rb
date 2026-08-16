@@ -17,6 +17,10 @@ RecordingStudioDuplicatable.configure do |config|
   # and mount the engine so views can call:
   #   recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id)
   #
+  # Optional: if the host app also installs recording_studio_api, this addon
+  # registers a member duplicate action. Allowlist it per type with:
+  #   RecordingStudioApi.register_recordable_type_api("Page", capability_actions: %i[duplicate])
+  #
   # Prefix applied to duplicated names/titles.
   # config.duplication_prefix = "[Copy] "
 

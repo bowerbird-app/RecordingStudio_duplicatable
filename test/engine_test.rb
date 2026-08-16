@@ -117,6 +117,16 @@ class EngineTest < Minitest::Test
     assert_equal 2, to_prepare_blocks.size
   end
 
+  def test_api_initializer_registers_the_duplicate_capability_action
+    registered = false
+
+    RecordingStudioDuplicatable::Api.stub(:register_capability_action!, -> { registered = true }) do
+      find_initializer("recording_studio_duplicatable.register_recording_studio_api_action").block.call
+    end
+
+    assert registered
+  end
+
   def test_capability_initializer_registers_and_applies_capabilities
     recording_class = Class.new
     recording_studio = build_recording_studio_stub(recording_class: recording_class)

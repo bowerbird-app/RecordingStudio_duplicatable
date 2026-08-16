@@ -142,6 +142,60 @@ class GuidesController < ApplicationController
         }
       ]
     },
+    "api" => {
+      title: "Recording Studio API",
+      subtitle: "When the host app also installs Recording Studio API, this addon registers a duplicate action that authenticated API clients can call.",
+      sections: [
+        {
+          anchor: "optional-api",
+          title: "Optional JSON API",
+          subtitle: "Recording Studio API is not required for duplication. Install it in the host app when you want authenticated JSON access to the same in-place duplicate behavior.",
+          code_block: {
+            title: "Host app Gemfile",
+            language: "ruby",
+            code: <<~RUBY
+              gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "0.4.0"
+            RUBY
+          }
+        },
+        {
+          anchor: "allowlist-duplicate",
+          title: "Allowlist the duplicate action",
+          subtitle: "Recording Studio API only exposes custom actions that the host app allowlists for each type.",
+          code_block: {
+            title: "Version profile and type allowlist",
+            language: "ruby",
+            code: <<~RUBY
+              RecordingStudioApi.configure do |config|
+                config.api_versions = %w[v1]
+                config.default_api_version = "v1"
+
+                config.version "v1" do |api|
+                  api.use :duplicatable, "~> 1.0"
+                end
+              end
+
+              RecordingStudioApi.register_recordable_type_api("Page", capability_actions: %i[duplicate])
+            RUBY
+          }
+        },
+        {
+          anchor: "duplicate-endpoint",
+          title: "Call duplicate",
+          subtitle: "Post to the member action. An empty body uses the type's prefix, suffix, and child-copy defaults.",
+          code_block: {
+            title: "Member action",
+            language: "http",
+            code: <<~HTTP
+              POST /recording_studio_api/api/v1/pages/:id/actions/duplicate
+              Content-Type: application/json
+
+              { "suffix": " (Copy)" }
+            HTTP
+          }
+        }
+      ]
+    },
     "methods" => {
       title: "Methods",
       subtitle: "The built-in endpoint is the simple option. The service and recording APIs are still there for custom workflows.",
@@ -170,6 +224,10 @@ class GuidesController < ApplicationController
               {
                 method: "RecordingStudioDuplicatable::Services::DuplicationService.call(recording:, actor:, ...)",
                 purpose: "Use the wrapped Result object in controllers and services"
+              },
+              {
+                method: "POST /recording_studio_api/api/v1/:resource/:id/actions/duplicate",
+                purpose: "Optional JSON duplicate action when Recording Studio API is installed"
               }
             ]
           }

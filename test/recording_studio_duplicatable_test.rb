@@ -120,6 +120,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "Page`, `Report`, `Folder`, and `Comment`"
     assert_includes readme_source, "/guides/setup"
     assert_includes readme_source, "/guides/approach"
+    assert_includes readme_source, "/guides/use"
+    assert_includes readme_source, "/guides/api"
+    assert_includes readme_source, "/guides/methods"
     assert_includes readme_source, "gem-provided duplicate route"
     assert_includes readme_source, "included vs excluded child copying"
     assert_includes readme_source, "recording_studio_accessible"
@@ -168,6 +171,14 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes controller_source, '"setup"'
     assert_includes controller_source, '"approach"'
     assert_includes controller_source, '"methods"'
+    assert_includes controller_source, '"api"'
+    assert_includes controller_source, 'anchor: "optional-api"'
+    assert_includes controller_source, 'anchor: "allowlist-duplicate"'
+    assert_includes controller_source, 'anchor: "duplicate-endpoint"'
+    assert_includes controller_source, 'title: "Recording Studio API"'
+    assert_includes controller_source, 'title: "Optional JSON API"'
+    assert_includes controller_source, "capability_actions: %i[duplicate]"
+    assert_includes controller_source, "/recording_studio_api/api/v1/pages/:id/actions/duplicate"
     assert_includes controller_source, 'anchor: "accessible-install"'
     assert_includes controller_source, 'anchor: "mount-and-actor-setup"'
     assert_includes controller_source, 'anchor: "capability"'
@@ -243,6 +254,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
       "recording = RecordingStudio::Recording.find_by!(recordable: page)"
     )
     assert_includes controller_source, "RecordingStudioDuplicatable::Services::DuplicationService.call"
+    assert_includes(
+      controller_source,
+      "POST /recording_studio_api/api/v1/:resource/:id/actions/duplicate"
+    )
     assert_includes(
       controller_source,
       "redirect_to page_path(duplicate_recording.recordable.slug), notice: " \
@@ -445,6 +460,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes sidebar_source, 'href: guide_path("setup")'
     assert_includes sidebar_source, 'href: guide_path("approach")'
     assert_includes sidebar_source, 'href: guide_path("use")'
+    assert_includes sidebar_source, 'href: guide_path("api")'
     assert_includes sidebar_source, 'href: guide_path("methods")'
     refute_includes sidebar_source, "page_path("
   end
@@ -524,8 +540,23 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "DuplicationService.call"
     assert_includes readme_source, "duplicate_in_place!"
     assert_includes readme_source, "host app `ApplicationController`"
+    assert_includes readme_source, "Optional Recording Studio API action"
+    assert_includes readme_source, "capability_actions: %i[duplicate]"
+    assert_includes readme_source, "/recording_studio_api/api/v1/pages/:id/actions/duplicate"
+    assert_includes readme_source, "docs/recording_studio_duplicatable/API.md"
     refute_includes readme_source, "RecordingStudio::Services::AccessCheck"
     refute_includes readme_source, "AccessCheck.allowed?"
+  end
+
+  def test_api_docs_describe_optional_duplicate_member_action
+    api_docs_path = File.expand_path("../docs/recording_studio_duplicatable/API.md", __dir__)
+    api_docs_source = File.read(api_docs_path)
+
+    assert_includes api_docs_source, "RecordingStudioApi.register_recordable_type_api"
+    assert_includes api_docs_source, "capability_actions: %i[duplicate]"
+    assert_includes api_docs_source, "api.use :duplicatable, \"~> 1.0\""
+    assert_includes api_docs_source, "/recording_studio_api/api/v1/pages/:id/actions/duplicate"
+    assert_includes api_docs_source, "duplicate_in_place!"
   end
 
   def test_update_summary_documents_recording_studio_accessible_authorization_api
@@ -542,6 +573,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 3.0"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.3.1"'
+    refute_includes gemspec_source, 'spec.add_dependency "recording_studio_api"'
   end
 
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint

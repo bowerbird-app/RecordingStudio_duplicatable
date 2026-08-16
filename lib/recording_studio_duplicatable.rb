@@ -18,6 +18,7 @@ require "recording_studio_duplicatable/configuration"
 require "recording_studio_duplicatable/services/base_service"
 require "recording_studio_duplicatable/capabilities/duplicatable"
 require "recording_studio_duplicatable/services/duplication_service"
+require "recording_studio_duplicatable/api"
 
 module RecordingStudioDuplicatable
   access_denied_superclass = defined?(::RecordingStudio::AccessDenied) ? ::RecordingStudio::AccessDenied : StandardError
