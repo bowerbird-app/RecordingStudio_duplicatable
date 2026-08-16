@@ -28,12 +28,16 @@ Metrics/MethodLength:
     - 'lib/generators/**/*'
     - 'lib/recording_studio_duplicatable/capabilities/duplicatable.rb'
     - 'lib/recording_studio_duplicatable/services/duplication_service.rb'
+    - 'lib/recording_studio_duplicatable/api.rb'
+    - 'lib/recording_studio_duplicatable/api/duplicate_recording.rb'
 
 Metrics/AbcSize:
   Exclude:
     - 'test/**/*'
     - 'lib/generators/**/*'
     - 'lib/recording_studio_duplicatable/capabilities/duplicatable.rb'
+    - 'lib/recording_studio_duplicatable/api.rb'
+    - 'lib/recording_studio_duplicatable/api/duplicate_recording.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:

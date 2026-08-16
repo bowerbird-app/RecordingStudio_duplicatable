@@ -96,6 +96,8 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes initializer_template, "recording_studio_recordable"
     assert_includes initializer_template, "RecordingStudioAccessible.grant_access"
     assert_includes initializer_template, "bin/rails db:migrate"
+    assert_includes initializer_template, "recording_studio_api"
+    assert_includes initializer_template, "capability_actions: %i[duplicate]"
   end
 
   def test_install_docs_mention_builtin_duplicate_endpoint
@@ -116,6 +118,7 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes install_template, "recording_studio_recordable"
     assert_includes install_template, "RecordingStudioAccessible.grant_access"
     assert_includes install_template, "bin/rails db:migrate"
+    assert_includes install_template, "recording_studio_api"
   end
 
   def test_migrations_generator_has_no_behavior_only_schema_to_copy

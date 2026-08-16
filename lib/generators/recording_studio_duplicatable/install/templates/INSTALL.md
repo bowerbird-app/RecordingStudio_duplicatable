@@ -18,3 +18,5 @@ Next steps:
 10. Use `RecordingStudioAccessible.grant_access` for setup and seed access grants.
 11. Render duplicate buttons with the mounted helper, for example:
    `recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id)`
+12. Optional: install `recording_studio_api` in the host app if you want the JSON
+   `duplicate` member action. Allowlist it per type; this gem does not require the API engine.

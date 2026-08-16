@@ -94,6 +94,11 @@ module RecordingStudioDuplicatable
       RecordingStudioDuplicatable::Hooks.run(:after_initialize, self)
     end
 
+    initializer "recording_studio_duplicatable.register_recording_studio_api_action",
+                before: "recording_studio_api.after_initialize" do
+      RecordingStudioDuplicatable::Api.register_capability_action!
+    end
+
     initializer "recording_studio_duplicatable.apply_recording_studio_capabilities",
                 after: "recording_studio.after_initialize" do
       RecordingStudioDuplicatable.apply_recording_studio_capabilities!

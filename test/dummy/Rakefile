@@ -4,3 +4,10 @@
 require_relative "config/application"
 
 Rails.application.load_tasks
+
+%w[tailwindcss:build tailwindcss:watch].each do |task_name|
+  next unless Rake::Task.task_defined?(task_name)
+
+  Rake::Task[task_name].enhance(["tailwind:link_gem_sources"])
+end
+

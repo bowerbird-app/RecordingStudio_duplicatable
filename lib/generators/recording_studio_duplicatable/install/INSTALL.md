@@ -21,5 +21,6 @@ To use the engine:
    for example `config.actor = -> { Current.actor }`
 8. Add `recording_studio_recordable` declarations to every configured Recording Studio 3 recordable.
 9. Use `RecordingStudioAccessible.grant_access` for setup and seed access grants.
+10. Optional: install `recording_studio_api` if you want the JSON duplicate member action.
 
 ===============================================================================

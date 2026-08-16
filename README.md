@@ -11,6 +11,7 @@
 - Recursively duplicates descendant recordings when child copying is enabled
 - Uses Recording Studio Accessible for duplication authorization while preserving parent/root recording relationships
 - Ships with a built-in duplication controller and route for simple buttons/links
+- Registers an optional Recording Studio API `duplicate` member action when `recording_studio_api` is installed
 - Exposes a small controller-friendly `DuplicationService`
 
 ## Installation
@@ -151,6 +152,40 @@ result = RecordingStudioDuplicatable::Services::DuplicationService.call(
 
 The lower-level recording and service APIs remain available for apps that want custom redirects, response formats, or extra side effects.
 
+### Optional Recording Studio API action
+
+This gem works without Recording Studio API. When the host app installs `recording_studio_api`,
+Duplicatable registers a member `duplicate` action for types that enable `:duplicatable`. The host
+must also allowlist `:duplicate` on each type that should expose it:
+
+```ruby
+gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "0.4.0"
+```
+
+```ruby
+RecordingStudioApi.configure do |config|
+  config.api_versions = %w[v1]
+  config.default_api_version = "v1"
+
+  config.version "v1" do |api|
+    api.use :duplicatable, "~> 1.0"
+  end
+end
+
+RecordingStudioApi.register_recordable_type_api("Page", capability_actions: %i[duplicate])
+```
+
+Clients then post to the Recording Studio API member-action route:
+
+```http
+POST /recording_studio_api/api/v1/pages/:id/actions/duplicate
+```
+
+The request body may be empty. Optional `prefix`, `suffix`, `include_children`, and
+`exclude_children` override the type defaults for that call. See
+[docs/recording_studio_duplicatable/API.md](docs/recording_studio_duplicatable/API.md) for named APIs,
+OpenAPI notes, and authorization details.
+
 ## Behavior notes
 
 - Duplication is wrapped in a transaction with row locking
@@ -171,6 +206,7 @@ The dummy app in `test/dummy/` demonstrates:
 - root `Workspace` recording setup
 - cards that post to the gem-provided duplicate endpoint
 - the resulting duplicated workspace recordings in the UI
+- FlatPack layout plus Tailwind utilities, with gem sources linked through `tmp/tailwind_scan` so the CSS build is not tied to one Bundler path
 
 Run it with:
 

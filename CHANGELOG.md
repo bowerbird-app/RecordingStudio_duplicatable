@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-16
+
+### Added
+- Optional Recording Studio API member action for in-place duplication when `recording_studio_api` is installed
+- Host-app allowlist and version-profile documentation for the `duplicate` action
+
+### Fixed
+- Dummy Tailwind build scans FlatPack and Recording Studio through a portable `tmp/tailwind_scan` symlink instead of a Codespaces-only gem path
+
 ## [0.2.0] - 2026-06-05
 
 ### Changed
@@ -34,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/releases/tag/v0.1.0
