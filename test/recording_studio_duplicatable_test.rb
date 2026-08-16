@@ -95,7 +95,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes tailwind_css_source, '@source "../../views";'
     assert_includes tailwind_css_source, '@source "../../../tmp/tailwind_scan/flat_pack/app/components";'
     assert_includes tailwind_css_source, '@source "../../../tmp/tailwind_scan/recording_studio/app/views";'
-    assert_includes dummy_rakefile_source, 'tailwindcss:build'
+    assert_includes dummy_rakefile_source, "tailwindcss:build"
     assert_includes dummy_rakefile_source, "tailwind:link_gem_sources"
     assert_includes tailwind_gem_sources_task, "FlatPack::Engine.root.join(\"app/components\")"
     assert_includes tailwind_gem_sources_task, "RecordingStudio::Engine.root.join(\"app/views\")"
