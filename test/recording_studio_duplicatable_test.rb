@@ -87,11 +87,14 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
     assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/application"'
     assert_includes dummy_gemfile_source, 'gem "tailwindcss-rails"'
-    assert_includes tailwind_css_source, '@import "tailwindcss";'
-    assert_includes tailwind_css_source, '@source "../../views";'
+    assert_includes tailwind_css_source, '@import "tailwindcss" source(none);'
+    assert_includes tailwind_css_source, '@source "../../views/**/*.erb";'
     assert_includes \
       tailwind_css_source,
-      '@source "../../../../../../usr/local/bundle/ruby/3.3.0/bundler/gems/flatpack-6f51848865fc/app/components";'
+      '@source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components/**/*.rb";'
+    assert_includes \
+      tailwind_css_source,
+      "mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb"
     refute_includes application_css_source, "flat_pack/"
     refute_includes tailwind_css_source, "@theme {"
     refute_includes tailwind_css_source, "--color-fp-primary"
@@ -514,10 +517,11 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
-    assert_includes readme_source, "recording_studio/v3.0.0"
-    assert_includes readme_source, 'tag: "0.3.1"'
+    assert_includes readme_source, 'tag: "v4.0.0"'
+    assert_includes readme_source, 'tag: "v0.6.0"'
     assert_includes readme_source, "recording_studio_recordable"
     assert_includes readme_source, "RecordingStudioAccessible.grant_access"
+    assert_includes readme_source, "access_actor_types"
     assert_includes readme_source, "bin/rails db:migrate"
     assert_includes readme_source, "duplicate_recording_path(recording_id: recording.id)"
     assert_includes readme_source, "config.actor = -> { Current.actor }"
@@ -540,8 +544,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_path = File.expand_path("../recording_studio_duplicatable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 3.0"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.3.1"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.6"'
   end
 
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint

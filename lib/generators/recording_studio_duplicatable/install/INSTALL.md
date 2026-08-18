@@ -19,7 +19,7 @@ To use the engine:
    `recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id)`
 7. Make sure your host app still provides the current actor through Recording Studio,
    for example `config.actor = -> { Current.actor }`
-8. Add `recording_studio_recordable` declarations to every configured Recording Studio 3 recordable.
+8. Add `recording_studio_recordable` declarations to every configured Recording Studio 4 recordable.
 9. Use `RecordingStudioAccessible.grant_access` for setup and seed access grants.
 
 ===============================================================================
