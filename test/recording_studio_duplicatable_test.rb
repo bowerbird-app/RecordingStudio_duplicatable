@@ -94,7 +94,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
       '@source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components/**/*.rb";'
     assert_includes \
       tailwind_css_source,
-      '@source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb";'
+      "mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb"
     refute_includes application_css_source, "flat_pack/"
     refute_includes tailwind_css_source, "@theme {"
     refute_includes tailwind_css_source, "--color-fp-primary"
