@@ -20,6 +20,10 @@ RecordingStudio.configure do |config|
   # Recordable duplication strategy for revisions
   config.recordable_dup_strategy = :dup
 
+  # RecordingStudio 4 production write hardening (enabled for the demo too).
+  config.require_actor = true if config.respond_to?(:require_actor=)
+  config.max_metadata_bytes = 16_384 if config.respond_to?(:max_metadata_bytes=)
+
   # Built-in capabilities remain disabled until you opt a recordable type into
   # them by including the relevant RecordingStudio capability module.
 end

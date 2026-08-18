@@ -18,8 +18,8 @@
 Add Recording Studio core, Recording Studio Accessible, and this addon to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "recording_studio/v3.0.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "0.3.1"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.0.0"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.6.0"
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
@@ -37,7 +37,9 @@ bin/rails db:migrate
 
 The installer mounts the engine so host app views can use the built-in duplicate endpoint.
 Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?` from the extracted access addon.
+Configure `RecordingStudioAccessible.configure { |c| c.access_actor_types = ["User"] }` (or your actor types) before granting access — blank allowlists reject new grants since Accessible 0.5.0.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
+RecordingStudio 4 also installs a harden migration for unique root recordings and composite indexes — run `recording_studio:migrations` and migrate before relying on writes under concurrency.
 
 ## Opting a model into duplication
 
@@ -80,7 +82,7 @@ RecordingStudioDuplicatable.configure do |config|
 end
 ```
 
-Recording Studio 3 requires every configured recordable to declare its hierarchy.
+Recording Studio 4 requires every configured recordable to declare its hierarchy.
 Root recordables use `root: true`; child recordables use `root: false` with
 `allowed_parent_types`. Enable `:accessible` on recordables that should accept
 direct access grants from Recording Studio Accessible.

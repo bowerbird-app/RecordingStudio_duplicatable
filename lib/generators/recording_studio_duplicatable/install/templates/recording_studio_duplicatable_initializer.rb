@@ -14,6 +14,7 @@ RecordingStudioDuplicatable.configure do |config|
   #   config.require_recordable_declarations = true
   # Add recording_studio_recordable declarations to every configured recordable,
   # and use RecordingStudioAccessible.grant_access for setup/seed grants.
+  # Configure RecordingStudioAccessible access_actor_types before granting access.
   # and mount the engine so views can call:
   #   recording_studio_duplicatable.duplicate_recording_path(recording_id: recording.id)
   #

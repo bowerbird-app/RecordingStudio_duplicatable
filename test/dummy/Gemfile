@@ -4,9 +4,12 @@ source "https://rubygems.org"
 gem "recording_studio_duplicatable", path: "../.."
 
 # RecordingStudio engine
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "recording_studio/v3.0.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible",
-                                   tag: "0.3.1"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.0.0"
+# Accessible 0.6.0 (RecordingStudio 4 support) — switch to tag "v0.6.0" once released.
+# See https://github.com/bowerbird-app/RecordingStudio_accessible/pull/13
+gem "recording_studio_accessible",
+    github: "bowerbird-app/RecordingStudio_accessible",
+    ref: "fd297891275d60998e5c7b7b250fc24505f7c469"
 
 # Devise authentication
 gem "devise"
@@ -32,7 +35,7 @@ gem "jbuilder"
 gem "tailwindcss-rails"
 
 # FlatPack UI component library [https://github.com/bowerbird-app/flatpack]
-gem "flat_pack", github: "bowerbird-app/flatpack"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.129"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -60,6 +63,9 @@ gem "image_processing", "~> 1.2"
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+
+  # Object#stub helpers for Minitest 6 (pulled in by Rails 8.1.3+)
+  gem "minitest-mock"
 
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
