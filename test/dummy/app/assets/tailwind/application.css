@@ -1,16 +1,23 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
 
-/* Include dummy app views for Tailwind CSS */
-@source "../../views";
+/* Scan FlatPack components so utility classes defined in Ruby constants are generated. */
+@source "../../../vendor/bundle/**/bundler/gems/flatpack-*/app/components/**/*.rb";
+@source "../../../vendor/bundle/**/bundler/gems/flatpack-*/app/components/**/*.erb";
+@source "../../../../../vendor/bundle/**/bundler/gems/flatpack-*/app/components/**/*.rb";
+@source "../../../../../vendor/bundle/**/bundler/gems/flatpack-*/app/components/**/*.erb";
+@source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components/**/*.rb";
+@source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components/**/*.erb";
+@source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb";
+@source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.erb";
 
-/* Include RecordingStudio engine views for Tailwind CSS */
-@source "../../vendor/bundle/**/recording_studio*/app/views";
-@source "../../vendor/bundle/**/RecordingStudio*/app/views";
-@source "../../../../../../usr/local/bundle/**/bundler/gems/RecordingStudio*/app/views";
+/* Scan companion engine views used by the dummy app. */
+@source "../../../vendor/bundle/**/bundler/gems/RecordingStudio*/app/views/**/*.erb";
+@source "../../../../../vendor/bundle/**/bundler/gems/RecordingStudio*/app/views/**/*.erb";
+@source "../../../../../../usr/local/bundle/**/bundler/gems/RecordingStudio*/app/views/**/*.erb";
+@source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/RecordingStudio*/app/views/**/*.erb";
 
-/* Scan FlatPack components for utility classes */
-@source "../../vendor/bundle/**/bundler/gems/flatpack-*/app/components";
-@source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components";
-
-/* Include this engine's views in the Tailwind build */
-@source "../../../../../app/views";
+/* Dummy app and this engine. */
+@source "../../views/**/*.erb";
+@source "../../components/**/*.{rb,erb}";
+@source "../../../../../app/views/**/*.erb";
+@source "../../../../../app/components/**/*.{rb,erb}";

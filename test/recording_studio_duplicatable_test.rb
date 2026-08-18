@@ -87,11 +87,14 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
     assert_includes sidebar_layout_source, 'stylesheet_link_tag "flat_pack/application"'
     assert_includes dummy_gemfile_source, 'gem "tailwindcss-rails"'
-    assert_includes tailwind_css_source, '@import "tailwindcss";'
-    assert_includes tailwind_css_source, '@source "../../views";'
+    assert_includes tailwind_css_source, '@import "tailwindcss" source(none);'
+    assert_includes tailwind_css_source, '@source "../../views/**/*.erb";'
     assert_includes \
       tailwind_css_source,
-      '@source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components";'
+      '@source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components/**/*.rb";'
+    assert_includes \
+      tailwind_css_source,
+      '@source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb";'
     refute_includes application_css_source, "flat_pack/"
     refute_includes tailwind_css_source, "@theme {"
     refute_includes tailwind_css_source, "--color-fp-primary"
