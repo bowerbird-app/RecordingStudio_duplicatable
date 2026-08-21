@@ -1,14 +1,22 @@
-<div style="display: grid; gap: 1.5rem;">
+<% recording_studio_page_nav(
+  title: recordable_title(@recordable),
+  page_nav_back_url: root_path,
+  page_nav_back_label: "Back to copies"
+) %>
+
+<%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
   <%= render FlatPack::PageTitle::Component.new(
     title: recordable_title(@recordable),
     subtitle: recordable_subtitle(@recordable),
     variant: :h1
   ) %>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-    <%= render FlatPack::Badge::Component.new(text: @recordable_type_label, style: :info, size: :sm) %>
-    <%= render FlatPack::Badge::Component.new(text: "#{@child_recordings.size} children", style: :default, size: :sm) %>
-  </div>
+  <%= render FlatPack::Grid::Component.new(cols: 1, gap: :sm) do %>
+    <div class="flex flex-wrap gap-2">
+      <%= render FlatPack::Badge::Component.new(text: @recordable_type_label, style: :info, size: :sm) %>
+      <%= render FlatPack::Badge::Component.new(text: "#{@child_recordings.size} children", style: :default, size: :sm) %>
+    </div>
+  <% end %>
 
   <% if @recordable.is_a?(Folder) && @child_folder_recordings.any? %>
     <%= render FlatPack::SectionTitle::Component.new(
@@ -34,4 +42,4 @@
     <% table.column(title: "Title", html: ->(child_recording) { child_recording_title(child_recording) }) %>
     <% table.column(title: "Open", html: ->(child_recording) { child_recording_link(child_recording) }) %>
   <% end %>
-</div>
+<% end %>

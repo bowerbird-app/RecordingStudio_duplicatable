@@ -6,6 +6,12 @@ rescue LoadError
   nil
 end
 
+begin
+  require "recording_studio/capabilities"
+rescue LoadError
+  nil
+end
+
 module RecordingStudioDuplicatable
   class << self
     def register_recording_studio_capability!
@@ -26,64 +32,65 @@ module RecordingStudioDuplicatable
       RecordingStudio.apply_capabilities!
     end
   end
+end
 
+module RecordingStudio
   module Capabilities
     # Duplicatable capability for RecordingStudio recordable models.
     #
     # Enables in-place duplication of a recording and its recordable, with
     # optional prefix/suffix renaming and selective child recording duplication.
     #
-    # == Direct include (uses global RecordingStudioDuplicatable.configuration defaults)
+    # Installing this gem does not enable the capability. Hosts opt each
+    # recordable type in explicitly:
     #
     #   class Page < ApplicationRecord
-    #     include RecordingStudioDuplicatable::Capabilities::Duplicatable
-    #   end
-    #
-    # == Factory method (per-type options override global config)
-    #
-    #   class Page < ApplicationRecord
-    #     include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
+    #     include RecordingStudio::Capabilities::Duplicatable.to(
     #       prefix: nil,
     #       suffix: " (Copy)",
-    #       include_children: nil,
+    #       include_children: ["Comment"],
     #       exclude_children: nil
     #     )
     #   end
     #
+    # Bare include and `.with(...)` remain aliases of `.to` / `include_for`.
+    #
     module Duplicatable
       extend ActiveSupport::Concern
 
+      ALLOWED_OPTIONS = %i[prefix suffix include_children exclude_children].freeze
+
       included do
-        RecordingStudio.enable_capability(:duplicatable, on: name) if defined?(RecordingStudio)
+        include ::RecordingStudio::Capabilities::Duplicatable.to
       end
 
-      # Returns a Module that, when included in a recordable model, enables the
-      # :duplicatable capability with per-type options that override the global
-      # RecordingStudioDuplicatable.configuration defaults.
-      #
-      # @param prefix [String, nil] String prepended to the duplicate's name/title
-      # @param suffix [String, nil] String appended to the duplicate's name/title
-      # @param include_children [Array<String,Class>, nil] Only duplicate these child types
-      # @param exclude_children [Array<String,Class>, nil] Duplicate all children EXCEPT these types
-      # @return [Module]
-      def self.with(prefix: nil, suffix: " (Copy)", include_children: nil, exclude_children: nil)
-        type_opts = {
-          prefix: prefix,
-          suffix: suffix,
-          include_children: include_children,
-          exclude_children: exclude_children
-        }
-
-        Module.new do
-          extend ActiveSupport::Concern
-
-          included do
-            if defined?(RecordingStudio)
-              RecordingStudio.enable_capability(:duplicatable, on: name)
-              RecordingStudio.set_capability_options(:duplicatable, on: name, **type_opts)
-            end
-          end
+      class << self
+        # Returns a Module that, when included in a recordable model, enables the
+        # :duplicatable capability through RecordingStudio::Capabilities.include_for.
+        # Per-type options override the global RecordingStudioDuplicatable.configuration
+        # defaults. Does not register the capability.
+        #
+        # @param prefix [String, nil] String prepended to the duplicate's name/title
+        # @param suffix [String, nil] String appended to the duplicate's name/title
+        # @param include_children [Array<String,Class>, nil] Only duplicate these child types
+        # @param exclude_children [Array<String,Class>, nil] Duplicate all children EXCEPT these types
+        # @return [Module]
+        def to(**options)
+          validate_options!(options)
+          RecordingStudio::Capabilities.include_for(:duplicatable, **options)
         end
+
+        alias with to
+
+        def validate_options!(options)
+          unknown = options.keys - ALLOWED_OPTIONS
+          return if unknown.empty?
+
+          raise ArgumentError,
+                "unknown Duplicatable option(s): #{unknown.map { |key| "#{key}:" }.join(', ')}. " \
+                "Use prefix:, suffix:, include_children:, or exclude_children:."
+        end
+        private :validate_options!
       end
 
       # Methods mixed into RecordingStudio::Recording via register_capability.
@@ -303,6 +310,12 @@ module RecordingStudioDuplicatable
         end
       end
     end
+  end
+end
+
+module RecordingStudioDuplicatable
+  module Capabilities
+    Duplicatable = ::RecordingStudio::Capabilities::Duplicatable
   end
 end
 

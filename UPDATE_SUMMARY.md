@@ -6,7 +6,7 @@ This branch updates RecordingStudio Duplicatable for RecordingStudio 4 and Recor
 
 ## Dependency state
 
-- `recording_studio` is pinned to tag `v4.0.0` and declared as a runtime dependency with `~> 4.0`.
+- `recording_studio` is pinned to tag `v4.2.0` and declared as a runtime dependency with `~> 4.2`.
 - `recording_studio_accessible` is pinned to the RecordingStudio 4 support commit (`fd29789…`, version `0.6.0`) until `v0.6.0` is tagged, and declared as a runtime dependency with `~> 0.6`.
 - The dummy app pins FlatPack `v0.1.129`.
 - Engine and dummy lockfiles should resolve Rails `8.1.x` with `minitest-mock` for Minitest 6 `Object#stub` helpers.

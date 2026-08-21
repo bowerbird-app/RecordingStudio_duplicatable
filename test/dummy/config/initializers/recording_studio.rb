@@ -23,7 +23,8 @@ RecordingStudio.configure do |config|
   # RecordingStudio 4 production write hardening (enabled for the demo too).
   config.require_actor = true if config.respond_to?(:require_actor=)
   config.max_metadata_bytes = 16_384 if config.respond_to?(:max_metadata_bytes=)
+  config.app_name = "Duplicatable Demo" if config.respond_to?(:app_name=)
 
   # Built-in capabilities remain disabled until you opt a recordable type into
-  # them by including the relevant RecordingStudio capability module.
+  # them with include RecordingStudio::Capabilities::Duplicatable.to(**opts).
 end

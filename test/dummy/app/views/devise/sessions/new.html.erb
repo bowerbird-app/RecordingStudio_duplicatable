@@ -1,50 +1,53 @@
-<%= render FlatPack::Card::Component.new(style: :default) do |card| %>
-  <% card.header do %>
-    <%= render FlatPack::PageTitle::Component.new(
-      title: "Sign In",
-      variant: :h2
-    ) %>
-  <% end %>
+<%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, class: "mx-auto w-full max-w-md px-4 py-12") do %>
+  <%= render FlatPack::Card::Component.new(style: :elevated, padding: :none) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::SectionTitle::Component.new(title: "Log in", class: "my-0") %>
+    <% end %>
 
-  <% card.body do %>
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-      <div style="display: grid; gap: 1rem;">
+    <% card.body do %>
+      <%= form_with(model: resource, as: resource_name, url: session_path(resource_name), data: { turbo: false }, class: "space-y-4") do |f| %>
         <%= render FlatPack::EmailInput::Component.new(
           name: "user[email]",
           label: "Email",
           value: "admin@admin.com",
-          placeholder: "you@example.com"
+          placeholder: "you@example.com",
+          required: true,
+          autofocus: true,
+          autocomplete: "email"
         ) %>
 
         <%= render FlatPack::PasswordInput::Component.new(
           name: "user[password]",
           label: "Password",
           value: "Password",
-          required: true
+          required: true,
+          autocomplete: "current-password"
         ) %>
 
-        <% if devise_mapping.rememberable? %>
-          <%= render FlatPack::Checkbox::Component.new(
-            name: "#{resource_name}[remember_me]",
-            label: "Remember me"
+        <%= render FlatPack::Grid::Component.new(cols: 1, gap: :md) do %>
+          <% if devise_mapping.rememberable? %>
+            <%= render FlatPack::Checkbox::Component.new(
+              name: "#{resource_name}[remember_me]",
+              label: "Remember me"
+            ) %>
+          <% end %>
+
+          <%= render FlatPack::Button::Component.new(
+            text: "Log in",
+            style: :primary,
+            size: :md,
+            type: "submit"
           ) %>
         <% end %>
-
-        <%= render FlatPack::Button::Component.new(
-          text: "Sign In",
-          style: :primary,
-          size: :md,
-          type: "submit"
-        ) %>
-      </div>
+      <% end %>
     <% end %>
-  <% end %>
 
-  <% card.footer do %>
-    <%= render FlatPack::Badge::Component.new(
-      text: "Default: admin@admin.com / Password",
-      style: :info,
-      size: :sm
-    ) %>
+    <% card.footer do %>
+      <%= render FlatPack::Badge::Component.new(
+        text: "Demo login: admin@admin.com / Password",
+        style: :info,
+        size: :sm
+      ) %>
+    <% end %>
   <% end %>
 <% end %>
