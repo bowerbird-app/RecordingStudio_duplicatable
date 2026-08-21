@@ -24,12 +24,16 @@ unless defined?(RecordingStudio)
     ENABLED_CAPABILITIES      = Hash.new { |h, k| h[k] = [] }
     CAPABILITY_OPTIONS_STORE  = {}
 
+    def self.recordable_type_name(type)
+      type.is_a?(Class) ? type.name.to_s : type.to_s
+    end
+
     def self.enable_capability(name, on:)
-      ENABLED_CAPABILITIES[name] << on
+      ENABLED_CAPABILITIES[name] << recordable_type_name(on)
     end
 
     def self.set_capability_options(name, on:, **opts)
-      CAPABILITY_OPTIONS_STORE[[name, on]] = opts
+      CAPABILITY_OPTIONS_STORE[[name, recordable_type_name(on)]] = opts
     end
 
     def self.capability_options(name, for_type:)
@@ -49,6 +53,25 @@ unless defined?(RecordingStudio)
 
     def self.register_capability(name, mod = nil, **)
       REGISTERED_CAPABILITIES[name] = { mod: mod, ** }
+    end
+
+    module Capabilities
+      class << self
+        def include_for(name, **options, &block)
+          capability_name = name
+          captured_options = options.dup
+
+          Module.new do
+            extend ActiveSupport::Concern
+
+            included do |base|
+              RecordingStudio.enable_capability(capability_name, on: base)
+              RecordingStudio.set_capability_options(capability_name, on: base, **captured_options)
+              block&.call(base)
+            end
+          end
+        end
+      end
     end
 
     def self.reset!
@@ -105,6 +128,29 @@ module RecordingStudio
 
   def self.register_capability(name, mod = nil, **)
     REGISTERED_CAPABILITIES[name] = { mod: mod, ** }
+  end
+
+  def self.recordable_type_name(type)
+    type.is_a?(Class) ? type.name.to_s : type.to_s
+  end
+
+  module Capabilities
+    class << self
+      def include_for(name, **options, &block)
+        capability_name = name
+        captured_options = options.dup
+
+        Module.new do
+          extend ActiveSupport::Concern
+
+          included do |base|
+            RecordingStudio.enable_capability(capability_name, on: base)
+            RecordingStudio.set_capability_options(capability_name, on: base, **captured_options)
+            block&.call(base)
+          end
+        end
+      end
+    end
   end
 
   def self.reset!
@@ -247,12 +293,56 @@ module RecordingStudioDuplicatable
       end
 
       # -------------------------------------------------------------------
-      # .with() factory creates a module that enables the capability
+      # .to() factory enables through include_for; .with / bare include alias it
       # -------------------------------------------------------------------
 
-      def test_with_returns_a_module
-        mod = Duplicatable.with
+      def test_to_returns_a_module
+        mod = Duplicatable.to
         assert_kind_of Module, mod
+      end
+
+      def test_to_enables_capability_when_included
+        RecordingStudio.reset!
+
+        Class.new do
+          def self.name = "TestPage"
+          include RecordingStudio::Capabilities::Duplicatable.to(suffix: " [dup]")
+        end
+
+        assert_includes RecordingStudio::ENABLED_CAPABILITIES[:duplicatable], "TestPage"
+        opts = RecordingStudio.capability_options(:duplicatable, for_type: "TestPage")
+        assert_equal " [dup]", opts[:suffix]
+      end
+
+      def test_to_does_not_register_the_capability
+        RecordingStudio.reset!
+        RecordingStudio::REGISTERED_CAPABILITIES.clear
+        RecordingStudioDuplicatable.register_recording_studio_capability!
+        registered_before = RecordingStudio::REGISTERED_CAPABILITIES.dup
+
+        Class.new do
+          def self.name = "UnregisteredPage"
+          include RecordingStudio::Capabilities::Duplicatable.to(suffix: " [dup]")
+        end
+
+        assert_equal registered_before, RecordingStudio::REGISTERED_CAPABILITIES
+        assert_equal(
+          RecordingStudio::Capabilities::Duplicatable::RecordingMethods,
+          RecordingStudio::REGISTERED_CAPABILITIES[:duplicatable][:mod]
+        )
+      end
+
+      def test_to_rejects_unknown_options
+        error = assert_raises(ArgumentError) do
+          Duplicatable.to(unknown_option: true)
+        end
+
+        assert_match(/unknown Duplicatable option/, error.message)
+        assert_match(/unknown_option:/, error.message)
+      end
+
+      def test_with_is_an_alias_of_to
+        assert_equal :to, Duplicatable.method(:with).original_name
       end
 
       def test_with_enables_capability_when_included
@@ -268,7 +358,7 @@ module RecordingStudioDuplicatable
         assert_equal " [dup]", opts[:suffix]
       end
 
-      def test_direct_include_enables_capability_without_per_type_options
+      def test_direct_include_enables_capability_through_to
         RecordingStudio.reset!
 
         Class.new do
@@ -277,9 +367,8 @@ module RecordingStudioDuplicatable
         end
 
         assert_includes RecordingStudio::ENABLED_CAPABILITIES[:duplicatable], "TestWidget"
-        # No per-type options stored for direct include
         opts = RecordingStudio.capability_options(:duplicatable, for_type: "TestWidget")
-        assert_nil opts
+        assert_equal({}, opts)
       end
 
       # -------------------------------------------------------------------

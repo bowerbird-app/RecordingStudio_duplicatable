@@ -13,9 +13,9 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 - RecordingStudio 4 harden / unique-root indexes installed in the dummy schema
 - A seeded `Workspace` root recording with child `Page`, `Report`, `Folder`, and `Comment` recordables
 - The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
-- FlatPack layout integration with the Rounded theme and Tailwind-generated utility layer
+- FlatPack screens on Recording Studio core default layout
 - A page/report/folder duplication demo that posts to the gem-provided duplicate route and shows included vs excluded child copying
-- Sidebar-linked static guides for setup, approach, use, and methods
+- Home-linked static guides for setup, approach, use, and methods
 
 ## Quick Start
 

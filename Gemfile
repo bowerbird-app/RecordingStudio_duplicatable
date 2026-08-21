@@ -5,7 +5,7 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in recording_studio_duplicatable.gemspec
 gemspec
 
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.0.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"
 # Accessible 0.6.0 (RecordingStudio 4 support) — switch to tag "v0.6.0" once released.
 # See https://github.com/bowerbird-app/RecordingStudio_accessible/pull/13
 gem "recording_studio_accessible",

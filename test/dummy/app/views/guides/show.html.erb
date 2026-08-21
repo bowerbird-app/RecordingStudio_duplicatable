@@ -1,4 +1,10 @@
-<div style="display: grid; gap: 1.5rem;">
+<% recording_studio_page_nav(
+  title: @guide[:title],
+  page_nav_back_url: root_path,
+  page_nav_back_label: "Back to copies"
+) %>
+
+<%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
   <%= render FlatPack::PageTitle::Component.new(
     title: @guide[:title],
     subtitle: @guide[:subtitle],
@@ -48,4 +54,4 @@
       <% end %>
     </section>
   <% end %>
-</div>
+<% end %>

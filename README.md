@@ -18,7 +18,7 @@
 Add Recording Studio core, Recording Studio Accessible, and this addon to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.0.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.2.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.6.0"
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
@@ -43,32 +43,29 @@ RecordingStudio 4 also installs a harden migration for unique root recordings an
 
 ## Opting a model into duplication
 
-Use the capability directly:
+Installing this gem does not enable duplication. Opt each recordable type in
+with one host verb:
 
 ```ruby
-class Workspace < ApplicationRecord
-  recording_studio_recordable label: "Workspace", root: true
+class Page < ApplicationRecord
+  recording_studio_recordable label: "Page", root: false, allowed_parent_types: ["Workspace"]
   RecordingStudio.enable_capability(:accessible, on: self)
 
-  include RecordingStudioDuplicatable::Capabilities::Duplicatable
-end
-```
-
-Or configure per-type overrides:
-
-```ruby
-class Workspace < ApplicationRecord
-  recording_studio_recordable label: "Workspace", root: true
-  RecordingStudio.enable_capability(:accessible, on: self)
-
-  include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
+  include RecordingStudio::Capabilities::Duplicatable.to(
     prefix: nil,
     suffix: " (Copy)",
-    include_children: nil,
+    include_children: ["Comment"],
     exclude_children: nil
   )
 end
 ```
+
+`.to` is a thin wrapper around `RecordingStudio::Capabilities.include_for(:duplicatable, **options)`.
+Parent rules stay on `recording_studio_recordable`. Option validation for `prefix:`, `suffix:`,
+`include_children:`, and `exclude_children:` stays in this gem.
+
+Bare `include RecordingStudioDuplicatable::Capabilities::Duplicatable` and `.with(...)` still work
+as aliases of `.to`.
 
 ## Configuration
 
@@ -171,7 +168,8 @@ The dummy app in `test/dummy/` demonstrates:
 - seed/setup access grants through `RecordingStudioAccessible.grant_access`
 - the required Recording Studio Accessible install/migration flow before duplication is used
 - root `Workspace` recording setup
-- cards that post to the gem-provided duplicate endpoint
+- Cards that post to the gem-provided duplicate endpoint
+- Recording Studio core default layout with Flatpack components
 - the resulting duplicated workspace recordings in the UI
 
 Run it with:

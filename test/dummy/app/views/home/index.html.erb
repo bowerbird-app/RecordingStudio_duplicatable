@@ -1,22 +1,26 @@
-<div style="display: grid; gap: 1.5rem;">
+<% recording_studio_page_nav(title: "Copy a page") %>
+<% recording_studio_page_nav_right do %>
+  <%= render FlatPack::Button::Component.new(
+    text: "Sign out",
+    style: :ghost,
+    size: :md,
+    url: destroy_user_session_path,
+    data: { turbo_method: :delete }
+  ) %>
+<% end %>
+
+<%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
   <%= render FlatPack::PageTitle::Component.new(
-    title: "Duplicatable Demo",
+    title: "Copy a page",
     subtitle: "These cards post to the gem's built-in duplication endpoint. Pages copy comments, reports skip comments, and folders copy their nested tree.",
     variant: :h1
   ) %>
 
-  <% if flash[:notice].present? %>
-    <%= render FlatPack::Alert::Component.new(
-      title: "Duplication complete",
-      description: flash[:notice],
-      style: :success
-    ) %>
-  <% elsif flash[:alert].present? %>
-    <%= render FlatPack::Alert::Component.new(
-      title: "Duplication error",
-      description: flash[:alert],
-      style: :danger
-    ) %>
+  <%= render FlatPack::Grid::Component.new(cols: 4, gap: :md) do %>
+    <%= render FlatPack::Button::Component.new(text: "Setup", style: :secondary, size: :sm, url: guide_path("setup")) %>
+    <%= render FlatPack::Button::Component.new(text: "Approach", style: :secondary, size: :sm, url: guide_path("approach")) %>
+    <%= render FlatPack::Button::Component.new(text: "Use", style: :secondary, size: :sm, url: guide_path("use")) %>
+    <%= render FlatPack::Button::Component.new(text: "Methods", style: :secondary, size: :sm, url: guide_path("methods")) %>
   <% end %>
 
   <%= render FlatPack::SectionTitle::Component.new(
@@ -24,7 +28,7 @@
     subtitle: "Configured with `include_children: [\"Comment\"]` so duplicate page recordings also copy their child comments."
   ) %>
 
-  <div style="display: grid; gap: 1rem;">
+  <%= render FlatPack::Grid::Component.new(cols: 1, gap: :md) do %>
     <% @pages.each do |page| %>
       <%= render "recordable_card",
         recordable: page,
@@ -33,14 +37,14 @@
         recordable_path: page_path(page.slug),
         duplicate_path: duplicate_recording_path_for(page) %>
     <% end %>
-  </div>
+  <% end %>
 
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Reports",
     subtitle: "Configured with `exclude_children: [\"Comment\"]` so duplicate reports leave their child comments behind."
   ) %>
 
-  <div style="display: grid; gap: 1rem;">
+  <%= render FlatPack::Grid::Component.new(cols: 1, gap: :md) do %>
     <% @reports.each do |report| %>
       <%= render "recordable_card",
         recordable: report,
@@ -49,14 +53,14 @@
         recordable_path: report_path(report.slug),
         duplicate_path: duplicate_recording_path_for(report) %>
     <% end %>
-  </div>
+  <% end %>
 
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Folders",
     subtitle: "Configured with `include_children: [\"Folder\", \"Comment\"]` so nested folders duplicate recursively."
   ) %>
 
-  <div style="display: grid; gap: 1rem;">
+  <%= render FlatPack::Grid::Component.new(cols: 1, gap: :md) do %>
     <% @folders.each do |folder| %>
       <%= render "recordable_card",
         recordable: folder,
@@ -65,5 +69,5 @@
         recordable_path: folder_path(folder.slug),
         duplicate_path: duplicate_recording_path_for(folder) %>
     <% end %>
-  </div>
-</div>
+  <% end %>
+<% end %>

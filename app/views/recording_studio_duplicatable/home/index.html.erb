@@ -44,7 +44,7 @@
           <ol style="margin: 0; padding-left: 1.25rem;">
           <li>Install <code>recording_studio_accessible</code>, run its install + migration generators, and apply its migrations before using duplication.</li>
           <li>Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount.</li>
-          <li>Opt the desired recordable types into <code>RecordingStudioDuplicatable::Capabilities::Duplicatable</code>.</li>
+          <li>Opt the desired recordable types in with <code>include RecordingStudio::Capabilities::Duplicatable.to(**opts)</code>.</li>
           <li>Configure Recording Studio recordable types and capability options in the host app initializer.</li>
           <li>Use the dummy app to validate recursive duplication, asset scanning, and authentication flows.</li>
           </ol>

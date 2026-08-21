@@ -2,7 +2,7 @@ class Page < ApplicationRecord
   recording_studio_recordable label: "Page", root: false, allowed_parent_types: [ "Workspace" ]
   RecordingStudio.enable_capability(:accessible, on: self) if defined?(RecordingStudio)
 
-  include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
+  include RecordingStudio::Capabilities::Duplicatable.to(
     prefix: nil,
     suffix: " (Copy)",
     include_children: [ "Comment" ],

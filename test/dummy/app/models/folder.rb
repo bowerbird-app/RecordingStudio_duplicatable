@@ -2,7 +2,7 @@ class Folder < ApplicationRecord
   recording_studio_recordable label: "Folder", root: false, allowed_parent_types: [ "Workspace", "Folder" ]
   RecordingStudio.enable_capability(:accessible, on: self) if defined?(RecordingStudio)
 
-  include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
+  include RecordingStudio::Capabilities::Duplicatable.to(
     prefix: nil,
     suffix: " (Copy)",
     include_children: [ "Folder", "Comment" ],

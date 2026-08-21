@@ -48,7 +48,7 @@ class GuidesController < ApplicationController
                 recording_studio_recordable label: "Page", root: false, allowed_parent_types: ["Workspace"]
                 RecordingStudio.enable_capability(:accessible, on: self)
 
-                include RecordingStudioDuplicatable::Capabilities::Duplicatable.with(
+                include RecordingStudio::Capabilities::Duplicatable.to(
                   prefix: nil,
                   suffix: " (Copy)",
                   include_children: ["Comment"],
@@ -156,11 +156,7 @@ class GuidesController < ApplicationController
                 purpose: "Post to the gem-provided controller from a button or link"
               },
               {
-                method: "RecordingStudioDuplicatable::Capabilities::Duplicatable",
-                purpose: "Enable duplication with global defaults"
-              },
-              {
-                method: "RecordingStudioDuplicatable::Capabilities::Duplicatable.with(...)",
+                method: "RecordingStudio::Capabilities::Duplicatable.to(...)",
                 purpose: "Enable duplication with per-type options"
               },
               {

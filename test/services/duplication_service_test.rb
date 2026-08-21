@@ -22,6 +22,25 @@ unless defined?(RecordingStudio)
     def self.capability_options(name, for_type:) = CAPABILITY_OPTIONS_STORE[[name, for_type]]
     def self.register_capability(name, mod = nil, **) = (REGISTERED_CAPABILITIES[name] = { mod: mod, ** })
 
+    module Capabilities
+      class << self
+        def include_for(name, **options, &block)
+          capability_name = name
+          captured_options = options.dup
+
+          Module.new do
+            extend ActiveSupport::Concern
+
+            included do |base|
+              RecordingStudio.enable_capability(capability_name, on: base)
+              RecordingStudio.set_capability_options(capability_name, on: base, **captured_options)
+              block&.call(base)
+            end
+          end
+        end
+      end
+    end
+
     def self.reset!
       REGISTERED_CAPABILITIES.clear
       ENABLED_CAPABILITIES.clear

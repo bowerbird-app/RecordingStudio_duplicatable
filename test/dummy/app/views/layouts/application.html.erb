@@ -1,36 +1,41 @@
 <!DOCTYPE html>
 <html data-theme="rounded">
   <head>
-    <title><%= content_for(:title) || "Dummy" %></title>
+    <title><%= content_for(:title) || "Duplicatable Demo" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Dummy">
+    <meta name="application-name" content="Duplicatable Demo">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "flat_pack/variables", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "flat_pack/rich_text", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "flat_pack/application", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="margin: 0; background: var(--surface-page-background-color); color: var(--surface-content-color);">
+  <body class="bg-(--surface-page-background-color) text-(--surface-content-color)" data-theme="rounded">
     <%= render "layouts/icon_sprite" %>
 
-    <main style="display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; box-sizing: border-box;">
-      <%= yield %>
+    <main class="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center p-6">
+      <div class="w-full">
+        <% if flash[:notice].present? %>
+          <%= render FlatPack::Alert::Component.new(description: flash[:notice], style: :success, class: "mb-6") %>
+        <% end %>
+        <% if flash[:alert].present? %>
+          <%= render FlatPack::Alert::Component.new(description: flash[:alert], style: :danger, class: "mb-6") %>
+        <% end %>
+        <%= yield %>
+      </div>
     </main>
   </body>
 </html>

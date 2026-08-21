@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-21
+
+### Added
+- Canonical host verb `include RecordingStudio::Capabilities::Duplicatable.to(**opts)` wrapping `RecordingStudio::Capabilities.include_for(:duplicatable, **options)`
+
+### Changed
+- Runtime dependency is now RecordingStudio `~> 4.2` (tested with `4.2.0`)
+- Dummy recordables enable duplication with `.to` instead of `.with`
+- Dummy app uses Recording Studio core default layout with Flatpack
+
+### Upgrade Notes
+- Host apps must move to RecordingStudio `~> 4.2` (`tag: "v4.2.0"` where a git tag is used). Stay on `0.3.x` if you are still on RecordingStudio 4.0/4.1.
+- Enable duplication with `include RecordingStudio::Capabilities::Duplicatable.to(**opts)`. Installing the gem still does not enable the capability.
+- Parent rules stay on `recording_studio_recordable`.
+- Bare `include RecordingStudioDuplicatable::Capabilities::Duplicatable` and `.with(...)` remain aliases of `.to`.
+
 ## [0.3.0] - 2026-08-18
 
 ### Changed
@@ -49,7 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/releases/tag/v0.1.0
