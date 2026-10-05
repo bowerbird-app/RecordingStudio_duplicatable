@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Test app and runtime dependency pin Recording Studio Accessible `v0.11.1` (`~> 0.11`). Dummy installs Accessible 0.8–0.11 migrations (string `role`, invitations, dependent grants) and seeds the first owner with `bootstrap_owner_access!`.
+
+### Upgrade Notes
+- Host apps must move to Recording Studio Accessible `~> 0.11` (`tag: "v0.11.1"` where a git tag is used). Run `bin/rails generate recording_studio_accessible:migrations` and `bin/rails db:migrate` so `depends_on_recording_id`, invitations, and string roles are installed. Grant through `bootstrap_owner_access!` / `grant_access` — `RecordingStudio::Access` is readonly.
+
 ## [0.4.1] - 2026-09-02
 
 Cloud Agent Builds for this gem now match Billing 0.9.13. Boot files are

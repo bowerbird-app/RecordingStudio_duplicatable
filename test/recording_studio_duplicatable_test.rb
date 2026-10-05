@@ -501,8 +501,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes seeds_source, "ensure_folder_recordings!"
     assert_includes seeds_source, "parent_folder: folder"
     assert_includes seeds_source, "parent_recording_id: parent_recording.id"
-    assert_includes seeds_source, "RecordingStudioAccessible.grant_access"
+    assert_includes seeds_source, "RecordingStudioAccessible.bootstrap_owner_access!"
     refute_includes seeds_source, "RecordingStudio::Access.find_or_create_by!"
+    refute_includes seeds_source, "RecordingStudio::Access.create!"
   end
 
   def test_dummy_recordable_show_view_lists_children
@@ -541,7 +542,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
     assert_includes readme_source, 'tag: "v4.2.2"'
     assert_includes readme_source, "RecordingStudio::Capabilities::Duplicatable.to("
-    assert_includes readme_source, 'tag: "v0.6.0"'
+    assert_includes readme_source, 'tag: "v0.11.1"'
     assert_includes readme_source, "recording_studio_recordable"
     assert_includes readme_source, "RecordingStudioAccessible.grant_access"
     assert_includes readme_source, "access_actor_types"
@@ -568,7 +569,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_source = File.read(gemspec_path)
 
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.2"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.6"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.11"'
   end
 
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint

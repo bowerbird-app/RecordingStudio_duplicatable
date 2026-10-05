@@ -89,19 +89,11 @@ root_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
 )
 
 Current.actor = user
-original_access_authorizer = RecordingStudioAccessible.configuration.access_management_authorizer
-RecordingStudioAccessible.configuration.access_management_authorizer = ->(**) { true }
-begin
-  grant_result = RecordingStudioAccessible.grant_access(
-    recording: root_recording,
-    actor: user,
-    role: :admin,
-    manager_actor: user
-  )
-  raise grant_result.error if grant_result.failure?
-ensure
-  RecordingStudioAccessible.configuration.access_management_authorizer = original_access_authorizer
-end
+grant_result = RecordingStudioAccessible.bootstrap_owner_access!(
+  recording: root_recording,
+  actor: user
+)
+raise grant_result.error if grant_result.failure?
 
 def ensure_comment_recordings!(root_recording:, parent_recording:, recordable:, comments:)
   comments.each do |comment_attributes|
