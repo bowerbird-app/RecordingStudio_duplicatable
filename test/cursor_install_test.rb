@@ -52,6 +52,8 @@ class CursorInstallTest < Minitest::Test
     assert_operator apt_at, :<, fetch_at
     assert_operator fetch_at, :<, complete_at
     refute_includes install, "fetch-skills.sh\" || true"
+    assert_includes install, "RAILS_MASTER_KEY"
+    assert_includes install, "test/dummy/config/master.key"
   end
 
   def test_gitignore_does_not_vendor_fetched_skills
