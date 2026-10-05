@@ -2,7 +2,7 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-DEMO_PAGES = [
+DEMO_PAGES ||= [
   {
     slug: "launch-plan",
     title: "Launch Plan",
@@ -25,7 +25,7 @@ DEMO_PAGES = [
   }
 ].freeze
 
-DEMO_REPORTS = [
+DEMO_REPORTS ||= [
   {
     slug: "weekly-kpis",
     title: "Weekly KPI Report",
@@ -45,7 +45,7 @@ DEMO_REPORTS = [
   }
 ].freeze
 
-DEMO_FOLDERS = [
+DEMO_FOLDERS ||= [
   {
     slug: "product-docs",
     name: "Product Docs",

@@ -165,7 +165,7 @@ The dummy app in `test/dummy/` demonstrates:
 - Devise authentication
 - `Current.actor` wiring
 - explicit `recording_studio_accessible` installation for the extracted access addon and its `RecordingStudioAccessible.authorized?` authorization API
-- seed/setup access grants through `RecordingStudioAccessible.bootstrap_owner_access!` (and `grant_access` for later members)
+- seed/setup access grants through `RecordingStudioAccessible.bootstrap_owner_access!` (and `RecordingStudioAccessible.grant_access` for later members)
 - the required Recording Studio Accessible install/migration flow before duplication is used
 - root `Workspace` recording setup
 - Cards that post to the gem-provided duplicate endpoint
