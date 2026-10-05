@@ -2,7 +2,7 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-DEMO_PAGES = [
+DEMO_PAGES ||= [
   {
     slug: "launch-plan",
     title: "Launch Plan",
@@ -25,7 +25,7 @@ DEMO_PAGES = [
   }
 ].freeze
 
-DEMO_REPORTS = [
+DEMO_REPORTS ||= [
   {
     slug: "weekly-kpis",
     title: "Weekly KPI Report",
@@ -45,7 +45,7 @@ DEMO_REPORTS = [
   }
 ].freeze
 
-DEMO_FOLDERS = [
+DEMO_FOLDERS ||= [
   {
     slug: "product-docs",
     name: "Product Docs",
@@ -89,19 +89,11 @@ root_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
 )
 
 Current.actor = user
-original_access_authorizer = RecordingStudioAccessible.configuration.access_management_authorizer
-RecordingStudioAccessible.configuration.access_management_authorizer = ->(**) { true }
-begin
-  grant_result = RecordingStudioAccessible.grant_access(
-    recording: root_recording,
-    actor: user,
-    role: :admin,
-    manager_actor: user
-  )
-  raise grant_result.error if grant_result.failure?
-ensure
-  RecordingStudioAccessible.configuration.access_management_authorizer = original_access_authorizer
-end
+grant_result = RecordingStudioAccessible.bootstrap_owner_access!(
+  recording: root_recording,
+  actor: user
+)
+raise grant_result.error if grant_result.failure?
 
 def ensure_comment_recordings!(root_recording:, parent_recording:, recordable:, comments:)
   comments.each do |comment_attributes|
