@@ -6,7 +6,7 @@ This branch updates the test app and dependency pin for Recording Studio Accessi
 
 ## Dependency state
 
-- `recording_studio` stays on tag `v4.2.2` with runtime dependency `~> 4.2`.
+- `recording_studio` stays on tag `v4.3.0` with runtime dependency `~> 4.2`.
 - `recording_studio_accessible` is pinned to tag `v0.11.1` and declared as a runtime dependency with `~> 0.11`.
 - The dummy app pins FlatPack `v0.1.129`.
 - Engine and dummy lockfiles should resolve Rails `8.1.x` with `minitest-mock` for Minitest 6 `Object#stub` helpers.
