@@ -19,7 +19,7 @@ Add Recording Studio core, Recording Studio Accessible, and this addon to your h
 
 ```ruby
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.4.0"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.1"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.13.0"
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
