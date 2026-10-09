@@ -542,7 +542,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
     assert_includes readme_source, 'tag: "v4.4.0"'
     assert_includes readme_source, "RecordingStudio::Capabilities::Duplicatable.to("
-    assert_includes readme_source, 'tag: "v0.11.1"'
+    assert_includes readme_source, 'tag: "v0.13.0"'
     assert_includes readme_source, "recording_studio_recordable"
     assert_includes readme_source, "RecordingStudioAccessible.grant_access"
     assert_includes readme_source, "access_actor_types"
@@ -569,7 +569,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_source = File.read(gemspec_path)
 
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.2"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.11"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.13"'
   end
 
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint
