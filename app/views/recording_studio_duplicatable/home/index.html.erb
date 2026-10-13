@@ -1,32 +1,50 @@
 <div style="display: grid; gap: 1.5rem; padding: 1.5rem 0;">
   <%= render FlatPack::PageTitle::Component.new(
-    title: "RecordingStudio Duplicatable",
-    subtitle: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables.",
+    title: t("recording_studio.duplicatable.home.title", default: "RecordingStudio Duplicatable"),
+    subtitle: t(
+      "recording_studio.duplicatable.home.subtitle",
+      default: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables."
+    ),
     variant: :h1
   ) %>
 
   <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-    <%= render FlatPack::Badge::Component.new(text: "Engine mounted", style: :success, size: :sm) %>
-    <%= render FlatPack::Badge::Component.new(text: "FlatPack enabled", style: :info, size: :sm) %>
-    <%= render FlatPack::Badge::Component.new(text: "Recursive duplication", style: :warning, size: :sm) %>
+    <%= render FlatPack::Badge::Component.new(
+      text: t("recording_studio.duplicatable.home.badges.engine_mounted", default: "Engine mounted"),
+      style: :success,
+      size: :sm
+    ) %>
+    <%= render FlatPack::Badge::Component.new(
+      text: t("recording_studio.duplicatable.home.badges.flatpack_enabled", default: "FlatPack enabled"),
+      style: :info,
+      size: :sm
+    ) %>
+    <%= render FlatPack::Badge::Component.new(
+      text: t("recording_studio.duplicatable.home.badges.recursive_duplication", default: "Recursive duplication"),
+      style: :warning,
+      size: :sm
+    ) %>
   </div>
 
   <div style="display: grid; gap: 1.5rem;">
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
-            title: "What's working",
-            subtitle: "Core addon capabilities already wired in.",
+            title: t("recording_studio.duplicatable.home.whats_working.title", default: "What's working"),
+            subtitle: t(
+              "recording_studio.duplicatable.home.whats_working.subtitle",
+              default: "Core addon capabilities already wired in."
+            ),
             variant: :h3
           ) %>
       <% end %>
 
       <% card.body do %>
           <ul style="margin: 0; padding-left: 1.25rem;">
-            <li>Rails engine routes are mounted and responding.</li>
-            <li>The behavior-only engine does not add host application tables.</li>
-            <li>FlatPack now drives the dummy app styling directly, including the Rounded theme.</li>
-            <li>The dummy app exercises authentication, FlatPack layouts, Recording Studio setup, and live duplication.</li>
+            <li><%= t("recording_studio.duplicatable.home.whats_working.routes", default: "Rails engine routes are mounted and responding.") %></li>
+            <li><%= t("recording_studio.duplicatable.home.whats_working.no_tables", default: "The behavior-only engine does not add host application tables.") %></li>
+            <li><%= t("recording_studio.duplicatable.home.whats_working.flatpack", default: "FlatPack now drives the dummy app styling directly, including the Rounded theme.") %></li>
+            <li><%= t("recording_studio.duplicatable.home.whats_working.dummy", default: "The dummy app exercises authentication, FlatPack layouts, Recording Studio setup, and live duplication.") %></li>
           </ul>
       <% end %>
     <% end %>
@@ -34,19 +52,31 @@
     <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
       <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
-            title: "How to use it",
-            subtitle: "The standard path for enabling duplication in a host app.",
+            title: t("recording_studio.duplicatable.home.how_to_use.title", default: "How to use it"),
+            subtitle: t(
+              "recording_studio.duplicatable.home.how_to_use.subtitle",
+              default: "The standard path for enabling duplication in a host app."
+            ),
             variant: :h3
           ) %>
       <% end %>
 
         <% card.body do %>
           <ol style="margin: 0; padding-left: 1.25rem;">
-          <li>Install <code>recording_studio_accessible</code>, run its install + migration generators, and apply its migrations before using duplication.</li>
-          <li>Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount.</li>
-          <li>Opt the desired recordable types in with <code>include RecordingStudio::Capabilities::Duplicatable.to(**opts)</code>.</li>
-          <li>Configure Recording Studio recordable types and capability options in the host app initializer.</li>
-          <li>Use the dummy app to validate recursive duplication, asset scanning, and authentication flows.</li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.how_to_use.install_accessible",
+            default: "Install <code>recording_studio_accessible</code>, run its install + migration generators, and apply its migrations before using duplication."
+          ).html_safe %></li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.how_to_use.add_gem",
+            default: "Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount."
+          ).html_safe %></li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.how_to_use.opt_in",
+            default: "Opt the desired recordable types in with <code>include RecordingStudio::Capabilities::Duplicatable.to(**opts)</code>."
+          ).html_safe %></li>
+          <li><%= t("recording_studio.duplicatable.home.how_to_use.configure", default: "Configure Recording Studio recordable types and capability options in the host app initializer.") %></li>
+          <li><%= t("recording_studio.duplicatable.home.how_to_use.validate", default: "Use the dummy app to validate recursive duplication, asset scanning, and authentication flows.") %></li>
           </ol>
         <% end %>
     <% end %>
@@ -54,21 +84,27 @@
     <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "FlatPack usage",
-          subtitle: "This page itself now uses FlatPack components for its primary UI structure.",
+          title: t("recording_studio.duplicatable.home.flatpack.title", default: "FlatPack usage"),
+          subtitle: t(
+            "recording_studio.duplicatable.home.flatpack.subtitle",
+            default: "This page itself now uses FlatPack components for its primary UI structure."
+          ),
           variant: :h3
         ) %>
       <% end %>
 
       <% card.body do %>
         <p>
-          Use FlatPack cards, buttons, badges, inputs, and layout primitives as the default path for addon UI. Keep raw HTML for simple semantic content only.
+          <%= t(
+            "recording_studio.duplicatable.home.flatpack.body",
+            default: "Use FlatPack cards, buttons, badges, inputs, and layout primitives as the default path for addon UI. Keep raw HTML for simple semantic content only."
+          ) %>
         </p>
       <% end %>
 
       <% card.footer do %>
         <%= render FlatPack::Button::Component.new(
-          text: "View FlatPack documentation",
+          text: t("recording_studio.duplicatable.home.flatpack.docs_button", default: "View FlatPack documentation"),
           style: :primary,
           size: :md,
           url: "https://github.com/bowerbird-app/flatpack"
@@ -79,19 +115,37 @@
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "Install flow",
-          subtitle: "What the host app generator path covers.",
+          title: t("recording_studio.duplicatable.home.install_flow.title", default: "Install flow"),
+          subtitle: t(
+            "recording_studio.duplicatable.home.install_flow.subtitle",
+            default: "What the host app generator path covers."
+          ),
           variant: :h3
         ) %>
       <% end %>
 
       <% card.body do %>
         <ul style="margin: 0; padding-left: 1.25rem;">
-          <li>Add the gem to your host app and run <code>bundle install</code>.</li>
-          <li>Run <code>rails generate recording_studio_accessible:install</code>, then <code>rails generate recording_studio_accessible:migrations</code>, then <code>bin/rails db:migrate</code>.</li>
-          <li>Run <code>rails generate recording_studio_duplicatable:install</code> to mount the engine and add configuration.</li>
-          <li>No RecordingStudio Duplicatable migrations are required; use the install generator for mount and configuration only.</li>
-          <li>Verify your host app styles do not override the FlatPack tokens you want to keep.</li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.install_flow.bundle",
+            default: "Add the gem to your host app and run <code>bundle install</code>."
+          ).html_safe %></li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.install_flow.accessible_generators",
+            default: "Run <code>rails generate recording_studio_accessible:install</code>, then <code>rails generate recording_studio_accessible:migrations</code>, then <code>bin/rails db:migrate</code>."
+          ).html_safe %></li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.install_flow.duplicatable_install",
+            default: "Run <code>rails generate recording_studio_duplicatable:install</code> to mount the engine and add configuration."
+          ).html_safe %></li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.install_flow.no_migrations",
+            default: "No RecordingStudio Duplicatable migrations are required; use the install generator for mount and configuration only."
+          ) %></li>
+          <li><%= t(
+            "recording_studio.duplicatable.home.install_flow.styles",
+            default: "Verify your host app styles do not override the FlatPack tokens you want to keep."
+          ) %></li>
         </ul>
       <% end %>
     <% end %>

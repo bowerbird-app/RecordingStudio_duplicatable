@@ -22,23 +22,62 @@ module RecordingStudioDuplicatable
 
     def redirect_missing_actor
       redirect_back fallback_location: duplication_fallback_location,
-                    alert: "No current actor is available to duplicate this recording."
+                    alert: t(
+                      "recording_studio.duplicatable.flashes.no_actor",
+                      default: "No current actor is available to duplicate this recording."
+                    )
     end
 
     def redirect_missing_recording
       redirect_back fallback_location: duplication_fallback_location,
-                    alert: "No recording is available to duplicate."
+                    alert: t(
+                      "recording_studio.duplicatable.flashes.no_recording",
+                      default: "No recording is available to duplicate."
+                    )
     end
 
     def redirect_with_duplication_result(result)
       flash_type = result.success? ? :notice : :alert
-      message = if result.success?
-                  %(Created duplicate "#{duplicated_recordable_label(result.value)}".)
-                else
-                  "Duplication failed: #{result.error}"
-                end
+      redirect_back fallback_location: duplication_fallback_location,
+                    flash_type => duplication_result_message(result)
+    end
 
-      redirect_back fallback_location: duplication_fallback_location, flash_type => message
+    def duplication_result_message(result)
+      if result.success?
+        created_duplicate_notice(result.value)
+      else
+        duplication_failed_alert(result.error)
+      end
+    end
+
+    def created_duplicate_notice(recording)
+      # rubocop:disable Style/FormatStringToken -- I18n interpolation, not Ruby format
+      t(
+        "recording_studio.duplicatable.flashes.created",
+        label: duplicated_recordable_label(recording),
+        default: 'Created duplicate "%{label}".'
+      )
+      # rubocop:enable Style/FormatStringToken
+    end
+
+    def duplication_failed_alert(error)
+      # rubocop:disable Style/FormatStringToken -- I18n interpolation, not Ruby format
+      t(
+        "recording_studio.duplicatable.flashes.failed",
+        error: translate_duplication_error(error),
+        default: "Duplication failed: %{error}"
+      )
+      # rubocop:enable Style/FormatStringToken
+    end
+
+    def translate_duplication_error(error)
+      english = "Actor does not have :edit access for duplication"
+      case error.to_s
+      when english
+        t("recording_studio.duplicatable.errors.access_denied", default: english)
+      else
+        error
+      end
     end
 
     def find_recording

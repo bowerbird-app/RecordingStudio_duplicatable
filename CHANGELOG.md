@@ -13,6 +13,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrade Notes
 - Host apps must move to Recording Studio Accessible `~> 0.11` (`tag: "v0.11.1"` where a git tag is used). Run `bin/rails generate recording_studio_accessible:migrations` and `bin/rails db:migrate` so `depends_on_recording_id`, invitations, and string roles are installed. Grant through `bootstrap_owner_access!` / `grant_access` — `RecordingStudio::Access` is readonly.
 
+## [0.5.0] - 2026-10-13
+
+### Added
+- English Rails I18n keys under `recording_studio.duplicatable.*` for the engine home page, duplication controller flashes, and the known access-denied error string shown in failure flashes
+- Locale regression: every `lib/**/*.rb` file must not mention `i18n.load_path` / `I18n.load_path`
+- Host override coverage: test-only fixture plus always-loaded boot-order guard on the rarely shown `flashes.no_recording` key
+- Render-level literal-English asserts for the engine home page and duplication flashes
+
+### Changed
+- Version `0.4.1` → `0.5.0`
+- Engine home copy and duplication controller notices/alerts resolve through `t(..., default: <main English>)` (English output unchanged)
+- Known access-denied service errors stay English on the Result; the controller maps that English at flash render time so hosts can translate it
+
+### Upgrade Notes
+- Bump to `0.5.0`. No migration.
+- English hosts need no change. Copy `recording_studio.duplicatable.*` keys into host locale files when translating.
+- Hosts override by defining the same nested keys in their own `config/locales`.
+- Generator CLI text, `ArgumentError`s, hook/log messages, `MissingDependencyError`, configuration defaults such as `" (Copy)"` (written into stored titles), and icon/style tokens stay untranslated.
+
 ## [0.4.1] - 2026-09-02
 
 Cloud Agent Builds for this gem now match Billing 0.9.13. Boot files are
@@ -87,7 +106,8 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.2.0...v0.3.0
