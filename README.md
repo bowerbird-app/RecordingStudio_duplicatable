@@ -158,6 +158,17 @@ The lower-level recording and service APIs remain available for apps that want c
 - Child-copy filters apply recursively through the descendant tree
 - Post-duplication callbacks and hooks run after the transaction completes
 
+## Internationalization
+
+Customer-facing copy ships under `recording_studio.duplicatable.*` in
+`config/locales/en.yml`. Every call site passes an English `default:` so a host
+locale without a fallback never shows "translation missing".
+
+Hosts override by defining the same nested keys in their own `config/locales`.
+Service and capability raised messages stay English; the built-in controller
+maps known access-denied English at flash render time. Configuration defaults
+such as `" (Copy)"` stay raw because they are written into stored titles.
+
 ## Dummy app
 
 The dummy app in `test/dummy/` demonstrates:
