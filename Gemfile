@@ -8,7 +8,13 @@ gemspec
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.5.0"
 gem "recording_studio_accessible",
     github: "bowerbird-app/RecordingStudio_accessible",
-    tag: "v0.15.0"
+    tag: "v0.17.0"
+# Accessible 0.17 pulls Trashable query-only; pin git sources for Bundler resolution.
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.129", require: false
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0",
+                                require: false
+gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.10.0",
+                                  require: false
 
 gem "puma"
 gem "sprockets-rails"
