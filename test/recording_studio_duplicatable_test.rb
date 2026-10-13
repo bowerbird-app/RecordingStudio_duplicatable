@@ -542,7 +542,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
     assert_includes readme_source, 'tag: "v4.5.0"'
     assert_includes readme_source, "RecordingStudio::Capabilities::Duplicatable.to("
-    assert_includes readme_source, 'tag: "v0.15.0"'
+    assert_includes readme_source, 'tag: "v0.17.0"'
+    assert_includes readme_source, 'tag: "v0.10.0"'
+    assert_includes readme_source, 'tag: "v0.2.0"'
     assert_includes readme_source, "recording_studio_recordable"
     assert_includes readme_source, "RecordingStudioAccessible.grant_access"
     assert_includes readme_source, "access_actor_types"
