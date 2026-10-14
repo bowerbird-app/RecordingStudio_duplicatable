@@ -18,7 +18,7 @@
 Add Recording Studio core, Recording Studio Accessible, and this addon to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.5.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.6.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.17.0"
 # Accessible 0.17 needs Trashable query helpers; pin for Bundler resolution only.
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0", require: false
