@@ -16,6 +16,12 @@
       ) %>
 
       <%= render FlatPack::Sidebar::Item::Component.new(
+        label: "Status",
+        href: engine_status_path,
+        icon: :dashboard
+      ) %>
+
+      <%= render FlatPack::Sidebar::Item::Component.new(
         label: "Setup",
         href: guide_path("setup"),
         icon: :folder

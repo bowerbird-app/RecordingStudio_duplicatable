@@ -472,6 +472,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     routes_source = File.read(routes_path)
 
     assert_includes routes_source, 'mount RecordingStudioDuplicatable::Engine, at: "/recording_studio_duplicatable"'
+    assert_includes routes_source, 'get "engine_status", to: "engine_status#show"'
     assert_includes routes_source, 'get "guides/:slug"'
     assert_includes routes_source, 'get "pages/:slug"'
     assert_includes routes_source, 'get "reports/:slug"'
@@ -538,16 +539,38 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "child_recording_title(child_recording)"
   end
 
-  def test_engine_home_page_uses_flatpack_components
-    view_path = File.expand_path("../app/views/recording_studio_duplicatable/home/index.html.erb", __dir__)
+  def test_dummy_engine_status_page_uses_flatpack_and_gem_ships_no_views
+    view_path = File.expand_path("dummy/app/views/engine_status/show.html.erb", __dir__)
     view_source = File.read(view_path)
+    routes_path = File.expand_path("../config/routes.rb", __dir__)
+    routes_source = File.read(routes_path)
+    views_root = File.expand_path("../app/views", __dir__)
+    home_controller = File.expand_path(
+      "../app/controllers/recording_studio_duplicatable/home_controller.rb",
+      __dir__
+    )
+    gem_view_files =
+      if Dir.exist?(views_root)
+        Dir[File.join(views_root, "**", "*")].select { |path| File.file?(path) }
+      else
+        []
+      end
 
     assert_includes view_source, "RecordingStudio::Capabilities::Duplicatable.to"
     assert_includes view_source, "FlatPack::PageTitle::Component"
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "FlatPack::Button::Component"
     assert_includes view_source, "FlatPack::Badge::Component"
+    assert_includes view_source, "content_for :title"
     refute_includes view_source, "tailwindcss:build"
+    assert_empty gem_view_files
+    refute File.exist?(home_controller)
+    assert_includes(
+      routes_source,
+      'post "recordings/:recording_id/duplicate", to: "duplications#create", as: :duplicate_recording'
+    )
+    refute_includes routes_source, "home#index"
+    refute_includes routes_source, "root"
   end
 
   def test_readme_documents_builtin_duplication_endpoint_and_lower_level_apis
@@ -571,6 +594,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "DuplicationService.call"
     assert_includes readme_source, "duplicate_in_place!"
     assert_includes readme_source, "host app `ApplicationController`"
+    assert_includes readme_source, "The engine ships no views and no home route."
+    refute_includes readme_source, "HomeController"
     refute_includes readme_source, "RecordingStudio::Services::AccessCheck"
     refute_includes readme_source, "AccessCheck.allowed?"
   end
@@ -605,7 +630,12 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     )
     duplications_controller_source = File.read(duplications_controller_path)
 
-    assert_includes routes_source, 'post "recordings/:recording_id/duplicate"'
+    assert_includes(
+      routes_source,
+      'post "recordings/:recording_id/duplicate", to: "duplications#create", as: :duplicate_recording'
+    )
+    refute_includes routes_source, "home#index"
+    refute_includes routes_source, "root"
     assert_includes application_controller_source, "defined?(::ApplicationController) ? ::ApplicationController : ActionController::Base"
     assert_includes application_controller_source, "current_duplication_actor"
     assert_includes duplications_controller_source, "Services::DuplicationService.call"

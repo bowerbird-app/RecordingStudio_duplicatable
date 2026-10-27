@@ -7,52 +7,6 @@ require "i18n"
 class LocalesTest < Minitest::Test
   # rubocop:disable Style/FormatStringToken, Layout/LineLength -- I18n tokens / locale literals match en.yml
   EXPECTED_LEAVES = {
-    "recording_studio.duplicatable.home.title" => "RecordingStudio Duplicatable",
-    "recording_studio.duplicatable.home.subtitle" =>
-      "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables.",
-    "recording_studio.duplicatable.home.badges.engine_mounted" => "Engine mounted",
-    "recording_studio.duplicatable.home.badges.flatpack_enabled" => "FlatPack enabled",
-    "recording_studio.duplicatable.home.badges.recursive_duplication" => "Recursive duplication",
-    "recording_studio.duplicatable.home.whats_working.title" => "What's working",
-    "recording_studio.duplicatable.home.whats_working.subtitle" => "Core addon capabilities already wired in.",
-    "recording_studio.duplicatable.home.whats_working.routes" => "Rails engine routes are mounted and responding.",
-    "recording_studio.duplicatable.home.whats_working.no_tables" =>
-      "The behavior-only engine does not add host application tables.",
-    "recording_studio.duplicatable.home.whats_working.flatpack" =>
-      "FlatPack now drives the dummy app styling directly, including the Rounded theme.",
-    "recording_studio.duplicatable.home.whats_working.dummy" =>
-      "The dummy app exercises authentication, FlatPack layouts, Recording Studio setup, and live duplication.",
-    "recording_studio.duplicatable.home.how_to_use.title" => "How to use it",
-    "recording_studio.duplicatable.home.how_to_use.subtitle" =>
-      "The standard path for enabling duplication in a host app.",
-    "recording_studio.duplicatable.home.how_to_use.install_accessible" =>
-      "Install <code>recording_studio_accessible</code>, run its install + migration generators, and apply its migrations before using duplication.",
-    "recording_studio.duplicatable.home.how_to_use.add_gem" =>
-      "Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount.",
-    "recording_studio.duplicatable.home.how_to_use.opt_in" =>
-      "Opt the desired recordable types in with <code>include RecordingStudio::Capabilities::Duplicatable.to(**opts)</code>.",
-    "recording_studio.duplicatable.home.how_to_use.configure" =>
-      "Configure Recording Studio recordable types and capability options in the host app initializer.",
-    "recording_studio.duplicatable.home.how_to_use.validate" =>
-      "Use the dummy app to validate recursive duplication, asset scanning, and authentication flows.",
-    "recording_studio.duplicatable.home.flatpack.title" => "FlatPack usage",
-    "recording_studio.duplicatable.home.flatpack.subtitle" =>
-      "This page itself now uses FlatPack components for its primary UI structure.",
-    "recording_studio.duplicatable.home.flatpack.body" =>
-      "Use FlatPack cards, buttons, badges, inputs, and layout primitives as the default path for addon UI. Keep raw HTML for simple semantic content only.",
-    "recording_studio.duplicatable.home.flatpack.docs_button" => "View FlatPack documentation",
-    "recording_studio.duplicatable.home.install_flow.title" => "Install flow",
-    "recording_studio.duplicatable.home.install_flow.subtitle" => "What the host app generator path covers.",
-    "recording_studio.duplicatable.home.install_flow.bundle" =>
-      "Add the gem to your host app and run <code>bundle install</code>.",
-    "recording_studio.duplicatable.home.install_flow.accessible_generators" =>
-      "Run <code>rails generate recording_studio_accessible:install</code>, then <code>rails generate recording_studio_accessible:migrations</code>, then <code>bin/rails db:migrate</code>.",
-    "recording_studio.duplicatable.home.install_flow.duplicatable_install" =>
-      "Run <code>rails generate recording_studio_duplicatable:install</code> to mount the engine and add configuration.",
-    "recording_studio.duplicatable.home.install_flow.no_migrations" =>
-      "No RecordingStudio Duplicatable migrations are required; use the install generator for mount and configuration only.",
-    "recording_studio.duplicatable.home.install_flow.styles" =>
-      "Verify your host app styles do not override the FlatPack tokens you want to keep.",
     "recording_studio.duplicatable.flashes.no_actor" =>
       "No current actor is available to duplicate this recording.",
     "recording_studio.duplicatable.flashes.no_recording" => "No recording is available to duplicate.",
@@ -130,7 +84,7 @@ class LocalesTest < Minitest::Test
     tree = locale_tree(File.join(engine_locales_dir, "en.yml"), "en")
     duplicatable = tree.fetch("recording_studio").fetch("duplicatable")
 
-    assert_equal "RecordingStudio Duplicatable", duplicatable.fetch("home").fetch("title")
+    refute duplicatable.key?("home")
     assert_equal "No recording is available to duplicate.", duplicatable.fetch("flashes").fetch("no_recording")
     assert_equal(
       "Actor does not have :edit access for duplication",

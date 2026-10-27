@@ -102,7 +102,7 @@ Available options:
 | `include_children` | Only duplicate descendants of these recordable types |
 | `exclude_children` | Duplicate descendants except these recordable types |
 
-`RecordingStudioDuplicatable::ApplicationController` calls `recording_studio_layout { RecordingStudioDuplicatable.configuration.layout }`. `DuplicationsController` and `HomeController` inherit that call. Do not set `layout "recording_studio/default_layout"` on those controllers. Invalid `config.layout` values raise `ArgumentError` when assigned.
+`RecordingStudioDuplicatable::ApplicationController` calls `recording_studio_layout { RecordingStudioDuplicatable.configuration.layout }`. `DuplicationsController` inherits that call. The engine ships no views and no home route. The dummy app renders the overview at `/engine_status`. Do not set `layout "recording_studio/default_layout"` on the engine controller. Invalid `config.layout` values raise `ArgumentError` when assigned.
 
 Pass title and subtitle strings to `content_for` with `html_safe`. The default layout calls `to_s` on those slots. A string that was already escaped is escaped again, and an apostrophe shows up as a character entity.
 

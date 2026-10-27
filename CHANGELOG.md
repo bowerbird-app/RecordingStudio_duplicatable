@@ -15,8 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Development and dummy apps pin `flat_pack` git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`) and `view_component` `4.19.0`
 - `RecordingStudioDuplicatable::Configuration` stores `layout` through `RecordingStudio::Layout.accept`. The default is `nil`
 - `RecordingStudioDuplicatable::ApplicationController` calls `recording_studio_layout` with that setting. `UsesDefaultLayout` and `layout "recording_studio/default_layout"` are gone
-- Engine and dummy pages set `content_for :title` and `content_for :subtitle`. The default layout renders the single page heading. Back links use `flat_pack_page_nav`. Page actions use `register_page_nav`
-- Cards use `background`, `border`, and `shadow`. The removed `style:` keyword is gone from engine and dummy views
+- The engine no longer ships `HomeController`, views, or `root "home#index"`. Its only route is `POST recordings/:recording_id/duplicate`. The overview page and `recording_studio.duplicatable.home.*` copy live in the dummy app at `/engine_status`
+- Dummy pages set `content_for :title` and `content_for :subtitle`. The default layout renders the single page heading. Back links use `flat_pack_page_nav`. Page actions use `register_page_nav`
+- Cards use `background`, `border`, and `shadow`. The removed `style:` keyword is gone from dummy views
 
 ### Upgrade Notes
 - Move the host app to Recording Studio `v6.1.0` or newer (`tag: "v6.1.0"` when the gem comes from git). Stay on `0.5.x` if you are still on Recording Studio 4.

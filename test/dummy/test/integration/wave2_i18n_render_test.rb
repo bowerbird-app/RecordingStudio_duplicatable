@@ -12,9 +12,9 @@ class Wave2I18nRenderTest < ActionDispatch::IntegrationTest
     @user = User.find_by!(email: "admin@admin.com")
   end
 
-  test "engine home renders literal english from gem locale keys" do
+  test "dummy engine status page renders literal english from dummy locale keys" do
     sign_in @user
-    get "/recording_studio_duplicatable"
+    get "/engine_status"
 
     assert_response :success
     assert_includes response.body, "RecordingStudio Duplicatable"
