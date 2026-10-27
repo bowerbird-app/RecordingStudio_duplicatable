@@ -1,15 +1,13 @@
-<% recording_studio_page_nav(
-  title: recordable_title(@recordable),
-  page_nav_back_url: root_path,
-  page_nav_back_label: "Back to copies"
+<% content_for :title, recordable_title(@recordable).to_s.html_safe %>
+<% content_for :subtitle, recordable_subtitle(@recordable).to_s.html_safe %>
+<% flat_pack_page_nav(
+  round: true,
+  style: :default,
+  back_href: root_path,
+  back_tooltip: "Back to copies"
 ) %>
 
 <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
-  <%= render FlatPack::PageTitle::Component.new(
-    title: recordable_title(@recordable),
-    subtitle: recordable_subtitle(@recordable),
-    variant: :h1
-  ) %>
 
   <%= render FlatPack::Grid::Component.new(cols: 1, gap: :sm) do %>
     <div class="flex flex-wrap gap-2">

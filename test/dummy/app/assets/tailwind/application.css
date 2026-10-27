@@ -9,12 +9,16 @@
 @source "../../../../../../usr/local/bundle/**/bundler/gems/flatpack-*/app/components/**/*.erb";
 @source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb";
 @source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.erb";
+@source "../../../../../../usr/local/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb";
+@source "../../../../../../usr/local/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.erb";
+@source "../../../../../../usr/local/lib/ruby/gems/*/bundler/gems/flatpack-*/app/helpers/**/*.rb";
 
 /* Scan companion engine views used by the dummy app. */
 @source "../../../vendor/bundle/**/bundler/gems/RecordingStudio*/app/views/**/*.erb";
 @source "../../../../../vendor/bundle/**/bundler/gems/RecordingStudio*/app/views/**/*.erb";
 @source "../../../../../../usr/local/bundle/**/bundler/gems/RecordingStudio*/app/views/**/*.erb";
 @source "../../../../../../home/*/.local/share/mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/RecordingStudio*/app/views/**/*.erb";
+@source "../../../../../../usr/local/lib/ruby/gems/*/bundler/gems/RecordingStudio*/app/views/**/*.erb";
 
 /* Dummy app and this engine. */
 @source "../../views/**/*.erb";

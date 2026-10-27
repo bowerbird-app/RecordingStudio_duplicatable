@@ -1,4 +1,21 @@
-# Migration Notes - Private Gems to Public Gems
+# Migration Notes
+
+## 0.6.0 layout upgrade
+
+Recording Studio `v6.1.0` removed `RecordingStudio::UsesDefaultLayout`, `recording_studio/action_layout`, and `recording_studio/shared/page_nav`.
+
+1. Require `recording_studio` `>= 6.1.0` and pin tag `v6.1.0`.
+2. Pin `flat_pack` to git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`). `v0.1.315` is the newest tag and is older than that ref.
+3. Pin `view_component` to `4.19.0`.
+4. If Accessible, Trashable, or Metrics still require `recording_studio` below 6, load `test/support/widen_recording_studio_requirement.rb` before Bundler evaluates gemspecs.
+5. Set `config.layout` on `RecordingStudioDuplicatable::Configuration`. `nil` falls through to `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`.
+6. Call `recording_studio_layout { RecordingStudioDuplicatable.configuration.layout }` on the engine controller. Do not hard-code `layout "recording_studio/default_layout"`.
+7. Move page headings to `content_for :title` and `content_for :subtitle`. Mark those strings `html_safe`. The default layout calls `to_s` on the slots, and an already escaped string is escaped again. Use `flat_pack_page_nav` for back and close, and `register_page_nav` for page actions.
+8. Run `bundle exec rake recording_studio:check_layouts` from the dummy app.
+
+Duplication invariants stay the same. Writes stay in a transaction, rows stay locked, and `RecordingStudioAccessible.authorized?` still runs.
+
+## Private gems to public gems
 
 ## Changes Made
 

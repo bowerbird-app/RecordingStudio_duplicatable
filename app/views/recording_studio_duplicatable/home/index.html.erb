@@ -1,12 +1,10 @@
+<% content_for :title, t("recording_studio.duplicatable.home.title", default: "RecordingStudio Duplicatable").to_s.html_safe %>
+<% content_for :subtitle, t(
+  "recording_studio.duplicatable.home.subtitle",
+  default: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables."
+).to_s.html_safe %>
+
 <div style="display: grid; gap: 1.5rem; padding: 1.5rem 0;">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: t("recording_studio.duplicatable.home.title", default: "RecordingStudio Duplicatable"),
-    subtitle: t(
-      "recording_studio.duplicatable.home.subtitle",
-      default: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables."
-    ),
-    variant: :h1
-  ) %>
 
   <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
     <%= render FlatPack::Badge::Component.new(
@@ -27,7 +25,7 @@
   </div>
 
   <div style="display: grid; gap: 1.5rem;">
-    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <%= render FlatPack::Card::Component.new do |card| %>
       <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
             title: t("recording_studio.duplicatable.home.whats_working.title", default: "What's working"),
@@ -49,7 +47,7 @@
       <% end %>
     <% end %>
 
-    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+    <%= render FlatPack::Card::Component.new(border: :default, shadow: :none) do |card| %>
       <% card.header do %>
           <%= render FlatPack::PageTitle::Component.new(
             title: t("recording_studio.duplicatable.home.how_to_use.title", default: "How to use it"),
@@ -81,7 +79,7 @@
         <% end %>
     <% end %>
 
-    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+    <%= render FlatPack::Card::Component.new(border: :default, shadow: :none) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
           title: t("recording_studio.duplicatable.home.flatpack.title", default: "FlatPack usage"),
@@ -107,12 +105,12 @@
           text: t("recording_studio.duplicatable.home.flatpack.docs_button", default: "View FlatPack documentation"),
           style: :primary,
           size: :md,
-          url: "https://github.com/bowerbird-app/flatpack"
+          href: "https://github.com/bowerbird-app/flatpack"
         ) %>
       <% end %>
     <% end %>
 
-    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <%= render FlatPack::Card::Component.new do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
           title: t("recording_studio.duplicatable.home.install_flow.title", default: "Install flow"),

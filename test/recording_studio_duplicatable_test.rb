@@ -64,10 +64,15 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     )
     engine_controller_source = File.read(engine_controller_path)
 
-    assert_includes controller_source, "recording_studio/default_layout"
-    assert_includes controller_source, "RecordingStudio::LayoutHelper"
+    assert_includes controller_source, "recording_studio_layout"
+    assert_includes controller_source, 'devise_controller? ? "application" : nil'
+    refute_includes controller_source, "recording_studio/default_layout"
+    refute_includes controller_source, "RecordingStudio::LayoutHelper"
     refute_includes controller_source, "flat_pack_sidebar"
-    assert_includes engine_controller_source, "RecordingStudio::UsesDefaultLayout"
+    assert_includes engine_controller_source,
+                    "recording_studio_layout { RecordingStudioDuplicatable.configuration.layout }"
+    refute_includes engine_controller_source, "RecordingStudio::UsesDefaultLayout"
+    refute_includes engine_controller_source, 'layout "application"'
   end
 
   def test_dummy_app_stylesheets_link_flatpack_assets_and_remove_custom_theme_overrides
@@ -88,7 +93,13 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/variables"'
     assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/rich_text"'
     assert_includes application_layout_source, 'stylesheet_link_tag "flat_pack/application"'
-    assert_includes default_layout_head_source, 'stylesheet_link_tag "flat_pack/application"'
+    assert_includes default_layout_head_source, 'stylesheet_link_tag "application"'
+    refute_includes default_layout_head_source, "flat_pack/"
+    flatpack_at = application_layout_source.index('stylesheet_link_tag "flat_pack/variables"')
+    tailwind_at = application_layout_source.index('stylesheet_link_tag "tailwind"')
+    assert flatpack_at
+    assert tailwind_at
+    assert_operator flatpack_at, :<, tailwind_at
     assert_includes dummy_gemfile_source, 'gem "tailwindcss-rails"'
     assert_includes tailwind_css_source, '@import "tailwindcss" source(none);'
     assert_includes tailwind_css_source, '@source "../../views/**/*.erb";'
@@ -98,6 +109,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes \
       tailwind_css_source,
       "mise/installs/ruby/*/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb"
+    assert_includes \
+      tailwind_css_source,
+      "usr/local/lib/ruby/gems/*/bundler/gems/flatpack-*/app/components/**/*.rb"
     refute_includes application_css_source, "flat_pack/"
     refute_includes tailwind_css_source, "@theme {"
     refute_includes tailwind_css_source, "--color-fp-primary"
@@ -159,7 +173,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, "duplicate_recording_path_for(folder)"
     assert_includes view_source, "built-in duplication endpoint"
     assert_includes view_source, 'guide_path("setup")'
-    assert_includes view_source, "recording_studio_page_nav"
+    assert_includes view_source, "content_for :title"
+    assert_includes view_source, "register_page_nav"
+    refute_includes view_source, "recording_studio_page_nav"
+    refute_includes view_source, "FlatPack::PageTitle::Component"
     refute_includes view_source, 'class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"'
     refute_includes view_source, "style: :error"
     refute_includes view_source, "xl:grid-cols-2"
@@ -172,7 +189,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes view_source, 'text: "Show"'
     assert_includes view_source, "text: \"\#{child_count} children\""
     assert_includes view_source, 'text: "Duplicate"'
-    assert_includes view_source, "url: recordable_path"
+    assert_includes view_source, "href: recordable_path"
     assert_includes view_source, "form_with url: duplicate_path"
     refute_includes view_source, "card.header"
     refute_includes view_source, "recordable.body.truncate"
@@ -468,10 +485,10 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     view_path = File.expand_path("dummy/app/views/home/index.html.erb", __dir__)
     view_source = File.read(view_path)
 
-    assert_includes view_source, 'url: guide_path("setup")'
-    assert_includes view_source, 'url: guide_path("approach")'
-    assert_includes view_source, 'url: guide_path("use")'
-    assert_includes view_source, 'url: guide_path("methods")'
+    assert_includes view_source, 'href: guide_path("setup")'
+    assert_includes view_source, 'href: guide_path("approach")'
+    assert_includes view_source, 'href: guide_path("use")'
+    assert_includes view_source, 'href: guide_path("methods")'
   end
 
   def test_dummy_top_nav_removes_old_title_text
@@ -540,7 +557,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
-    assert_includes readme_source, 'tag: "v4.7.0"'
+    assert_includes readme_source, 'tag: "v6.1.0"'
     assert_includes readme_source, "RecordingStudio::Capabilities::Duplicatable.to("
     assert_includes readme_source, 'tag: "v0.18.0"'
     assert_includes readme_source, 'tag: "v0.11.0"'
@@ -570,7 +587,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_path = File.expand_path("../recording_studio_duplicatable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", "~> 4.2"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", "~> 0.15"'
   end
 

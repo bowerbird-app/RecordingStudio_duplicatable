@@ -6,7 +6,7 @@ module RecordingStudioDuplicatable
   class Configuration
     attr_accessor :duplication_prefix, :duplication_suffix, :duplication_rename_attribute,
                   :authorization_resolver
-    attr_reader :hooks
+    attr_reader :hooks, :layout
 
     def initialize
       @hooks = Hooks.new
@@ -16,6 +16,11 @@ module RecordingStudioDuplicatable
       @duplication_suffix           = " (Copy)"
       @duplication_rename_attribute = nil # nil = auto-detect :name then :title
       @authorization_resolver       = nil
+      @layout                       = nil
+    end
+
+    def layout=(value)
+      @layout = RecordingStudio::Layout.accept(value)
     end
 
     def to_h
