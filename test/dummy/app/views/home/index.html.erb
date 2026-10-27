@@ -1,26 +1,18 @@
-<% recording_studio_page_nav(title: "Copy a page") %>
-<% recording_studio_page_nav_right do %>
-  <%= render FlatPack::Button::Component.new(
-    text: "Sign out",
-    style: :ghost,
-    size: :md,
-    url: destroy_user_session_path,
-    data: { turbo_method: :delete }
-  ) %>
-<% end %>
+<% content_for :title, "Copy a page".html_safe %>
+<% content_for :subtitle, "These cards post to the gem's built-in duplication endpoint. Pages copy comments, reports skip comments, and folders copy their nested tree.".html_safe %>
+<% register_page_nav(
+  "Sign out",
+  destroy_user_session_path,
+  role: :secondary,
+  data: { turbo_method: :delete }
+) %>
 
 <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Copy a page",
-    subtitle: "These cards post to the gem's built-in duplication endpoint. Pages copy comments, reports skip comments, and folders copy their nested tree.",
-    variant: :h1
-  ) %>
-
   <%= render FlatPack::Grid::Component.new(cols: 4, gap: :md) do %>
-    <%= render FlatPack::Button::Component.new(text: "Setup", style: :secondary, size: :sm, url: guide_path("setup")) %>
-    <%= render FlatPack::Button::Component.new(text: "Approach", style: :secondary, size: :sm, url: guide_path("approach")) %>
-    <%= render FlatPack::Button::Component.new(text: "Use", style: :secondary, size: :sm, url: guide_path("use")) %>
-    <%= render FlatPack::Button::Component.new(text: "Methods", style: :secondary, size: :sm, url: guide_path("methods")) %>
+    <%= render FlatPack::Button::Component.new(text: "Setup", style: :secondary, size: :sm, href: guide_path("setup")) %>
+    <%= render FlatPack::Button::Component.new(text: "Approach", style: :secondary, size: :sm, href: guide_path("approach")) %>
+    <%= render FlatPack::Button::Component.new(text: "Use", style: :secondary, size: :sm, href: guide_path("use")) %>
+    <%= render FlatPack::Button::Component.new(text: "Methods", style: :secondary, size: :sm, href: guide_path("methods")) %>
   <% end %>
 
   <%= render FlatPack::SectionTitle::Component.new(

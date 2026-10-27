@@ -46,7 +46,7 @@ class DuplicatableHostLocaleOverrideTest < ActionDispatch::IntegrationTest
 
   # Test-only fixture applied via backend.load_translations(file) on top of the
   # already-initialized backend — never mutates I18n.load_path (Marshal).
-  test "fresh-backend last-file-wins host fixture overrides gem english on engine home" do
+  test "fresh-backend last-file-wins host fixture overrides dummy english on engine status" do
     assert File.exist?(FRESH_HOST_LOCALE), "expected test-only host override fixture at #{FRESH_HOST_LOCALE}"
     assert_includes File.read(FRESH_HOST_LOCALE), HOST_HOME_TITLE
 
@@ -60,7 +60,7 @@ class DuplicatableHostLocaleOverrideTest < ActionDispatch::IntegrationTest
     assert_equal HOST_HOME_TITLE, I18n.t(HOME_TITLE_KEY)
     assert_equal HOST_NO_RECORDING, I18n.t(OVERRIDE_KEY)
 
-    get "/recording_studio_duplicatable"
+    get "/engine_status"
     assert_response :success
     assert_includes response.body, HOST_HOME_TITLE
     refute_includes response.body, "HOST FlatPack"

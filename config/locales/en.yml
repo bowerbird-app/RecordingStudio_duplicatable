@@ -1,41 +1,6 @@
 en:
   recording_studio:
     duplicatable:
-      home:
-        title: "RecordingStudio Duplicatable"
-        subtitle: "The engine is mounted and ready to provide in-place duplication for Recording Studio recordables."
-        badges:
-          engine_mounted: "Engine mounted"
-          flatpack_enabled: "FlatPack enabled"
-          recursive_duplication: "Recursive duplication"
-        whats_working:
-          title: "What's working"
-          subtitle: "Core addon capabilities already wired in."
-          routes: "Rails engine routes are mounted and responding."
-          no_tables: "The behavior-only engine does not add host application tables."
-          flatpack: "FlatPack now drives the dummy app styling directly, including the Rounded theme."
-          dummy: "The dummy app exercises authentication, FlatPack layouts, Recording Studio setup, and live duplication."
-        how_to_use:
-          title: "How to use it"
-          subtitle: "The standard path for enabling duplication in a host app."
-          install_accessible: "Install <code>recording_studio_accessible</code>, run its install + migration generators, and apply its migrations before using duplication."
-          add_gem: "Add the gem to the host app and run <code>rails generate recording_studio_duplicatable:install</code> if you want the initializer and mount."
-          opt_in: "Opt the desired recordable types in with <code>include RecordingStudio::Capabilities::Duplicatable.to(**opts)</code>."
-          configure: "Configure Recording Studio recordable types and capability options in the host app initializer."
-          validate: "Use the dummy app to validate recursive duplication, asset scanning, and authentication flows."
-        flatpack:
-          title: "FlatPack usage"
-          subtitle: "This page itself now uses FlatPack components for its primary UI structure."
-          body: "Use FlatPack cards, buttons, badges, inputs, and layout primitives as the default path for addon UI. Keep raw HTML for simple semantic content only."
-          docs_button: "View FlatPack documentation"
-        install_flow:
-          title: "Install flow"
-          subtitle: "What the host app generator path covers."
-          bundle: "Add the gem to your host app and run <code>bundle install</code>."
-          accessible_generators: "Run <code>rails generate recording_studio_accessible:install</code>, then <code>rails generate recording_studio_accessible:migrations</code>, then <code>bin/rails db:migrate</code>."
-          duplicatable_install: "Run <code>rails generate recording_studio_duplicatable:install</code> to mount the engine and add configuration."
-          no_migrations: "No RecordingStudio Duplicatable migrations are required; use the install generator for mount and configuration only."
-          styles: "Verify your host app styles do not override the FlatPack tokens you want to keep."
       flashes:
         no_actor: "No current actor is available to duplicate this recording."
         no_recording: "No recording is available to duplicate."

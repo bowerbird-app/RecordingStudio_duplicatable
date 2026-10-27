@@ -3,11 +3,8 @@
 module RecordingStudioDuplicatable
   class ApplicationController < (defined?(::ApplicationController) ? ::ApplicationController : ActionController::Base)
     protect_from_forgery with: :exception
-    if defined?(RecordingStudio::UsesDefaultLayout)
-      include RecordingStudio::UsesDefaultLayout
-    else
-      layout "application"
-    end
+
+    recording_studio_layout { RecordingStudioDuplicatable.configuration.layout }
 
     private
 

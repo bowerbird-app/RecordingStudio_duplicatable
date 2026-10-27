@@ -1,4 +1,4 @@
-<%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+<%= render FlatPack::Card::Component.new(border: :default, shadow: :none) do |card| %>
   <% card.body do %>
     <article style="display: grid; gap: 1rem;">
       <%= render FlatPack::PageTitle::Component.new(
@@ -17,7 +17,7 @@
           text: "Show",
           style: :ghost,
           size: :sm,
-          url: recordable_path
+          href: recordable_path
         ) %>
 
         <% if duplicate_path.present? %>

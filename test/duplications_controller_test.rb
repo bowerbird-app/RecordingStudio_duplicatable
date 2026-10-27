@@ -16,7 +16,6 @@ module RecordingStudioDuplicatable
         post "/recordings/:recording_id/duplicate",
              to: "recording_studio_duplicatable/duplications#create",
              as: :duplicate_recording
-        root to: "recording_studio_duplicatable/home#index"
       end
       @original_allow_forgery_protection = ActionController::Base.allow_forgery_protection
       ActionController::Base.allow_forgery_protection = false

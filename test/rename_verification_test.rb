@@ -39,7 +39,6 @@ class RenameVerificationTest < Minitest::Test
       File.join(@root, "lib", "recording_studio_duplicatable.rb"),
       File.join(@root, "lib", "recording_studio_duplicatable"),
       File.join(@root, "app", "controllers", "recording_studio_duplicatable"),
-      File.join(@root, "app", "views", "recording_studio_duplicatable"),
       File.join(@root, "lib", "generators", "recording_studio_duplicatable")
     ]
 

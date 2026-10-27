@@ -18,7 +18,8 @@
 Add Recording Studio core, Recording Studio Accessible, and this addon to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.7.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
+gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"
 # Accessible 0.17 needs Trashable query helpers; pin for Bundler resolution only.
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0", require: false
@@ -42,7 +43,9 @@ The installer mounts the engine so host app views can use the built-in duplicate
 Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?` from the extracted access addon.
 Configure `RecordingStudioAccessible.configure { |c| c.access_actor_types = ["User"] }` (or your actor types) before granting access — blank allowlists reject new grants since Accessible 0.5.0.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
-RecordingStudio 4 also installs a harden migration for unique root recordings and composite indexes — run `recording_studio:migrations` and migrate before relying on writes under concurrency.
+Recording Studio 6.1 uses the shared `recording_studio/default_layout` shell. `flat_pack` `0.1.319` (git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56`) supplies the page title and page nav that shell renders. Tag `v0.1.315` is the newest Flatpack tag. `main` at that ref reports `FlatPack::VERSION = "0.1.319"`.
+
+Recording Studio 4 also installs a harden migration for unique root recordings and composite indexes. Run `recording_studio:migrations` and migrate before relying on writes under concurrency.
 
 ## Opting a model into duplication
 
@@ -79,6 +82,7 @@ RecordingStudioDuplicatable.configure do |config|
   config.duplication_prefix = nil
   config.duplication_suffix = " (Copy)"
   config.duplication_rename_attribute = nil
+  config.layout = nil
 end
 ```
 
@@ -94,8 +98,15 @@ Available options:
 | `duplication_prefix` | Prefix added to a duplicate name/title |
 | `duplication_suffix` | Suffix added to a duplicate name/title |
 | `duplication_rename_attribute` | Force the rename attribute instead of auto-detecting `name`/`title` |
+| `layout` | Layout for this gem's controllers. `nil` uses `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` renders with no layout. A String is a layout name. A callable must be `->(controller:) { ... }` and return a String, `nil`, or `false`. |
 | `include_children` | Only duplicate descendants of these recordable types |
 | `exclude_children` | Duplicate descendants except these recordable types |
+
+`RecordingStudioDuplicatable::ApplicationController` calls `recording_studio_layout { RecordingStudioDuplicatable.configuration.layout }`. `DuplicationsController` inherits that call. The engine ships no views and no home route. The dummy app renders the overview at `/engine_status`. Do not set `layout "recording_studio/default_layout"` on the engine controller. Invalid `config.layout` values raise `ArgumentError` when assigned.
+
+Pass title and subtitle strings to `content_for` with `html_safe`. The default layout calls `to_s` on those slots. A string that was already escaped is escaped again, and an apostrophe shows up as a character entity.
+
+This gem requires `recording_studio` `>= 6.1.0` and, for the default layout, `flat_pack` `>= 0.1.315`. Pin `view_component` to `4.19.0` (`>= 4.14` and `< 5`) in the host Gemfile.
 
 ## Usage
 

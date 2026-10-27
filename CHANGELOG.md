@@ -7,11 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-27
+
 ### Changed
-- Test app and runtime dependency pin Recording Studio Accessible `v0.11.1` (`~> 0.11`). Dummy installs Accessible 0.8–0.11 migrations (string `role`, invitations, dependent grants) and seeds the first owner with `bootstrap_owner_access!`.
+- Version `0.5.0` to `0.6.0`
+- Runtime dependency is now `recording_studio` `>= 6.1.0` (tested with tag `v6.1.0`)
+- Development and dummy apps pin `flat_pack` git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`) and `view_component` `4.19.0`
+- `RecordingStudioDuplicatable::Configuration` stores `layout` through `RecordingStudio::Layout.accept`. The default is `nil`
+- `RecordingStudioDuplicatable::ApplicationController` calls `recording_studio_layout` with that setting. `UsesDefaultLayout` and `layout "recording_studio/default_layout"` are gone
+- The engine no longer ships `HomeController`, views, or `root "home#index"`. Its only route is `POST recordings/:recording_id/duplicate`. The overview page and `recording_studio.duplicatable.home.*` copy live in the dummy app at `/engine_status`
+- Dummy pages set `content_for :title` and `content_for :subtitle`. The default layout renders the single page heading. Back links use `flat_pack_page_nav`. Page actions use `register_page_nav`
+- Cards use `background`, `border`, and `shadow`. The removed `style:` keyword is gone from dummy views
 
 ### Upgrade Notes
-- Host apps must move to Recording Studio Accessible `~> 0.11` (`tag: "v0.11.1"` where a git tag is used). Run `bin/rails generate recording_studio_accessible:migrations` and `bin/rails db:migrate` so `depends_on_recording_id`, invitations, and string roles are installed. Grant through `bootstrap_owner_access!` / `grant_access` — `RecordingStudio::Access` is readonly.
+- Move the host app to Recording Studio `v6.1.0` or newer (`tag: "v6.1.0"` when the gem comes from git). Stay on `0.5.x` if you are still on Recording Studio 4.
+- Set `config.layout` only when this gem's screens should use a different layout than `RecordingStudio.configuration.layout`. Leave it `nil` to keep the shared default layout.
+- Replace `recording_studio_page_nav` and inline page-level `FlatPack::PageTitle::Component` calls with `content_for :title`, `content_for :subtitle`, `flat_pack_page_nav`, and `register_page_nav`.
+- Remove `style:` from `FlatPack::Card::Component`. Use `border:` and `shadow:` instead.
+- Load Flatpack stylesheets before Tailwind.
+- Sibling gems that still require `recording_studio` below 6 need a Bundler override such as `test/support/widen_recording_studio_requirement.rb` before `bundle install` can resolve `v6.1.0`.
+- Duplication behavior is unchanged. Copy writes stay inside a transaction with row locks, and authorization still goes through `RecordingStudioAccessible.authorized?`.
 
 ## [0.5.0] - 2026-10-13
 
