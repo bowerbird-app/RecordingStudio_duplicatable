@@ -5,7 +5,7 @@ require "yaml"
 require "i18n"
 
 class LocalesTest < Minitest::Test
-  # rubocop:disable Style/FormatStringToken, Layout/LineLength -- I18n tokens / locale literals match en.yml
+  # rubocop:disable Style/FormatStringToken -- I18n tokens match en.yml
   EXPECTED_LEAVES = {
     "recording_studio.duplicatable.flashes.no_actor" =>
       "No current actor is available to duplicate this recording.",
@@ -15,7 +15,7 @@ class LocalesTest < Minitest::Test
     "recording_studio.duplicatable.errors.access_denied" =>
       "Actor does not have :edit access for duplication"
   }.freeze
-  # rubocop:enable Style/FormatStringToken, Layout/LineLength
+  # rubocop:enable Style/FormatStringToken
 
   def setup
     seed_gem_english_translations!
