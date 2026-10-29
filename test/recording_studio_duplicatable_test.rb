@@ -27,7 +27,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
   end
 
   def test_version_exists
-    refute_nil ::RecordingStudioDuplicatable::VERSION
+    assert_equal "0.6.1", ::RecordingStudioDuplicatable::VERSION
   end
 
   def test_duplicatable_capability_requires_recording_studio_capability_support
