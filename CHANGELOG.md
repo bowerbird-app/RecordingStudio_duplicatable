@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-29
+
+### Changed
+- Version `0.6.0` to `0.6.1`
+- Agent and Copilot project notes use `RecordingStudioDuplicatable` instead of leftover `GemTemplate` wording
+- README names Flatpack tag `v0.1.329` as the current newest tag. The dummy and development pin is still git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`)
+
+### Upgrade Notes
+- Bump to `0.6.1`. No migration. No behavior change.
+
 ## [0.6.0] - 2026-10-27
 
 ### Changed
@@ -121,7 +131,9 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.3.0...v0.4.0

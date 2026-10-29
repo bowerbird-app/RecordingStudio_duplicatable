@@ -43,7 +43,7 @@ The installer mounts the engine so host app views can use the built-in duplicate
 Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?` from the extracted access addon.
 Configure `RecordingStudioAccessible.configure { |c| c.access_actor_types = ["User"] }` (or your actor types) before granting access — blank allowlists reject new grants since Accessible 0.5.0.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
-Recording Studio 6.1 uses the shared `recording_studio/default_layout` shell. `flat_pack` `0.1.319` (git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56`) supplies the page title and page nav that shell renders. Tag `v0.1.315` is the newest Flatpack tag. `main` at that ref reports `FlatPack::VERSION = "0.1.319"`.
+Recording Studio 6.1 uses the shared `recording_studio/default_layout` shell. `flat_pack` `0.1.319` (git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56`) supplies the page title and page nav that shell renders. Tag `v0.1.329` is the newest Flatpack tag. `main` at that ref reports `FlatPack::VERSION = "0.1.319"`.
 
 Recording Studio 4 also installs a harden migration for unique root recordings and composite indexes. Run `recording_studio:migrations` and migrate before relying on writes under concurrency.
 
