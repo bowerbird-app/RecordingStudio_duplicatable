@@ -8,17 +8,18 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_merge_updates_known_attributes
-    resolver = ->(**_) { true }
-
     @configuration.merge!(
       duplication_prefix: "[copy] ",
-      duplication_suffix: " [dup]",
-      authorization_resolver: resolver
+      duplication_suffix: " [dup]"
     )
 
     assert_equal "[copy] ", @configuration.duplication_prefix
     assert_equal " [dup]", @configuration.duplication_suffix
-    assert_equal resolver, @configuration.authorization_resolver
+  end
+
+  def test_authorization_resolver_is_not_a_configuration_hook
+    refute_respond_to @configuration, :authorization_resolver
+    refute_respond_to @configuration, :authorization_resolver=
   end
 
   def test_merge_ignores_unknown_keys
@@ -57,7 +58,7 @@ class ConfigurationTest < Minitest::Test
 
     assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
     assert_equal 1, result.fetch(:hooks_registered).fetch(:after_service)
-    assert_equal false, result.fetch(:authorization_resolver_configured)
+    refute result.key?(:authorization_resolver_configured)
   end
 
   def test_configure_without_block_is_safe

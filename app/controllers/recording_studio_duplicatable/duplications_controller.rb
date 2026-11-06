@@ -83,7 +83,19 @@ module RecordingStudioDuplicatable
     def find_recording
       return unless defined?(RecordingStudio::Recording)
 
-      RecordingStudio::Recording.unscoped.find_by(id: params[:recording_id])
+      recording = RecordingStudio::Recording.find_by(id: params[:recording_id])
+      return unless recording
+      return unless recording_visible_to_actor?(recording)
+
+      recording
+    end
+
+    def recording_visible_to_actor?(recording)
+      RecordingStudioDuplicatable.authorized?(
+        actor: current_duplication_actor,
+        recording: recording,
+        role: :view
+      )
     end
 
     def duplicated_recordable_label(recording)

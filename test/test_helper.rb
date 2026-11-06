@@ -21,3 +21,26 @@ ActiveSupport.on_load(:action_controller_base) do
 end
 
 ActionController::Base.include(RecordingStudio::ControllerLayout) if defined?(ActionController::Base)
+
+ACCESSIBLE_AUTHORIZED = RecordingStudioAccessible.method(:authorized?) if defined?(RecordingStudioAccessible)
+
+module Minitest
+  class Test
+    def setup
+      reset_current_attributes!
+      super
+    end
+
+    def teardown
+      super
+      reset_current_attributes!
+    end
+
+    def reset_current_attributes!
+      return unless defined?(Current)
+      return unless Current.respond_to?(:reset)
+
+      Current.reset
+    end
+  end
+end

@@ -4,8 +4,7 @@ require_relative "hooks"
 
 module RecordingStudioDuplicatable
   class Configuration
-    attr_accessor :duplication_prefix, :duplication_suffix, :duplication_rename_attribute,
-                  :authorization_resolver
+    attr_accessor :duplication_prefix, :duplication_suffix, :duplication_rename_attribute
     attr_reader :hooks, :layout
 
     def initialize
@@ -15,7 +14,6 @@ module RecordingStudioDuplicatable
       @duplication_prefix           = nil
       @duplication_suffix           = " (Copy)"
       @duplication_rename_attribute = nil # nil = auto-detect :name then :title
-      @authorization_resolver       = nil
       @layout                       = nil
     end
 
@@ -28,7 +26,6 @@ module RecordingStudioDuplicatable
         duplication_prefix: duplication_prefix,
         duplication_suffix: duplication_suffix,
         duplication_rename_attribute: duplication_rename_attribute,
-        authorization_resolver_configured: !authorization_resolver.nil?,
         hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
       }
     end
