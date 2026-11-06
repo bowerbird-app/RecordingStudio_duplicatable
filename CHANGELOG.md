@@ -14,13 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RecordingStudioDuplicatable.authorized?` always calls `RecordingStudioAccessible.authorized?`. Hosts can no longer replace that check with `config.authorization_resolver`
 - The built-in duplicate endpoint loads the target with `RecordingStudio::Recording.find_by` and requires Accessible `:view` before duplication. Trashed or otherwise unscoped rows are no longer found this way
 - Dummy home lists and show pages only include recordings the current actor can `:view`
-- Runtime Accessible dependency is `>= 0.15`. Development pins Recording Studio `v6.5.0`, Accessible `v0.24.2`, Trashable `v0.12.3`, and Metrics `v0.7.3`. Dummy `authorize_write` uses `RecordingStudioAccessible.authorized?` and seeded owner grants, not `actor.present?`
+- Runtime Accessible dependency is `>= 0.15`. Development pins Recording Studio `v6.5.0`, Accessible `v0.24.2`, Trashable `v0.12.3`, and Metrics `v0.7.3`. Dummy `authorize_write` uses Accessible (`AccessCreationContext` for Access rows; otherwise `:edit` / `:admin`), not `actor.present?` or a self-grant
 
 ### Upgrade Notes
 - Bump to `0.7.0`. No migration.
 - Remove any `config.authorization_resolver` assignment. Grant `:edit` through Recording Studio Accessible instead of a custom resolver.
 - Duplicate requests for recordings the actor cannot `:view` now flash the missing-recording message instead of an access-denied error. `:view` without `:edit` still fails duplication with the access-denied flash.
-- Pin `recording_studio_accessible` to `v0.24.2` (or another `>= 0.15` release). Pin Recording Studio to `v6.5.0` in the host Gemfile. Set `config.authorize_write` through Accessible; do not use `actor.present?`.
+- Pin `recording_studio_accessible` to `v0.24.2` (or another `>= 0.15` release). Pin Recording Studio to `v6.5.0` in the host Gemfile. Set `config.authorize_write` through Accessible (`AccessCreationContext` for Access grants); do not use `actor.present?` or a self-grant.
 
 ## [0.6.2] - 2026-11-05
 

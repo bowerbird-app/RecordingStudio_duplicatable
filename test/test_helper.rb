@@ -24,23 +24,23 @@ ActionController::Base.include(RecordingStudio::ControllerLayout) if defined?(Ac
 
 ACCESSIBLE_AUTHORIZED = RecordingStudioAccessible.method(:authorized?) if defined?(RecordingStudioAccessible)
 
-module ResetCurrentAttributes
-  def setup
-    reset_current_attributes!
-    super
-  end
+module Minitest
+  class Test
+    def setup
+      reset_current_attributes!
+      super
+    end
 
-  def teardown
-    super
-    reset_current_attributes!
-  end
+    def teardown
+      super
+      reset_current_attributes!
+    end
 
-  def reset_current_attributes!
-    return unless defined?(Current)
-    return unless Current.respond_to?(:reset)
+    def reset_current_attributes!
+      return unless defined?(Current)
+      return unless Current.respond_to?(:reset)
 
-    Current.reset
+      Current.reset
+    end
   end
 end
-
-Minitest::Test.prepend(ResetCurrentAttributes)

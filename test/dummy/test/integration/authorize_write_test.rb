@@ -15,6 +15,8 @@ class AuthorizeWriteTest < ActiveSupport::TestCase
 
     assert_includes initializer, "config.authorize_write"
     assert_includes initializer, "RecordingStudioAccessible.authorized?"
+    assert_includes initializer, "AccessCreationContext.allowed?"
+    refute_includes initializer, "recordable.actor == actor"
     refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer)
     refute_includes initializer, "allow_unauthorized_writes = true"
   end
@@ -39,5 +41,21 @@ class AuthorizeWriteTest < ActiveSupport::TestCase
 
     refute authorizer.call(actor: outsider, root_recording: @root_recording, recordable: folder)
     assert authorizer.call(actor: @admin, root_recording: @root_recording, recordable: folder)
+  end
+
+  test "dummy authorize_write allows Access rows through AccessCreationContext not self-grant" do
+    authorizer = RecordingStudio.configuration.authorize_write
+    outsider = User.create!(
+      email: "access-outsider-#{SecureRandom.hex(4)}@example.com",
+      password: "Password",
+      password_confirmation: "Password"
+    )
+    access = RecordingStudio::Access.new(actor: outsider, role: :view)
+
+    refute authorizer.call(actor: outsider, root_recording: @root_recording, recordable: access)
+    assert RecordingStudioAccessible::AccessCreationContext.allow {
+      authorizer.call(actor: outsider, root_recording: @root_recording, recordable: access)
+    }
+    assert authorizer.call(actor: @admin, root_recording: @root_recording, recordable: access)
   end
 end

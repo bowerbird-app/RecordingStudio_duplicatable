@@ -7,16 +7,12 @@ require "rails/test_help"
 
 ActiveRecord::Migration.maintain_test_schema!
 
-module ResetCurrentAttributes
-  def setup
+class ActiveSupport::TestCase
+  setup do
     Current.reset if defined?(Current) && Current.respond_to?(:reset)
-    super
   end
 
-  def teardown
-    super
+  teardown do
     Current.reset if defined?(Current) && Current.respond_to?(:reset)
   end
 end
-
-ActiveSupport::TestCase.prepend(ResetCurrentAttributes)

@@ -44,7 +44,7 @@ Install and configure `recording_studio_accessible` before using duplication so 
 Configure `RecordingStudioAccessible.configure { |c| c.access_actor_types = ["User"] }` (or your actor types) before granting access — blank allowlists reject new grants since Accessible 0.5.0.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
 Recording Studio 6.5 uses the shared `recording_studio/default_layout` shell via `recording_studio_layout`. `flat_pack` `0.1.319` (git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56`) supplies the page title and page nav that shell renders. `main` at that ref reports `FlatPack::VERSION = "0.1.319"`.
-Set `RecordingStudio.configuration.authorize_write` through `RecordingStudioAccessible.authorized?` (seeded owner grants in the dummy). Do not use `actor.present?` as a write policy.
+Set `RecordingStudio.configuration.authorize_write` through Accessible (`AccessCreationContext` for Access grants, then `:edit` / `:admin` on the root). Do not use `actor.present?` or a self-grant as a write policy.
 
 Recording Studio 4 also installs a harden migration for unique root recordings and composite indexes. Run `recording_studio:migrations` and migrate before relying on writes under concurrency.
 

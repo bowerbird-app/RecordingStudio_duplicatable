@@ -560,6 +560,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
 
     assert_includes initializer_source, "config.authorize_write"
     assert_includes initializer_source, "RecordingStudioAccessible.authorized?"
+    assert_includes initializer_source, "AccessCreationContext.allowed?"
+    refute_includes initializer_source, "recordable.actor == actor"
     refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer_source)
     refute_includes initializer_source, "allow_unauthorized_writes = true"
   end
