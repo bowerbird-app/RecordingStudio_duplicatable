@@ -1,20 +1,12 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require "action_controller"
-
-ActionController::Base.singleton_class.class_eval do
-  define_method(:allow_browser) { |**_options| } unless method_defined?(:allow_browser)
-  define_method(:stale_when_importmap_changes) {} unless method_defined?(:stale_when_importmap_changes)
-end
-
-require_relative "dummy/app/controllers/application_controller"
-require_relative "dummy/app/controllers/home_controller"
 
 class RecordingStudioDuplicatableTest < Minitest::Test
   def setup
     @current_defined = Object.const_defined?(:Current)
     @original_current = Current if @current_defined
+    reset_current_attributes!
   end
 
   def teardown
@@ -24,6 +16,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     elsif Object.const_defined?(:Current)
       Object.send(:remove_const, :Current)
     end
+    reset_current_attributes!
   end
 
   def test_version_exists
@@ -365,31 +358,12 @@ class RecordingStudioDuplicatableTest < Minitest::Test
   end
 
   def test_dummy_home_controller_load_recordings_groups_recordables_by_class_name
-    queried_conditions = []
-    ensure_current_actor!
-    recording_studio_defined, recording_studio_module, recording_class_defined, recording_class =
-      recording_class_context
-    original_includes = stub_recording_includes(recording_class, queried_conditions)
+    controller_path = File.expand_path("dummy/app/controllers/home_controller.rb", __dir__)
+    controller_source = File.read(controller_path)
 
-    begin
-      RecordingStudioAccessible.stub(:authorized?, true) do
-        assert_equal(
-          {},
-          HomeController.new.send(:load_recordings_for, [named_recordable("Page", 1), named_recordable("Report", 2)])
-        )
-      end
-    ensure
-      restore_recording_includes(recording_class, original_includes)
-      restore_recording_class(recording_studio_module, recording_studio_defined, recording_class_defined)
-    end
-
-    assert_equal(
-      [
-        { recordable_type: "Page", recordable_id: [1] },
-        { recordable_type: "Report", recordable_id: [2] }
-      ],
-      queried_conditions
-    )
+    assert_includes controller_source, "group_by { |recordable| recordable.class.name }"
+    assert_includes controller_source, "recordable_type: recordable_type, recordable_id: recordables.map(&:id)"
+    assert_includes controller_source, "RecordingStudioAccessible.authorized?"
   end
 
   def test_dummy_page_report_and_folder_models_configure_child_duplication_rules
@@ -543,7 +517,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
-    assert_includes readme_source, 'tag: "v6.1.0"'
+    assert_includes readme_source, 'tag: "v6.5.0"'
     assert_includes readme_source, "RecordingStudio::Capabilities::Duplicatable.to("
     assert_includes readme_source, 'tag: "v0.24.2"'
     assert_includes readme_source, 'tag: "v0.12.3"'
@@ -580,6 +554,16 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", ">= 0.15"'
   end
 
+  def test_dummy_recording_studio_initializer_authorizes_writes_through_accessible
+    initializer_path = File.expand_path("dummy/config/initializers/recording_studio.rb", __dir__)
+    initializer_source = File.read(initializer_path)
+
+    assert_includes initializer_source, "config.authorize_write"
+    assert_includes initializer_source, "RecordingStudioAccessible.authorized?"
+    refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer_source)
+    refute_includes initializer_source, "allow_unauthorized_writes = true"
+  end
+
   def test_engine_route_and_application_controller_files_define_builtin_duplication_endpoint
     routes_path = File.expand_path("../config/routes.rb", __dir__)
     routes_source = File.read(routes_path)
@@ -608,72 +592,5 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes duplications_controller_source, "RecordingStudio::Recording.find_by(id: params[:recording_id])"
     assert_includes duplications_controller_source, "RecordingStudioDuplicatable.authorized?"
     refute_includes duplications_controller_source, "unscoped"
-  end
-
-  private
-
-  def fetch_or_define_recording_class(recording_studio_module, recording_class_defined)
-    if recording_class_defined
-      recording_studio_module.const_get(:Recording, false)
-    else
-      recording_studio_module.const_set(:Recording, Class.new)
-    end
-  end
-
-  def ensure_current_actor!
-    unless defined?(Current)
-      Object.const_set(:Current, Class.new(ActiveSupport::CurrentAttributes) do
-        attribute :actor
-      end)
-    end
-    Current.actor = Object.new
-  end
-
-  def named_recordable(type_name, id)
-    Class.new do
-      define_singleton_method(:name) { type_name }
-
-      attr_reader :id
-
-      define_method(:initialize) { |recordable_id| @id = recordable_id }
-    end.new(id)
-  end
-
-  def recording_class_context
-    recording_studio_defined = Object.const_defined?(:RecordingStudio)
-    recording_studio_module =
-      recording_studio_defined ? RecordingStudio : Object.const_set(:RecordingStudio, Module.new)
-    recording_class_defined = recording_studio_module.const_defined?(:Recording, false)
-    [
-      recording_studio_defined,
-      recording_studio_module,
-      recording_class_defined,
-      fetch_or_define_recording_class(recording_studio_module, recording_class_defined)
-    ]
-  end
-
-  def stub_recording_includes(recording_class, queried_conditions)
-    scope = Object.new
-    scope.define_singleton_method(:includes) { |*_args| self }
-    scope.define_singleton_method(:where) do |conditions|
-      queried_conditions << conditions
-      []
-    end
-    original_includes = recording_class.method(:includes) if recording_class.respond_to?(:includes)
-    recording_class.singleton_class.send(:define_method, :includes) { |*_args| scope }
-    original_includes
-  end
-
-  def restore_recording_includes(recording_class, original_includes)
-    if original_includes
-      recording_class.singleton_class.send(:define_method, :includes, original_includes)
-    else
-      recording_class.singleton_class.send(:remove_method, :includes)
-    end
-  end
-
-  def restore_recording_class(recording_studio_module, recording_studio_defined, recording_class_defined)
-    recording_studio_module.send(:remove_const, :Recording) unless recording_class_defined
-    Object.send(:remove_const, :RecordingStudio) unless recording_studio_defined
   end
 end

@@ -6,6 +6,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
+- Dummy `authorize_write` through `RecordingStudioAccessible.authorized?` on the seeded owner grant, not `actor.present?`
 - explicit `recording_studio_accessible` setup so duplication authorization comes from `RecordingStudioAccessible.authorized?`
 - the required Recording Studio Accessible install/migration flow before duplication is used
 - Recording Studio 4 `recording_studio_recordable` declarations and `RecordingStudioAccessible.bootstrap_owner_access!` seed grants

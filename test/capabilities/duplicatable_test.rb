@@ -508,6 +508,49 @@ module RecordingStudioDuplicatable
         assert_equal [{ actor: :user, recording: :recording, role: :edit }], calls
       end
 
+      def test_authorized_is_false_when_accessible_returns_false
+        RecordingStudioAccessible.stub(:authorized?, false) do
+          refute RecordingStudioDuplicatable.authorized?(actor: :user, recording: :recording, role: :edit)
+        end
+      end
+
+      def test_authorized_is_false_when_accessible_returns_nil
+        RecordingStudioAccessible.stub(:authorized?, nil) do
+          refute RecordingStudioDuplicatable.authorized?(actor: :user, recording: :recording, role: :view)
+        end
+      end
+
+      def test_authorized_denies_edit_when_accessible_only_allows_view
+        RecordingStudioAccessible.stub(:authorized?, ->(role:, **) { role == :view }) do
+          assert RecordingStudioDuplicatable.authorized?(actor: :user, recording: :recording, role: :view)
+          refute RecordingStudioDuplicatable.authorized?(actor: :user, recording: :recording, role: :edit)
+        end
+      end
+
+      def test_duplicate_in_place_denies_when_accessible_returns_nil
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Original")
+        )
+
+        RecordingStudioAccessible.stub(:authorized?, nil) do
+          assert_raises(RecordingStudioDuplicatable::AccessDenied) do
+            recording.duplicate_in_place!(actor: :user)
+          end
+        end
+      end
+
+      def test_duplicate_in_place_denies_when_actor_has_view_but_not_edit
+        recording = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Original")
+        )
+
+        RecordingStudioAccessible.stub(:authorized?, ->(role:, **) { role == :view }) do
+          assert_raises(RecordingStudioDuplicatable::AccessDenied) do
+            recording.duplicate_in_place!(actor: :user)
+          end
+        end
+      end
+
       def test_uses_parent_recording_for_authorization_when_present
         parent = FakeRecording.new(id: 99)
         recording = FakeRecording.new(

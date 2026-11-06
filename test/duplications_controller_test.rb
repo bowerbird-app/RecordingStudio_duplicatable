@@ -22,6 +22,7 @@ module RecordingStudioDuplicatable
       setup_current_class
       setup_recording_studio
       RecordingStudioAccessible.define_singleton_method(:authorized?) { |**| true }
+      reset_current_attributes!
     end
 
     def teardown
@@ -29,6 +30,7 @@ module RecordingStudioDuplicatable
       restore_accessible_authorized
       restore_current_class
       restore_recording_studio
+      reset_current_attributes!
     end
 
     def test_engine_route_exposes_duplicate_recording_path
@@ -147,6 +149,28 @@ module RecordingStudioDuplicatable
       assert_equal "No recording is available to duplicate.", flash[:alert]
     end
 
+    def test_create_redirects_with_alert_when_view_authorization_is_nil
+      Current.actor = :current_actor
+      recording = build_recording(id: "rec-nil-view", title: "Hidden")
+      install_recording_scope(recording)
+      called = false
+      RecordingStudioAccessible.define_singleton_method(:authorized?) { |**| nil }
+
+      RecordingStudioDuplicatable::Services::DuplicationService.stub(
+        :call,
+        lambda do |**_kwargs|
+          called = true
+          success_result(nil)
+        end
+      ) do
+        post :create, params: { recording_id: "rec-nil-view" }
+      end
+
+      refute called
+      assert_redirected_to "/"
+      assert_equal "No recording is available to duplicate.", flash[:alert]
+    end
+
     def test_create_redirects_with_alert_when_actor_cannot_view_recording
       Current.actor = :current_actor
       recording = build_recording(id: "rec-hidden", title: "Hidden")
@@ -231,6 +255,7 @@ module RecordingStudioDuplicatable
     end
 
     def restore_current_class
+      Current.reset if defined?(Current) && Current.respond_to?(:reset)
       Object.send(:remove_const, :Current) if Object.const_defined?(:Current)
       Object.const_set(:Current, @original_current) if @current_defined
     end

@@ -1,12 +1,10 @@
 source "https://rubygems.org"
 
-require_relative "../support/widen_recording_studio_requirement"
-
 # Use the local duplicatable addon engine
 gem "recording_studio_duplicatable", path: "../.."
 
 # RecordingStudio engine
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.5.0"
 gem "recording_studio_accessible",
     github: "bowerbird-app/RecordingStudio_accessible",
     tag: "v0.24.2"

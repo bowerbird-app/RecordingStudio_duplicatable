@@ -2,12 +2,10 @@
 
 source "https://rubygems.org"
 
-require_relative "test/support/widen_recording_studio_requirement"
-
 # Specify your gem's dependencies in recording_studio_duplicatable.gemspec
 gemspec
 
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.5.0"
 gem "recording_studio_accessible",
     github: "bowerbird-app/RecordingStudio_accessible",
     tag: "v0.24.2"
