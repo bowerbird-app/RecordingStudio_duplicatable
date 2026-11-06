@@ -21,10 +21,12 @@ module RecordingStudioDuplicatable
       ActionController::Base.allow_forgery_protection = false
       setup_current_class
       setup_recording_studio
+      RecordingStudioAccessible.define_singleton_method(:authorized?) { |**| true }
     end
 
     def teardown
       ActionController::Base.allow_forgery_protection = @original_allow_forgery_protection
+      restore_accessible_authorized
       restore_current_class
       restore_recording_studio
     end
@@ -145,6 +147,28 @@ module RecordingStudioDuplicatable
       assert_equal "No recording is available to duplicate.", flash[:alert]
     end
 
+    def test_create_redirects_with_alert_when_actor_cannot_view_recording
+      Current.actor = :current_actor
+      recording = build_recording(id: "rec-hidden", title: "Hidden")
+      install_recording_scope(recording)
+      called = false
+      RecordingStudioAccessible.define_singleton_method(:authorized?) { |**| false }
+
+      RecordingStudioDuplicatable::Services::DuplicationService.stub(
+        :call,
+        lambda do |**_kwargs|
+          called = true
+          success_result(nil)
+        end
+      ) do
+        post :create, params: { recording_id: "rec-hidden" }
+      end
+
+      refute called
+      assert_redirected_to "/"
+      assert_equal "No recording is available to duplicate.", flash[:alert]
+    end
+
     def test_create_redirects_with_failure_message_when_duplication_is_denied
       Current.actor = :current_actor
       recording = build_recording(id: "rec-4", title: "Folder (Copy)")
@@ -169,12 +193,16 @@ module RecordingStudioDuplicatable
     end
 
     def install_recording_scope(recording)
-      scope = Object.new
-      scope.define_singleton_method(:find_by) do |id:|
+      @recording_class.define_singleton_method(:find_by) do |id:|
         id == recording&.id ? recording : nil
       end
+    end
 
-      @recording_class.define_singleton_method(:unscoped) { scope }
+    def restore_accessible_authorized
+      original = ACCESSIBLE_AUTHORIZED
+      RecordingStudioAccessible.define_singleton_method(:authorized?) do |**kwargs|
+        original.call(**kwargs)
+      end
     end
 
     def success_result(recording)

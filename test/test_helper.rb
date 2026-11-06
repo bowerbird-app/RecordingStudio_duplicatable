@@ -21,3 +21,5 @@ ActiveSupport.on_load(:action_controller_base) do
 end
 
 ActionController::Base.include(RecordingStudio::ControllerLayout) if defined?(ActionController::Base)
+
+ACCESSIBLE_AUTHORIZED = RecordingStudioAccessible.method(:authorized?) if defined?(RecordingStudioAccessible)

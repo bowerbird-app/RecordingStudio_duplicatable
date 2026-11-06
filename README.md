@@ -20,10 +20,10 @@ Add Recording Studio core, Recording Studio Accessible, and this addon to your h
 ```ruby
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
 gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"
-# Accessible 0.17 needs Trashable query helpers; pin for Bundler resolution only.
-gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0", require: false
-gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.11.0", require: false
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.2"
+# Accessible needs Trashable query helpers; pin for Bundler resolution only.
+gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.3", require: false
+gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.3", require: false
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
@@ -106,7 +106,7 @@ Available options:
 
 Pass title and subtitle strings to `content_for` with `html_safe`. The default layout calls `to_s` on those slots. A string that was already escaped is escaped again, and an apostrophe shows up as a character entity.
 
-This gem requires `recording_studio` `>= 6.1.0` and, for the default layout, `flat_pack` `>= 0.1.315`. Pin `view_component` to `4.19.0` (`>= 4.14` and `< 5`) in the host Gemfile.
+This gem requires `recording_studio` `>= 6.1.0`, `recording_studio_accessible` `>= 0.15`, and, for the default layout, `flat_pack` `>= 0.1.315`. Pin `view_component` to `4.19.0` (`>= 4.14` and `< 5`) in the host Gemfile. Duplication authorization always goes through `RecordingStudioAccessible.authorized?`. There is no host authorization resolver.
 
 ## Usage
 
@@ -126,7 +126,7 @@ The built-in controller:
 - falls back to `Current.actor` when needed
 - resolves the impersonator from your Recording Studio impersonator setup
 - falls back to `Current.impersonator` when needed
-- relies on the existing duplication API, which performs the standard `RecordingStudioAccessible.authorized?` duplication authorization check
+- finds the recording without `unscoped`, requires Accessible `:view`, then relies on the duplication API's `RecordingStudioAccessible.authorized?` `:edit` check
 - redirects back with a notice or alert
 
 Make sure your host app keeps Recording Studio configured with the current actor, for example:
@@ -196,6 +196,7 @@ The dummy app in `test/dummy/` demonstrates:
 - Cards that post to the gem-provided duplicate endpoint
 - Recording Studio core default layout with Flatpack components
 - the resulting duplicated workspace recordings in the UI
+- home and show pages scoped to recordings the signed-in actor can `:view`
 
 Dummy credentials (`test/dummy/config/credentials.yml.enc`) are encrypted with the shared RecordingStudio_* development master key. Set `RAILS_MASTER_KEY` or put that key in `test/dummy/config/master.key` (gitignored). Keep the encrypted file; do not generate a per-repo dummy key.
 

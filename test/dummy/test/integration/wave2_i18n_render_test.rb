@@ -36,7 +36,7 @@ class Wave2I18nRenderTest < ActionDispatch::IntegrationTest
   test "successful duplication flash renders literal english created message" do
     sign_in @user
     page = Page.find_by!(slug: "launch-plan")
-    recording = RecordingStudio::Recording.unscoped.find_by!(recordable: page)
+    recording = RecordingStudio::Recording.find_by!(recordable: page)
 
     post "/recording_studio_duplicatable/recordings/#{recording.id}/duplicate"
 
@@ -52,9 +52,10 @@ class Wave2I18nRenderTest < ActionDispatch::IntegrationTest
       password: "Password",
       password_confirmation: "Password"
     )
-    sign_in outsider
     page = Page.find_by!(slug: "feature-brief")
-    recording = RecordingStudio::Recording.unscoped.find_by!(recordable: page)
+    recording = RecordingStudio::Recording.find_by!(recordable: page)
+    grant_view_access!(outsider, recording)
+    sign_in outsider
     english = "Actor does not have :edit access for duplication"
 
     post "/recording_studio_duplicatable/recordings/#{recording.id}/duplicate"
@@ -70,7 +71,8 @@ class Wave2I18nRenderTest < ActionDispatch::IntegrationTest
       password_confirmation: "Password"
     )
     page = Page.find_by!(slug: "feature-brief")
-    recording = RecordingStudio::Recording.unscoped.find_by!(recordable: page)
+    recording = RecordingStudio::Recording.find_by!(recordable: page)
+    grant_view_access!(outsider, recording)
 
     with_restored_i18n_backend do
       previous_locales = I18n.available_locales
@@ -111,6 +113,16 @@ class Wave2I18nRenderTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def grant_view_access!(actor, recording)
+    result = RecordingStudioAccessible.grant_access(
+      recording: recording,
+      actor: actor,
+      role: :view,
+      manager_actor: @user
+    )
+    assert result.success?, result.error.to_s
+  end
 
   def with_restored_i18n_backend
     previous_load_path = I18n.load_path.dup

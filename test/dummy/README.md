@@ -15,6 +15,7 @@ This Rails app exists to validate the Recording Studio duplicatable addon in a r
 - The mounted RecordingStudioDuplicatable engine and its built-in duplicate endpoint
 - FlatPack screens on Recording Studio core default layout
 - A page/report/folder duplication demo that posts to the gem-provided duplicate route and shows included vs excluded child copying
+- Home and show pages that only list recordings the signed-in actor can `:view` through Accessible
 - Home-linked static guides for setup, approach, use, and methods
 
 ## Quick Start

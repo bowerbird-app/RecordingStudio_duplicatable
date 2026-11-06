@@ -30,7 +30,13 @@ module RecordingStudioDuplicatable
     end
 
     def authorized?(actor:, recording:, role:)
-      authorization_resolver!.call(actor: actor, recording: recording, role: role)
+      raise_accessible_missing_dependency! unless accessible_authorization_available?
+
+      RecordingStudioAccessible.authorized?(
+        actor: actor,
+        recording: recording,
+        role: role
+      )
     end
 
     def ensure_current_impersonator_attribute!
@@ -46,24 +52,8 @@ module RecordingStudioDuplicatable
 
     private
 
-    def authorization_resolver!
-      return configuration.authorization_resolver if configuration.authorization_resolver
-
-      raise_accessible_missing_dependency! unless accessible_authorization_available?
-
-      method(:accessible_authorization_allowed?)
-    end
-
     def accessible_authorization_available?
       defined?(RecordingStudioAccessible) && RecordingStudioAccessible.respond_to?(:authorized?)
-    end
-
-    def accessible_authorization_allowed?(actor:, recording:, role:)
-      RecordingStudioAccessible.authorized?(
-        actor: actor,
-        recording: recording,
-        role: role
-      )
     end
 
     def raise_accessible_missing_dependency!

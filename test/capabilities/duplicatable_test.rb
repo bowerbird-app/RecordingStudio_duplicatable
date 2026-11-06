@@ -269,7 +269,14 @@ module RecordingStudioDuplicatable
         RecordingStudioDuplicatable.configuration.duplication_prefix           = nil
         RecordingStudioDuplicatable.configuration.duplication_suffix           = " (Copy)"
         RecordingStudioDuplicatable.configuration.duplication_rename_attribute = nil
-        RecordingStudioDuplicatable.configuration.authorization_resolver       = ->(**) { true }
+        RecordingStudioAccessible.define_singleton_method(:authorized?) { |**| true }
+      end
+
+      def teardown
+        original = ACCESSIBLE_AUTHORIZED
+        RecordingStudioAccessible.define_singleton_method(:authorized?) do |**kwargs|
+          original.call(**kwargs)
+        end
       end
 
       # -------------------------------------------------------------------
@@ -442,7 +449,6 @@ module RecordingStudioDuplicatable
       end
 
       def test_raises_missing_dependency_error_when_accessible_addon_is_not_loaded
-        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
@@ -465,7 +471,6 @@ module RecordingStudioDuplicatable
       end
 
       def test_raises_missing_dependency_error_when_accessible_does_not_expose_authorized_api
-        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
@@ -490,7 +495,6 @@ module RecordingStudioDuplicatable
       end
 
       def test_default_authorization_delegates_to_recording_studio_accessible_public_api
-        RecordingStudioDuplicatable.configuration.authorization_resolver = nil
         calls = []
 
         result = RecordingStudioAccessible.stub(:authorized?, lambda { |**kwargs|
@@ -544,23 +548,24 @@ module RecordingStudioDuplicatable
         assert_equal recording, checked_recording
       end
 
-      def test_uses_configured_authorization_resolver_when_present
+      def test_authorization_does_not_consult_a_host_resolver
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
         )
         calls = []
 
-        RecordingStudioDuplicatable.configuration.authorization_resolver = lambda do |**kwargs|
+        RecordingStudioAccessible.stub(:authorized?, lambda { |**kwargs|
           calls << kwargs
           true
+        }) do
+          recording.duplicate_in_place!(actor: :user)
         end
-
-        recording.duplicate_in_place!(actor: :user)
 
         assert_equal 1, calls.length
         assert_equal :user, calls.first[:actor]
         assert_equal :edit, calls.first[:role]
         assert_equal recording, calls.first[:recording]
+        refute_respond_to RecordingStudioDuplicatable.configuration, :authorization_resolver=
       end
 
       # -------------------------------------------------------------------

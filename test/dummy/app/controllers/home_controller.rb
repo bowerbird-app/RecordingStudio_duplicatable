@@ -3,10 +3,13 @@ class HomeController < ApplicationController
                 :child_recording_title, :duplicate_recording_path_for
 
   def index
-    @pages = Page.includes(:workspace, :comments).order(:created_at)
-    @reports = Report.includes(:workspace, :comments).order(:created_at)
-    @folders = Folder.includes(:workspace, :comments, :child_folders).where(parent_folder_id: nil).order(:created_at)
-    @recordings_by_key = load_recordings_for(@pages, @reports, @folders)
+    pages = Page.includes(:workspace, :comments).order(:created_at)
+    reports = Report.includes(:workspace, :comments).order(:created_at)
+    folders = Folder.includes(:workspace, :comments, :child_folders).where(parent_folder_id: nil).order(:created_at)
+    @recordings_by_key = load_recordings_for(pages, reports, folders)
+    @pages = pages.select { |page| recording_for(page) }
+    @reports = reports.select { |report| recording_for(report) }
+    @folders = folders.select { |folder| recording_for(folder) }
   end
 
   def show_page
@@ -27,20 +30,45 @@ class HomeController < ApplicationController
   private
 
   def assign_recordable_show(recordable, recordable_type_label:)
+    recording = RecordingStudio::Recording.includes(child_recordings: :recordable).find_by(recordable: recordable)
+    raise ActiveRecord::RecordNotFound unless recording_visible_to_current_actor?(recording)
+
     @recordable = recordable
     @recordable_type_label = recordable_type_label
-    @recording = RecordingStudio::Recording.unscoped.includes(child_recordings: :recordable).find_by(recordable: recordable)
-    @child_recordings = Array(@recording&.child_recordings).sort_by(&:created_at)
+    @recording = recording
+    @child_recordings = Array(@recording.child_recordings)
+      .select { |child_recording| recording_visible_to_current_actor?(child_recording) }
+      .sort_by(&:created_at)
     @child_folder_recordings = @child_recordings.select { |child_recording| child_recording.recordable.is_a?(Folder) }
     render :show_recordable
   end
 
   def load_recordings_for(*collections)
+    actor = current_home_actor
+    return {} unless actor
+
     collections.flatten.compact.group_by { |recordable| recordable.class.name }.flat_map do |recordable_type, recordables|
-      RecordingStudio::Recording.unscoped
+      RecordingStudio::Recording
         .includes(:child_recordings)
         .where(recordable_type: recordable_type, recordable_id: recordables.map(&:id))
+        .select { |recording| recording_visible_to?(actor, recording) }
     end.index_by { |recording| recording_key(recording.recordable) }
+  end
+
+  def current_home_actor
+    return Current.actor if defined?(Current) && Current.respond_to?(:actor)
+
+    nil
+  end
+
+  def recording_visible_to_current_actor?(recording)
+    recording_visible_to?(current_home_actor, recording)
+  end
+
+  def recording_visible_to?(actor, recording)
+    return false unless actor && recording
+
+    RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
   end
 
   def child_count_for(recordable)
