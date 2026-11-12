@@ -17,23 +17,4 @@ class DuplicatableApiTest < Minitest::Test
     refute_nil initializer
     assert_equal "recording_studio_api.after_initialize", initializer.before
   end
-
-  def test_api_handler_requires_edit_and_calls_duplicate_in_place
-    source = File.read(
-      File.expand_path("../lib/recording_studio/duplicatable/api.rb", __dir__)
-    )
-    handler = File.read(
-      File.expand_path("../lib/recording_studio/duplicatable/api/duplicate_recording.rb", __dir__)
-    )
-
-    assert_includes source, "register_capability_action(:duplicate"
-    assert_includes source, "capability: :duplicatable"
-    assert_includes source, "required_role: :edit"
-    assert_includes source, 'summary: "Duplicates this recording in place under the same parent."'
-    refute_includes source, "register_mcp"
-    refute_includes handler, "register_mcp"
-    assert_includes handler, "context.access_grant.authorize!(recording: recording, role: :edit)"
-    assert_includes handler, "context.access_grant.accessible_recordings.find_by(id: recording_id)"
-    assert_includes handler, "recording.duplicate_in_place!"
-  end
 end

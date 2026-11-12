@@ -10,11 +10,23 @@ gem "recording_studio_accessible",
     github: "bowerbird-app/RecordingStudio_accessible",
     tag: "v0.24.2"
 # Accessible pulls Trashable query-only; pin git sources for Bundler resolution.
-gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56", require: false
+# recording_studio_api and its git-only deps are for dummy HTTP tests.
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.341", require: false
+gem "recording_studio_admin", github: "bowerbird-app/RecordingStudio_admin", tag: "v2.11.0",
+                              require: false
+gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v0.21.3",
+                            require: false
+gem "recording_studio_icons", github: "bowerbird-app/RecordingStudio_icons", tag: "v0.2.0",
+                              require: false
+gem "recording_studio_logs", github: "bowerbird-app/RecordingStudio_logs", tag: "v0.7.3",
+                             require: false
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.3",
                                 require: false
+gem "recording_studio_moveable", github: "bowerbird-app/RecordingStudio_moveable", tag: "v4.1.0",
+                                 require: false
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.3",
                                   require: false
+gem "redis", "~> 5.3", require: false
 gem "view_component", "4.19.0"
 
 gem "puma"

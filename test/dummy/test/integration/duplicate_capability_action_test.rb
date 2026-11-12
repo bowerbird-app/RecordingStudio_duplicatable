@@ -2,151 +2,145 @@
 
 require_relative "../test_helper"
 
-unless defined?(RecordingStudioApi)
-  module RecordingStudioApi
-    class AuthorizationError < StandardError; end
-    class NotFoundError < StandardError; end
-    class UnsupportedActionError < StandardError; end
-  end
-end
-
-class DuplicateCapabilityActionTest < ActiveSupport::TestCase
-  ActionContext = Struct.new(
-    :recording,
-    :api_client,
-    :credential,
-    :access_grant,
-    :params,
-    keyword_init: true
-  )
-  ApiPrincipal = Struct.new(:id)
-
-  class AccessibleRecordings
-    def initialize(root_recording)
-      @root_recording = root_recording
-    end
-
-    def find_by(id:)
-      RecordingStudio::Recording.where(root_recording_id: @root_recording.id).find_by(id: id)
-    end
-  end
-
-  class AccessGrant
-    attr_reader :actor, :root_recording, :authorize_calls
-
-    def initialize(actor:, root_recording:)
-      @actor = actor
-      @root_recording = root_recording
-      @authorize_calls = []
-    end
-
-    def accessible_recordings
-      AccessibleRecordings.new(@root_recording)
-    end
-
-    def authorize!(recording:, role:)
-      @authorize_calls << [recording, role]
-      return if RecordingStudioAccessible.authorized?(actor: @actor, recording: recording, role: role)
-
-      raise RecordingStudioApi::AuthorizationError, "API access is not authorized to duplicate this recording."
-    end
-  end
-
+class DuplicateCapabilityActionTest < ActionDispatch::IntegrationTest
   setup do
+    skip "recording_studio_api is not available" unless defined?(RecordingStudioApi)
+
     Rails.application.load_seed
+    host! "example.com"
+
     @admin = User.find_by!(email: "admin@admin.com")
     @workspace = Workspace.find_by!(name: "Documentation Workspace")
     @root_recording = RecordingStudio::Recording.unscoped.find_by!(recordable: @workspace, parent_recording_id: nil)
     @page = Page.find_by!(slug: "launch-plan")
     @recording = RecordingStudio::Recording.find_by!(recordable: @page)
     Current.actor = @admin
+    @edit_token = issue_token(access_point: @root_recording, role: :edit, name: "Edit duplicate")
+    @view_token = issue_token(access_point: @root_recording, role: :view, name: "View duplicate")
   end
 
   test "authorized edit grant duplicates the recording in place" do
-    access_grant = AccessGrant.new(actor: @admin, root_recording: @root_recording)
     before_count = RecordingStudio::Recording.where(root_recording_id: @root_recording.id).count
 
-    duplicate = RecordingStudio::Duplicatable::Api::DuplicateRecording.call(
-      action_context(recording: @recording, access_grant: access_grant)
-    )
+    post "/recording_studio_api/api/v1/pages/#{@recording.id}/actions/duplicate",
+         headers: bearer(@edit_token),
+         as: :json
 
-    assert_equal [[@recording, :edit]], access_grant.authorize_calls
-    assert_equal @root_recording.id, duplicate.root_recording_id
-    assert_equal @recording.parent_recording_id, duplicate.parent_recording_id
+    assert_response :success, response.body
+    body = json_body
+    assert_equal @root_recording.id, body.fetch("root_id")
+    assert_equal @recording.parent_recording_id, body.fetch("parent_id")
+    duplicate = RecordingStudio::Recording.find(body.fetch("id"))
     assert_equal "Launch Plan (Copy)", duplicate.recordable.title
     assert_equal before_count + 1 + @page.comments.count,
                  RecordingStudio::Recording.where(root_recording_id: @root_recording.id).count
   end
 
   test "view grant is forbidden and does not duplicate" do
-    viewer = User.create!(
-      email: "api-viewer-#{SecureRandom.hex(4)}@example.com",
-      password: "Password",
-      password_confirmation: "Password"
-    )
-    result = RecordingStudioAccessible.grant_access(
-      recording: @root_recording,
-      actor: viewer,
-      role: :view,
-      manager_actor: @admin
-    )
-    assert result.success?, result.error.to_s
-
-    access_grant = AccessGrant.new(actor: viewer, root_recording: @root_recording)
     before_ids = RecordingStudio::Recording.where(root_recording_id: @root_recording.id).pluck(:id)
 
-    error = assert_raises(RecordingStudioApi::AuthorizationError) do
-      RecordingStudio::Duplicatable::Api::DuplicateRecording.call(
-        action_context(recording: @recording, access_grant: access_grant)
-      )
-    end
+    post "/recording_studio_api/api/v1/pages/#{@recording.id}/actions/duplicate",
+         headers: bearer(@view_token),
+         as: :json
 
-    assert_equal "API access is not authorized to duplicate this recording.", error.message
-    assert_equal [[@recording, :edit]], access_grant.authorize_calls
+    assert_response :forbidden, response.body
     assert_equal before_ids.sort, RecordingStudio::Recording.where(root_recording_id: @root_recording.id).pluck(:id).sort
   end
 
   test "cross-workspace recording is not found in the grant root" do
+    other_user = User.create!(
+      email: "other-#{SecureRandom.hex(4)}@example.com",
+      password: "Password",
+      password_confirmation: "Password"
+    )
     other_workspace = Workspace.create!(name: "Other Workspace #{SecureRandom.hex(4)}")
-    other_root = RecordingStudio::Recording.unscoped.create!(
+    other_root = RecordingStudio::Recording.unscoped.find_or_create_by!(
       recordable: other_workspace,
       parent_recording_id: nil
     )
+    Current.actor = other_user
+    bootstrap = RecordingStudioAccessible.bootstrap_owner_access!(recording: other_root, actor: other_user)
+    raise bootstrap.error if bootstrap.failure?
+
     other_page = other_workspace.pages.create!(
       title: "Foreign Page",
       slug: "foreign-page-#{SecureRandom.hex(4)}",
       summary: "Lives in another workspace.",
       body: "Must stay out of the first grant."
     )
-    foreign_recording = RecordingStudio::Recording.unscoped.create!(
+    foreign_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
       recordable: other_page,
       root_recording_id: other_root.id,
       parent_recording_id: other_root.id
     )
-
-    access_grant = AccessGrant.new(actor: @admin, root_recording: @root_recording)
     before_foreign = RecordingStudio::Recording.where(root_recording_id: other_root.id).count
+    Current.actor = @admin
 
-    error = assert_raises(RecordingStudioApi::NotFoundError) do
-      RecordingStudio::Duplicatable::Api::DuplicateRecording.call(
-        action_context(recording: foreign_recording, access_grant: access_grant)
-      )
-    end
+    post "/recording_studio_api/api/v1/pages/#{foreign_recording.id}/actions/duplicate",
+         headers: bearer(@edit_token),
+         as: :json
 
-    assert_equal "Recording was not found in this API scope", error.message
-    assert_empty access_grant.authorize_calls
+    assert_response :not_found, response.body
     assert_equal before_foreign, RecordingStudio::Recording.where(root_recording_id: other_root.id).count
+  end
+
+  test "duplicating a recording with Access children leaves the Access count unchanged" do
+    extra = User.create!(
+      email: "access-child-#{SecureRandom.hex(4)}@example.com",
+      password: "Password",
+      password_confirmation: "Password"
+    )
+    grant = RecordingStudioAccessible.grant_access(
+      recording: @recording,
+      actor: extra,
+      role: :view,
+      manager_actor: @admin
+    )
+    assert grant.success?, grant.error.to_s
+    assert RecordingStudio::Recording.exists?(
+      recordable_type: "RecordingStudio::Access",
+      parent_recording_id: @recording.id
+    )
+
+    access_count_before = RecordingStudio::Recording.where(recordable_type: "RecordingStudio::Access").count
+
+    post "/recording_studio_api/api/v1/pages/#{@recording.id}/actions/duplicate",
+         headers: bearer(@edit_token),
+         as: :json
+
+    assert_response :success, response.body
+    assert_equal access_count_before, RecordingStudio::Recording.where(recordable_type: "RecordingStudio::Access").count
   end
 
   private
 
-  def action_context(recording:, access_grant:)
-    ActionContext.new(
-      recording: recording,
-      api_client: ApiPrincipal.new("client-1"),
-      credential: ApiPrincipal.new("credential-1"),
-      access_grant: access_grant,
-      params: {}
-    )
+  def json_body
+    JSON.parse(response.body)
+  end
+
+  def bearer(token)
+    { "Authorization" => "Bearer #{token}" }
+  end
+
+  def issue_token(access_point:, role:, name:)
+    RecordingStudioAccessible::AccessCreationContext.allow do
+      provision = RecordingStudioApi::Services::ProvisionApiClient.call(
+        access_point_recording: access_point,
+        manager_actor: @admin,
+        role: role,
+        name: "#{name}-#{SecureRandom.hex(4)}"
+      )
+      raise provision.error unless provision.success?
+
+      payload = provision.value
+      token_result = RecordingStudioApi::Services::IssueOauthAccessToken.call(
+        grant_type: "client_credentials",
+        client_id: payload.fetch(:credential).oauth_client_id,
+        client_secret: payload.fetch(:token)
+      )
+      raise token_result.error unless token_result.success?
+
+      token_result.value.fetch(:access_token)
+    end
   end
 end

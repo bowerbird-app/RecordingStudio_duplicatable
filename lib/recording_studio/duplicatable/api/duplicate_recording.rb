@@ -39,14 +39,26 @@ module RecordingStudio
         end
 
         def duplicate!(recording)
-          recording.duplicate_in_place!(
+          result = RecordingStudioDuplicatable::Services::DuplicationService.call(
+            recording: recording,
             actor: context.access_grant.actor,
             metadata: duplicate_metadata
           )
-        rescue RecordingStudio::AccessDenied, RecordingStudioDuplicatable::AccessDenied => e
-          raise RecordingStudioApi::AuthorizationError, e.message
-        rescue RecordingStudio::CapabilityDisabled => e
-          raise RecordingStudioApi::UnsupportedActionError, e.message
+          return result.value if result.success?
+
+          raise_api_error!(result.error)
+        end
+
+        def raise_api_error!(error)
+          message = error.to_s
+          case message
+          when "Actor does not have :edit access for duplication"
+            raise RecordingStudioApi::AuthorizationError, message
+          when /capability/i
+            raise RecordingStudioApi::UnsupportedActionError, message
+          else
+            raise RecordingStudioApi::InvalidActionInputError, message
+          end
         end
 
         def duplicate_metadata

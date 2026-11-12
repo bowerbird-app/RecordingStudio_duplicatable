@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioDuplicatable::Engine, at: "/recording_studio_duplicatable"
+  mount RecordingStudioApi::Engine, at: "/recording_studio_api" if defined?(RecordingStudioApi)
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   get "up" => "rails/health#show", as: :rails_health_check

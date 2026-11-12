@@ -11,7 +11,7 @@
 - Recursively duplicates descendant recordings when child copying is enabled
 - Uses Recording Studio Accessible for duplication authorization while preserving parent/root recording relationships
 - Ships with a built-in duplication controller and route for simple buttons/links
-- Registers a Recording Studio API `:duplicate` member action over `duplicate_in_place!` when `recording_studio_api` is loaded
+- Registers a Recording Studio API `:duplicate` member action over `DuplicationService` when `recording_studio_api` is loaded
 - Exposes a small controller-friendly `DuplicationService`
 
 ## Installation
@@ -20,11 +20,12 @@ Add Recording Studio core, Recording Studio Accessible, and this addon to your h
 
 ```ruby
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.5.0"
-gem "flat_pack", github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.341"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.24.2"
 # Accessible needs Trashable query helpers; pin for Bundler resolution only.
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.7.3", require: false
 gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.3", require: false
+gem "recording_studio_api", github: "bowerbird-app/RecordingStudio_api", tag: "v0.21.3", require: false
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
@@ -44,7 +45,7 @@ The installer mounts the engine so host app views can use the built-in duplicate
 Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?` from the extracted access addon.
 Configure `RecordingStudioAccessible.configure { |c| c.access_actor_types = ["User"] }` (or your actor types) before granting access — blank allowlists reject new grants since Accessible 0.5.0.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
-Recording Studio 6.5 uses the shared `recording_studio/default_layout` shell via `recording_studio_layout`. `flat_pack` `0.1.319` (git ref `1fcbafe94f8eb118f0a22182f63f5110fcc97a56`) supplies the page title and page nav that shell renders. `main` at that ref reports `FlatPack::VERSION = "0.1.319"`.
+Recording Studio 6.5 uses the shared `recording_studio/default_layout` shell via `recording_studio_layout`. `flat_pack` `v0.1.341` supplies the page title and page nav that shell renders. Hosts that expose the `:duplicate` API action also pin `recording_studio_api` `v0.21.3`.
 Set `RecordingStudio.configuration.authorize_write` through Accessible (`AccessCreationContext` for Access grants, then `:edit` / `:admin` on the root). Do not use `actor.present?` or a self-grant as a write policy.
 
 Recording Studio 4 also installs a harden migration for unique root recordings and composite indexes. Run `recording_studio:migrations` and migrate before relying on writes under concurrency.
@@ -168,7 +169,7 @@ The lower-level recording and service APIs remain available for apps that want c
 
 ### Recording Studio API
 
-When `recording_studio_api` is loaded, this gem calls `RecordingStudioApi.register_capability_action(:duplicate, ...)` the same way Moveable registers `:move`. The handler authorizes with `context.access_grant.authorize!(recording:, role: :edit)`, finds the recording with `access_grant.accessible_recordings`, and calls `duplicate_in_place!`. MCP reaches it through `capability_action`. Do not add a custom MCP tool.
+When `recording_studio_api` is loaded, this gem calls `RecordingStudioApi.register_capability_action(:duplicate, ...)` the same way Moveable registers `:move`. The handler authorizes with `context.access_grant.authorize!(recording:, role: :edit)`, finds the recording with `access_grant.accessible_recordings`, and calls `DuplicationService` — the same service as the HTML duplicate button. MCP reaches it through `capability_action`. Do not add a custom MCP tool.
 
 Hosts that use Recording Studio API 0.19 or later get the action on every type that enables `:duplicatable`. Older hosts list `:duplicate` in that type's `capability_actions`. The OpenAPI summary is "Duplicates this recording in place under the same parent."
 
