@@ -20,7 +20,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
   end
 
   def test_version_exists
-    assert_equal "0.7.0", ::RecordingStudioDuplicatable::VERSION
+    assert_equal "0.8.0", ::RecordingStudioDuplicatable::VERSION
   end
 
   def test_duplicatable_capability_requires_recording_studio_capability_support
@@ -531,6 +531,9 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "config.actor = -> { Current.actor }"
     assert_includes readme_source, "DuplicationService.call"
     assert_includes readme_source, "duplicate_in_place!"
+    assert_includes readme_source, "register_capability_action"
+    assert_includes readme_source, "capability_action"
+    assert_includes readme_source, "Duplicates this recording in place under the same parent."
     assert_includes readme_source, "host app `ApplicationController`"
     assert_includes readme_source, "The engine ships no views and no home route."
     refute_includes readme_source, "HomeController"

@@ -11,6 +11,7 @@
 - Recursively duplicates descendant recordings when child copying is enabled
 - Uses Recording Studio Accessible for duplication authorization while preserving parent/root recording relationships
 - Ships with a built-in duplication controller and route for simple buttons/links
+- Registers a Recording Studio API `:duplicate` member action over `duplicate_in_place!` when `recording_studio_api` is loaded
 - Exposes a small controller-friendly `DuplicationService`
 
 ## Installation
@@ -164,6 +165,12 @@ result = RecordingStudioDuplicatable::Services::DuplicationService.call(
 ```
 
 The lower-level recording and service APIs remain available for apps that want custom redirects, response formats, or extra side effects.
+
+### Recording Studio API
+
+When `recording_studio_api` is loaded, this gem calls `RecordingStudioApi.register_capability_action(:duplicate, ...)` the same way Moveable registers `:move`. The handler authorizes with `context.access_grant.authorize!(recording:, role: :edit)`, finds the recording with `access_grant.accessible_recordings`, and calls `duplicate_in_place!`. MCP reaches it through `capability_action`. Do not add a custom MCP tool.
+
+Hosts that use Recording Studio API 0.19 or later get the action on every type that enables `:duplicatable`. Older hosts list `:duplicate` in that type's `capability_actions`. The OpenAPI summary is "Duplicates this recording in place under the same parent."
 
 ## Behavior notes
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-12
+
+### Added
+- Registers a Recording Studio API member action `:duplicate` for the `:duplicatable` capability. The handler lives in this gem, requires Accessible `:edit` through `context.access_grant.authorize!`, looks up the recording in `access_grant.accessible_recordings`, and calls `Recording#duplicate_in_place!`. MCP uses `capability_action`. There is no custom MCP tool.
+
+### Upgrade Notes
+- Bump to `0.8.0`. No migration.
+- Hosts that already load Recording Studio API receive `POST .../actions/duplicate` on types that enable `:duplicatable`. Recording Studio API 0.19 and later expose that action without listing it in `capability_actions`.
+- The call still needs an Accessible grant with `:edit` on the recording. Lookups stay inside the grant's root.
+
 ## [0.7.0] - 2026-11-06
 
 ### Changed
@@ -155,7 +165,8 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.0...v0.6.1
