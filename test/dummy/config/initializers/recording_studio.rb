@@ -3,6 +3,9 @@
 RecordingStudio.configure do |config|
   # Registered delegated_type recordables (strings or classes)
   config.recordable_types = [ "Workspace", "Page", "Report", "Folder", "Comment" ]
+  if defined?(RecordingStudioApi)
+    config.recordable_types = Array(config.recordable_types) + ["RecordingStudioApi::AdminApi"]
+  end
 
   # Actor resolver for events when no actor is explicitly supplied
   config.actor = -> { Current.actor }
@@ -31,18 +34,29 @@ RecordingStudio.configure do |config|
   # Access grant/bootstrap writes go through Accessible's AccessCreationContext
   # (same path as grant_access / bootstrap_owner_access!), not a self-grant.
   config.authorize_write = lambda { |actor:, root_recording:, recordable:, **|
-    next false unless actor.is_a?(User) && actor.persisted?
     next false unless root_recording
 
     if defined?(RecordingStudio::Access) && recordable.is_a?(RecordingStudio::Access)
       next true if RecordingStudioAccessible::AccessCreationContext.allowed?
+      next false unless actor.is_a?(User) && actor.persisted?
 
       RecordingStudioAccessible.authorized?(
         actor: actor,
         recording: root_recording,
         role: :admin
       )
+    elsif defined?(RecordingStudioApi) && recordable.class.name.to_s.start_with?("RecordingStudioApi::")
+      next true if RecordingStudioAccessible::AccessCreationContext.allowed?
+      next false unless actor.is_a?(User) && actor.persisted?
+
+      RecordingStudioAccessible.authorized?(
+        actor: actor,
+        recording: root_recording,
+        role: :edit
+      )
     else
+      next false unless actor
+
       RecordingStudioAccessible.authorized?(
         actor: actor,
         recording: root_recording,

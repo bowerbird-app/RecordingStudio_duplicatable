@@ -99,6 +99,12 @@ module RecordingStudioDuplicatable
       RecordingStudioDuplicatable.apply_recording_studio_capabilities!
     end
 
+    initializer "recording_studio_duplicatable.register_recording_studio_api_action",
+                before: "recording_studio_api.after_initialize" do
+      RecordingStudio::Duplicatable::Api.register_capability_action!
+      config.to_prepare { RecordingStudio::Duplicatable::Api.register_capability_action! }
+    end
+
     # Apply model extensions when models are loaded
     initializer "recording_studio_duplicatable.apply_model_extensions" do
       config.to_prepare do
