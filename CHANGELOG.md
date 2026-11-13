@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Development and dummy Gemfiles pin Recording Studio `v6.7.0`, Accessible `v0.32.0`, Trashable `v0.14.0`, Metrics `v0.8.0`, and FlatPack tag `v0.1.356`. `view_component` stays `4.19.0`. Gemspec floors stay `recording_studio >= 6.1.0` and `recording_studio_accessible >= 0.15`
+
+### Upgrade Notes
+- Pin those GitHub release tags in the host Gemfile. Use `tag:`, not `branch: "main"` or a raw commit `ref:`
+- This gem stays at `0.7.0`. No migration
+
 ## [0.7.0] - 2026-11-06
 
 ### Changed
