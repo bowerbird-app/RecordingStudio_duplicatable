@@ -32,7 +32,7 @@ module RecordingStudioDuplicatable
     #     after_duplicate: ->(new_rec) { notify_team(new_rec) }
     #   )
     #
-    class DuplicationService < BaseService
+    class DuplicationService < RecordingStudio::Services::BaseService
       # @param recording [RecordingStudio::Recording] The recording to duplicate
       # @param actor [Object] The actor performing the duplication
       # @param prefix [String, nil, :default] Prefix for the duplicate's name/title

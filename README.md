@@ -166,13 +166,15 @@ result = RecordingStudioDuplicatable::Services::DuplicationService.call(
 
 The lower-level recording and service APIs remain available for apps that want custom redirects, response formats, or extra side effects.
 
+`DuplicationService` inherits `RecordingStudio::Services::BaseService`. Register `before_service`, `after_service`, and `around_service` on `RecordingStudio.configuration.hooks`. Register `:after_duplicate` there too. The per-call `after_duplicate:` proc is unchanged.
+
 ## Behavior notes
 
 - Duplication is wrapped in a transaction with row locking
 - The actor must be authorized by `RecordingStudioAccessible.authorized?` to duplicate the target recording
 - The capability must be enabled for the recordable type
 - Child-copy filters apply recursively through the descendant tree
-- Post-duplication callbacks and hooks run after the transaction completes
+- The per-call `after_duplicate:` proc and the `:after_duplicate` hook run after the transaction completes. Register that hook with `RecordingStudio.configuration.hooks.on(:after_duplicate)`.
 
 ## Internationalization
 

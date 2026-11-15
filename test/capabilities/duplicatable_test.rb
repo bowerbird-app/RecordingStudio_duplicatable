@@ -973,18 +973,16 @@ module RecordingStudioDuplicatable
         )
 
         hook_received = nil
-        RecordingStudioDuplicatable.configuration.hooks.on(:after_duplicate) { |rec| hook_received = rec }
+        Time.zone = "UTC"
+        RecordingStudio.configuration.hooks.on(:after_duplicate) { |rec| hook_received = rec }
 
-        recording.duplicate_in_place!(actor: :user)
+        created = recording.duplicate_in_place!(actor: :user)
 
-        refute_nil hook_received
+        assert_same created, hook_received
       ensure
-        RecordingStudioDuplicatable.configuration.hooks.clear(:after_duplicate)
+        RecordingStudio.configuration.hooks.clear(:after_duplicate)
+        Time.zone = nil
       end
-
-      # -------------------------------------------------------------------
-      # Return value
-      # -------------------------------------------------------------------
 
       def test_returns_the_new_recording
         recording = FakeRecording.new(

@@ -1,5 +1,13 @@
 # Migration Notes
 
+## 1.0.0 service base and hooks
+
+`DuplicationService` inherits `RecordingStudio::Services::BaseService`. `.call` still returns `success?`, `failure?`, `value`, `error`, `errors`, `on_success`, `on_failure`, and `value!`.
+
+Delete `RecordingStudioDuplicatable::Hooks`, `RecordingStudioDuplicatable::Services::BaseService`, and `RecordingStudioDuplicatable.configuration.hooks`. Register `:after_duplicate` with `RecordingStudio.configuration.hooks.on(:after_duplicate)`. The per-call `after_duplicate:` proc is unchanged. `before_service`, `after_service`, and `around_service` on `RecordingStudio.configuration.hooks` now see `DuplicationService`.
+
+There is no database migration.
+
 ## Recording Studio 7
 
 Hosts pin `recording_studio` tag `v7.0.0` (`>= 7.0`, `< 8.0`) and `recording_studio_accessible` tag `v0.44.0` (`>= 0.44.0`, `< 1.0`). Trashable `v0.17.0` and Metrics `v0.9.0` are the pins that resolve with core 7. FlatPack stays `v0.1.356`.
