@@ -1,5 +1,13 @@
 # Migration Notes
 
+## Recording Studio 7
+
+Hosts pin `recording_studio` tag `v7.0.0` (`>= 7.0`, `< 8.0`) and `recording_studio_accessible` tag `v0.44.0` (`>= 0.44.0`, `< 1.0`). Trashable `v0.17.0` and Metrics `v0.9.0` are the pins that resolve with core 7. FlatPack stays `v0.1.356`.
+
+`RecordingStudio.root_recording_for` only finds a root. Seeds and setup create one with `RecordingStudio.create_root_recording!(recordable, actor:)`. `config.authorize_write` must allow a persisted user when `root_recording` is nil. Do not set `allow_unauthorized_writes`.
+
+Copy Recording Studio migration `add_root_recording_id_to_recording_studio_events` and migrate before writing events. `recording_studio_events.root_recording_id` is required.
+
 ## 0.6.0 layout upgrade
 
 Recording Studio `v6.1.0` removed `RecordingStudio::UsesDefaultLayout`, `recording_studio/action_layout`, and `recording_studio/shared/page_nav`.

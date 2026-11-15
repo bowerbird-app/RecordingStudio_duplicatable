@@ -457,6 +457,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes seeds_source, "parent_folder: folder"
     assert_includes seeds_source, "parent_recording_id: parent_recording.id"
     assert_includes seeds_source, "RecordingStudioAccessible.bootstrap_owner_access!"
+    assert_includes seeds_source, "RecordingStudio.create_root_recording!(workspace, actor: user)"
     refute_includes seeds_source, "RecordingStudio::Access.find_or_create_by!"
     refute_includes seeds_source, "RecordingStudio::Access.create!"
   end
@@ -517,11 +518,12 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
-    assert_includes readme_source, 'tag: "v6.7.0"'
+    assert_includes readme_source, 'tag: "v7.0.0"'
     assert_includes readme_source, "RecordingStudio::Capabilities::Duplicatable.to("
-    assert_includes readme_source, 'tag: "v0.32.0"'
-    assert_includes readme_source, 'tag: "v0.14.0"'
-    assert_includes readme_source, 'tag: "v0.8.0"'
+    assert_includes readme_source, 'tag: "v0.44.0"'
+    assert_includes readme_source, 'tag: "v0.17.0"'
+    assert_includes readme_source, 'tag: "v0.9.0"'
+    assert_includes readme_source, "create_root_recording!"
     assert_includes readme_source, 'tag: "v0.1.356"'
     refute_includes readme_source, "authorization_resolver"
     assert_includes readme_source, "recording_studio_recordable"
@@ -551,8 +553,8 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     gemspec_path = File.expand_path("../recording_studio_duplicatable.gemspec", __dir__)
     gemspec_source = File.read(gemspec_path)
 
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
-    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", ">= 0.15"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"'
+    assert_includes gemspec_source, 'spec.add_dependency "recording_studio_accessible", ">= 0.44.0", "< 1.0"'
   end
 
   def test_dummy_recording_studio_initializer_authorizes_writes_through_accessible
@@ -562,6 +564,7 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes initializer_source, "config.authorize_write"
     assert_includes initializer_source, "RecordingStudioAccessible.authorized?"
     assert_includes initializer_source, "AccessCreationContext.allowed?"
+    assert_includes initializer_source, "root_recording.nil?"
     refute_includes initializer_source, "recordable.actor == actor"
     refute_match(/authorize_write\s*=\s*->\(actor:, \*\*\) \{ actor\.present\? \}/, initializer_source)
     refute_includes initializer_source, "allow_unauthorized_writes = true"

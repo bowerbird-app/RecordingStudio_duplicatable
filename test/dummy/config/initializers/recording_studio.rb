@@ -25,14 +25,15 @@ RecordingStudio.configure do |config|
   config.max_metadata_bytes = 16_384 if config.respond_to?(:max_metadata_bytes=)
   config.app_name = "Duplicatable Demo" if config.respond_to?(:app_name=)
 
-  # Hosts must set authorize_write before Recording Studio core 6.5.0.
   # Writes fail closed: missing authorize_write raises AuthorizationError;
   # missing actor raises ActorRequired. `actor.present?` is not a write policy.
+  # create_root_recording! authorizes with root_recording nil. Any persisted
+  # user may create that root. Later writes go through Accessible.
   # Access grant/bootstrap writes go through Accessible's AccessCreationContext
   # (same path as grant_access / bootstrap_owner_access!), not a self-grant.
   config.authorize_write = lambda { |actor:, root_recording:, recordable:, **|
     next false unless actor.is_a?(User) && actor.persisted?
-    next false unless root_recording
+    next true if root_recording.nil?
 
     if defined?(RecordingStudio::Access) && recordable.is_a?(RecordingStudio::Access)
       next true if RecordingStudioAccessible::AccessCreationContext.allowed?

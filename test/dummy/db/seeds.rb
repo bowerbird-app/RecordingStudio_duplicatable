@@ -83,12 +83,8 @@ end
 
 workspace = Workspace.find_or_create_by!(name: "Documentation Workspace")
 
-root_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
-  recordable: workspace,
-  parent_recording_id: nil
-)
-
 Current.actor = user
+root_recording = RecordingStudio.create_root_recording!(workspace, actor: user)
 grant_result = RecordingStudioAccessible.bootstrap_owner_access!(
   recording: root_recording,
   actor: user
@@ -98,7 +94,7 @@ raise grant_result.error if grant_result.failure?
 def ensure_comment_recordings!(root_recording:, parent_recording:, recordable:, comments:)
   comments.each do |comment_attributes|
     comment = recordable.comments.find_or_initialize_by(author_name: comment_attributes[:author_name], body: comment_attributes[:body])
-    comment.save!
+    comment.save! if comment.new_record?
 
     RecordingStudio::Recording.unscoped.find_or_create_by!(
       recordable: comment,
@@ -110,10 +106,12 @@ end
 
 def ensure_folder_recordings!(root_recording:, parent_recording:, workspace:, folder_attributes:, parent_folder: nil)
   folder = workspace.folders.find_or_initialize_by(slug: folder_attributes[:slug])
-  folder.assign_attributes(
-    folder_attributes.except(:comments, :children).merge(parent_folder: parent_folder)
-  )
-  folder.save!
+  if folder.new_record?
+    folder.assign_attributes(
+      folder_attributes.except(:comments, :children).merge(parent_folder: parent_folder)
+    )
+    folder.save!
+  end
 
   folder_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
     recordable: folder,
@@ -141,8 +139,10 @@ end
 
 DEMO_PAGES.each do |attributes|
   page = workspace.pages.find_or_initialize_by(slug: attributes[:slug])
-  page.assign_attributes(attributes.except(:comments))
-  page.save!
+  if page.new_record?
+    page.assign_attributes(attributes.except(:comments))
+    page.save!
+  end
 
   page_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
     recordable: page,
@@ -160,8 +160,10 @@ end
 
 DEMO_REPORTS.each do |attributes|
   report = workspace.reports.find_or_initialize_by(slug: attributes[:slug])
-  report.assign_attributes(attributes.except(:comments))
-  report.save!
+  if report.new_record?
+    report.assign_attributes(attributes.except(:comments))
+    report.save!
+  end
 
   report_recording = RecordingStudio::Recording.unscoped.find_or_create_by!(
     recordable: report,
