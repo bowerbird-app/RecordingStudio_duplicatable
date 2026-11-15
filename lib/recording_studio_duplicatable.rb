@@ -15,7 +15,6 @@ end
 require "recording_studio_duplicatable/version"
 require "recording_studio_duplicatable/engine"
 require "recording_studio_duplicatable/configuration"
-require "recording_studio_duplicatable/services/base_service"
 require "recording_studio_duplicatable/capabilities/duplicatable"
 require "recording_studio_duplicatable/services/duplication_service"
 

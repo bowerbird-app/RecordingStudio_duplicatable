@@ -1,15 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "hooks"
-
 module RecordingStudioDuplicatable
   class Configuration
     attr_accessor :duplication_prefix, :duplication_suffix, :duplication_rename_attribute
-    attr_reader :hooks, :layout
+    attr_reader :layout
 
     def initialize
-      @hooks = Hooks.new
-
       # Duplicatable capability defaults
       @duplication_prefix           = nil
       @duplication_suffix           = " (Copy)"
@@ -25,8 +21,7 @@ module RecordingStudioDuplicatable
       {
         duplication_prefix: duplication_prefix,
         duplication_suffix: duplication_suffix,
-        duplication_rename_attribute: duplication_rename_attribute,
-        hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
+        duplication_rename_attribute: duplication_rename_attribute
       }
     end
 

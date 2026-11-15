@@ -49,15 +49,17 @@ class ConfigurationTest < Minitest::Test
     )
   end
 
-  def test_to_h_reports_registered_hook_counts
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.before_initialize { nil }
-    @configuration.hooks.after_service { nil }
+  def test_to_h_lists_duplication_settings
+    @configuration.duplication_prefix = "[copy] "
+    @configuration.duplication_suffix = " [dup]"
+    @configuration.duplication_rename_attribute = :title
 
     result = @configuration.to_h
 
-    assert_equal 2, result.fetch(:hooks_registered).fetch(:before_initialize)
-    assert_equal 1, result.fetch(:hooks_registered).fetch(:after_service)
+    assert_equal "[copy] ", result.fetch(:duplication_prefix)
+    assert_equal " [dup]", result.fetch(:duplication_suffix)
+    assert_equal :title, result.fetch(:duplication_rename_attribute)
+    refute result.key?(:hooks_registered)
     refute result.key?(:authorization_resolver_configured)
   end
 

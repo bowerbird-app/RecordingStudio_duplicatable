@@ -173,7 +173,7 @@ module RecordingStudio
           end
 
           after_duplicate&.call(new_recording)
-          RecordingStudioDuplicatable::Hooks.run(:after_duplicate, new_recording)
+          RecordingStudio::Hooks.run(:after_duplicate, new_recording)
 
           new_recording
         end

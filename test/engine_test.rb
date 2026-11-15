@@ -11,7 +11,6 @@ class EngineTest < Minitest::Test
   end
 
   def teardown
-    RecordingStudioDuplicatable.configuration.hooks.clear!
     RecordingStudioDuplicatable.instance_variable_set(:@configuration, @original_configuration)
 
     if @recording_studio_defined
@@ -22,28 +21,7 @@ class EngineTest < Minitest::Test
     end
   end
 
-  def test_before_and_after_initialize_initializers_run_hooks
-    before_called = false
-    after_called = false
-
-    RecordingStudioDuplicatable.configuration.hooks.before_initialize { |_engine| before_called = true }
-    RecordingStudioDuplicatable.configuration.hooks.after_initialize { |_engine| after_called = true }
-
-    find_initializer("recording_studio_duplicatable.before_initialize").block.call(Object.new)
-    find_initializer("recording_studio_duplicatable.after_initialize").block.call(Object.new)
-
-    assert before_called
-    assert after_called
-  end
-
-  def test_load_config_merges_config_sources_and_runs_on_configuration_hook
-    hook_called = false
-    hook_payload = nil
-    RecordingStudioDuplicatable.configuration.hooks.on_configuration do |cfg|
-      hook_called = true
-      hook_payload = cfg
-    end
-
+  def test_load_config_merges_config_sources
     xcfg = Struct.new(:recording_studio_duplicatable).new({ duplication_suffix: " [dup]" })
     app_config = Struct.new(:x).new(xcfg)
     app = Struct.new(:config) do
@@ -54,8 +32,6 @@ class EngineTest < Minitest::Test
 
     find_initializer("recording_studio_duplicatable.load_config").block.call(app)
 
-    assert hook_called
-    assert_equal RecordingStudioDuplicatable.configuration, hook_payload
     assert_equal "Copy: ", RecordingStudioDuplicatable.configuration.duplication_prefix
     assert_equal " [dup]", RecordingStudioDuplicatable.configuration.duplication_suffix
   end
@@ -102,21 +78,6 @@ class EngineTest < Minitest::Test
     assert_equal "[copy] ", RecordingStudioDuplicatable.configuration.duplication_prefix
   end
 
-  def test_apply_extension_initializers_register_active_support_on_load_callbacks
-    to_prepare_blocks = []
-    config_stub = Object.new
-    config_stub.define_singleton_method(:to_prepare) do |&block|
-      to_prepare_blocks << block
-    end
-
-    RecordingStudioDuplicatable::Engine.stub(:config, config_stub) do
-      find_initializer("recording_studio_duplicatable.apply_model_extensions").block.call
-      find_initializer("recording_studio_duplicatable.apply_controller_extensions").block.call
-    end
-
-    assert_equal 2, to_prepare_blocks.size
-  end
-
   def test_capability_initializer_registers_and_applies_capabilities
     recording_class = Class.new
     recording_studio = build_recording_studio_stub(recording_class: recording_class)
@@ -135,7 +96,7 @@ class EngineTest < Minitest::Test
                     RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
   end
 
-  def test_model_extension_prepare_block_reapplies_recording_studio_capabilities
+  def test_prepare_capabilities_reapplies_recording_studio_capabilities
     to_prepare_blocks = []
     config_stub = Object.new
     config_stub.define_singleton_method(:to_prepare) do |&block|
@@ -147,7 +108,7 @@ class EngineTest < Minitest::Test
     swap_recording_studio_constant(recording_studio)
 
     RecordingStudioDuplicatable::Engine.stub(:config, config_stub) do
-      find_initializer("recording_studio_duplicatable.apply_model_extensions").block.call
+      find_initializer("recording_studio_duplicatable.prepare_capabilities").block.call
     end
 
     assert_equal 1, to_prepare_blocks.size
@@ -156,45 +117,6 @@ class EngineTest < Minitest::Test
 
     assert_includes recording_class.included_modules,
                     RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
-  end
-
-  def test_apply_model_extensions_adds_registered_methods_once
-    model_class = Class.new do
-      def self.name
-        "ExampleRecord"
-      end
-    end
-
-    RecordingStudioDuplicatable.configuration.hooks.extend_model(:ExampleRecord) do
-      def template_extension_method
-        :applied
-      end
-    end
-
-    RecordingStudioDuplicatable::Engine.apply_model_extensions(model_class)
-    RecordingStudioDuplicatable::Engine.apply_model_extensions(model_class)
-
-    instance = model_class.new
-    assert_equal :applied, instance.template_extension_method
-  end
-
-  def test_apply_controller_extensions_matches_demodulized_name
-    controller_class = Class.new do
-      def self.name
-        "Admin::DashboardController"
-      end
-    end
-
-    RecordingStudioDuplicatable.configuration.hooks.extend_controller(:DashboardController) do
-      def template_controller_extension
-        :applied
-      end
-    end
-
-    RecordingStudioDuplicatable::Engine.apply_controller_extensions(controller_class)
-
-    instance = controller_class.new
-    assert_equal :applied, instance.template_controller_extension
   end
 
   private

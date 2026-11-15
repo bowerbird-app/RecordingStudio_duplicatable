@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-15
+
+### Removed
+- `RecordingStudioDuplicatable::Hooks`.
+- `RecordingStudioDuplicatable::Services::BaseService`.
+- `RecordingStudioDuplicatable.configuration.hooks`.
+- The `:hooks_registered` key on `RecordingStudioDuplicatable.configuration.to_h`.
+- Engine lifecycle hooks `before_initialize`, `after_initialize`, and `on_configuration`.
+- Engine model and controller extensions from `configuration.hooks`.
+
+### Changed
+- `DuplicationService` inherits `RecordingStudio::Services::BaseService`.
+- `.call` still returns an object with `success?`, `failure?`, `value`, `error`, `errors`, `on_success`, `on_failure`, and `value!`. That object is `RecordingStudio::Services::BaseService::Result`.
+- `DuplicationService` runs `before_service`, `after_service`, and `around_service` on `RecordingStudio.configuration.hooks`.
+- `duplicate_in_place!` still runs `:after_duplicate` after the transaction. The hook is `RecordingStudio::Hooks`, so hosts register it with `RecordingStudio.configuration.hooks.on(:after_duplicate)`.
+- The per-call `after_duplicate:` proc is unchanged.
+
+### Upgrade notes
+- Bump `recording_studio_duplicatable` to `1.0.0`. This gem has no migration.
+- Delete references to `RecordingStudioDuplicatable::Hooks`, `RecordingStudioDuplicatable::Services::BaseService`, and `RecordingStudioDuplicatable.configuration.hooks`.
+- Register `:after_duplicate` on `RecordingStudio.configuration.hooks`. A `before_service`, `after_service`, or `around_service` hook on that same registry now sees `DuplicationService`.
+- Stop reading `:hooks_registered` from `RecordingStudioDuplicatable.configuration.to_h`.
+
 ## [0.8.0] - 2026-11-15
 
 ### Changed
@@ -173,7 +196,8 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.8.0...v1.0.0
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.1...v0.6.2
