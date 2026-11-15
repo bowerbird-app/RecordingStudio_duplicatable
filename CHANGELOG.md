@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `:hooks_registered` key on `RecordingStudioDuplicatable.configuration.to_h`.
 - Engine lifecycle hooks `before_initialize`, `after_initialize`, and `on_configuration`.
 - Engine model and controller extensions from `configuration.hooks`.
+- The `recording_studio_duplicatable.prepare_capabilities` initializer. Registration still runs once from `recording_studio_duplicatable.apply_recording_studio_capabilities`. Reloads re-include capabilities through Recording Studio's `config.to_prepare`.
 
 ### Changed
 - `DuplicationService` inherits `RecordingStudio::Services::BaseService`.

@@ -5,7 +5,6 @@ module RecordingStudioDuplicatable
     isolate_namespace RecordingStudioDuplicatable
 
     initializer "recording_studio_duplicatable.load_config" do |app|
-      # Load config/recording_studio_duplicatable.yml via Rails config_for if present
       if app.respond_to?(:config_for)
         begin
           yaml = begin
@@ -40,13 +39,6 @@ module RecordingStudioDuplicatable
     initializer "recording_studio_duplicatable.apply_recording_studio_capabilities",
                 after: "recording_studio.after_initialize" do
       RecordingStudioDuplicatable.apply_recording_studio_capabilities!
-    end
-
-    # Re-apply after code reload. The after_initialize initializer above runs once.
-    initializer "recording_studio_duplicatable.prepare_capabilities" do
-      config.to_prepare do
-        RecordingStudioDuplicatable.apply_recording_studio_capabilities!
-      end
     end
   end
 end

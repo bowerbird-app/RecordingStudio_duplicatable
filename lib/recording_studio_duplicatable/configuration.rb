@@ -6,7 +6,6 @@ module RecordingStudioDuplicatable
     attr_reader :layout
 
     def initialize
-      # Duplicatable capability defaults
       @duplication_prefix           = nil
       @duplication_suffix           = " (Copy)"
       @duplication_rename_attribute = nil # nil = auto-detect :name then :title

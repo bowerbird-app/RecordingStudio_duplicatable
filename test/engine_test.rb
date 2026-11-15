@@ -96,29 +96,6 @@ class EngineTest < Minitest::Test
                     RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
   end
 
-  def test_prepare_capabilities_reapplies_recording_studio_capabilities
-    to_prepare_blocks = []
-    config_stub = Object.new
-    config_stub.define_singleton_method(:to_prepare) do |&block|
-      to_prepare_blocks << block
-    end
-
-    recording_class = Class.new
-    recording_studio = build_recording_studio_stub(recording_class: recording_class)
-    swap_recording_studio_constant(recording_studio)
-
-    RecordingStudioDuplicatable::Engine.stub(:config, config_stub) do
-      find_initializer("recording_studio_duplicatable.prepare_capabilities").block.call
-    end
-
-    assert_equal 1, to_prepare_blocks.size
-
-    to_prepare_blocks.first.call
-
-    assert_includes recording_class.included_modules,
-                    RecordingStudioDuplicatable::Capabilities::Duplicatable::RecordingMethods
-  end
-
   private
 
   def build_recording_studio_stub(recording_class:)

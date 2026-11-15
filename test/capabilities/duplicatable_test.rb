@@ -984,10 +984,6 @@ module RecordingStudioDuplicatable
         Time.zone = nil
       end
 
-      # -------------------------------------------------------------------
-      # Return value
-      # -------------------------------------------------------------------
-
       def test_returns_the_new_recording
         recording = FakeRecording.new(
           recordable: NamedRecordable.new(id: 1, name: "Original")
