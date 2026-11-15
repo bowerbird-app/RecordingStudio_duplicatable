@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-15
+
 ### Changed
+- Version `0.7.0` to `0.8.0`
 - Runtime dependency is `recording_studio` `>= 7.0`, `< 8.0` and `recording_studio_accessible` `>= 0.44.0`, `< 1.0`
 - Development and dummy Gemfiles pin Recording Studio `v7.0.0`, Accessible `v0.44.0`, Trashable `v0.17.0`, and Metrics `v0.9.0`. FlatPack stays tag `v0.1.356`. `view_component` stays `4.19.0`
 - Dummy seeds create the workspace root with `RecordingStudio.create_root_recording!`. A second seed leaves persisted recordables alone, because core 7 marks them readonly
@@ -15,11 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The dummy app includes Recording Studio's `recording_studio_events.root_recording_id` migration
 
 ### Upgrade Notes
+- Bump to `0.8.0`. No migration in this gem.
 - Require Recording Studio `>= 7.0`, `< 8.0` and Accessible `>= 0.44.0`, `< 1.0`. Pin the tags above with `tag:`, not `branch: "main"` or a raw commit `ref:`
 - `root_recording_for` only finds a root. Create one with `RecordingStudio.create_root_recording!(recordable, actor:)`
 - Set `config.authorize_write` so a persisted user may create a root when `root_recording` is nil. Do not set `allow_unauthorized_writes`
 - Run Recording Studio's `add_root_recording_id_to_recording_studio_events` migration before writing events
-- Duplication behavior is unchanged. This gem's own version is unchanged
+- Duplication behavior is unchanged
 
 ## [0.7.0] - 2026-11-06
 
@@ -169,7 +173,8 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.0...v0.6.1
