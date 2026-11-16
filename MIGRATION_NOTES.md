@@ -10,7 +10,7 @@ There is no database migration.
 
 ## Recording Studio 7
 
-Hosts pin `recording_studio` tag `v7.0.0` (`>= 7.0`, `< 8.0`) and `recording_studio_accessible` tag `v0.44.0` (`>= 0.44.0`, `< 1.0`). Trashable `v0.17.0` and Metrics `v0.9.0` are the pins that resolve with core 7. FlatPack stays `v0.1.356`.
+Hosts pin `recording_studio` tag `v7.3.0` (`>= 7.0`, `< 8.0`) and `recording_studio_accessible` tag `v0.45.1` (`>= 0.44.0`, `< 1.0`). Trashable `v1.0.1` and Metrics `v0.9.0` are the pins that resolve with those releases. FlatPack is tag `v0.1.377`.
 
 `RecordingStudio.root_recording_for` only finds a root. Seeds and setup create one with `RecordingStudio.create_root_recording!(recordable, actor:)`. `config.authorize_write` must allow a persisted user when `root_recording` is nil. Do not set `allow_unauthorized_writes`.
 

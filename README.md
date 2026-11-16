@@ -18,12 +18,12 @@
 Add Recording Studio core, Recording Studio Accessible, and this addon to your host app:
 
 ```ruby
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.356"
-gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.44.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.377"
+gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.45.1"
 # Accessible needs Trashable query helpers; pin for Bundler resolution only.
 gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.0", require: false
-gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.17.0", require: false
+gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v1.0.1", require: false
 gem "recording_studio_duplicatable", github: "bowerbird-app/RecordingStudio_duplicatable"
 ```
 
@@ -43,7 +43,7 @@ The installer mounts the engine so host app views can use the built-in duplicate
 Install and configure `recording_studio_accessible` before using duplication so authorization is provided by `RecordingStudioAccessible.authorized?` from the extracted access addon.
 Configure `RecordingStudioAccessible.configure { |c| c.access_actor_types = ["User"] }` (or your actor types) before granting access — blank allowlists reject new grants since Accessible 0.5.0.
 If Recording Studio Accessible adds migrations for your app, make sure those migrations are installed and applied before you use duplication.
-Recording Studio 7 uses the shared `recording_studio/default_layout` shell via `recording_studio_layout`. `flat_pack` tag `v0.1.356` supplies the page title and page nav that shell renders. That release reports `FlatPack::VERSION = "0.1.356"`.
+Recording Studio 7 uses the shared `recording_studio/default_layout` shell via `recording_studio_layout`. `flat_pack` tag `v0.1.377` supplies the page title and page nav that shell renders. That release reports `FlatPack::VERSION = "0.1.377"`.
 `RecordingStudio.root_recording_for` only finds a root. Create one with `RecordingStudio.create_root_recording!(recordable, actor:)`.
 Set `RecordingStudio.configuration.authorize_write` through Accessible (`AccessCreationContext` for Access grants, then `:edit` / `:admin` on the root). When `root_recording` is nil, allow a persisted user to create that root. Do not use `actor.present?`, a self-grant, or `allow_unauthorized_writes`.
 
