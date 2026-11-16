@@ -518,13 +518,14 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes readme_source, "recording_studio_accessible:install"
     assert_includes readme_source, "recording_studio_accessible:migrations"
     assert_includes readme_source, "RecordingStudioAccessible.authorized?"
-    assert_includes readme_source, 'tag: "v7.0.0"'
+    assert_includes readme_source, 'tag: "v7.3.0"'
     assert_includes readme_source, "RecordingStudio::Capabilities::Duplicatable.to("
-    assert_includes readme_source, 'tag: "v0.44.0"'
-    assert_includes readme_source, 'tag: "v0.17.0"'
+    assert_includes readme_source, 'tag: "v0.45.1"'
+    assert_includes readme_source, 'tag: "v1.0.1"'
     assert_includes readme_source, 'tag: "v0.9.0"'
     assert_includes readme_source, "create_root_recording!"
-    assert_includes readme_source, 'tag: "v0.1.356"'
+    assert_includes readme_source, 'tag: "v0.1.377"'
+    assert_development_gemfiles_pin_release_tags
     refute_includes readme_source, "authorization_resolver"
     assert_includes readme_source, "recording_studio_recordable"
     assert_includes readme_source, "RecordingStudioAccessible.grant_access"
@@ -598,5 +599,25 @@ class RecordingStudioDuplicatableTest < Minitest::Test
     assert_includes duplications_controller_source, "RecordingStudio::Recording.find_by(id: params[:recording_id])"
     assert_includes duplications_controller_source, "RecordingStudioDuplicatable.authorized?"
     refute_includes duplications_controller_source, "unscoped"
+  end
+
+  def assert_development_gemfiles_pin_release_tags
+    root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
+    dummy_gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
+
+    pins = {
+      "recording_studio" =>
+        'gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"',
+      "recording_studio_accessible" => 'tag: "v0.45.1"',
+      "recording_studio_metrics" =>
+        'gem "recording_studio_metrics", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.0"',
+      "recording_studio_trashable" =>
+        'gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v1.0.1"',
+      "flat_pack" => 'gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.377"'
+    }
+    pins.each do |gem_name, pin|
+      assert_includes root_gemfile, pin, "root Gemfile missing #{gem_name} pin"
+      assert_includes dummy_gemfile, pin, "dummy Gemfile missing #{gem_name} pin"
+    end
   end
 end
