@@ -66,7 +66,8 @@ class GuidesController < ApplicationController
               { option: "prefix", purpose: "Prepends text to the duplicate title or name" },
               { option: "suffix", purpose: "Appends text to the duplicate title or name" },
               { option: "include_children", purpose: "Copies only the listed child recording types" },
-              { option: "exclude_children", purpose: "Skips the listed child recording types" }
+              { option: "exclude_children", purpose: "Skips the listed child recording types" },
+              { option: "copy_rules", purpose: "Per-type :copy, :skip, or callable. Wins over registered copy rules. Access, token, and secret children stay out." }
             ]
           }
         }
@@ -85,7 +86,8 @@ class GuidesController < ApplicationController
               "Duplicate is deliberately simple. Move or copy workflows belong in other Recording Studio addon gems.",
               "After duplication the default behavior is to refresh the current page. A prefix or suffix can be added to distinguish the new recording.",
               "Duplication copies the recordable and creates a new recording for that duplicate.",
-              "Control of what child items are included in duplication lives in this gem through the capability options."
+              "Control of what child items are included in duplication lives in this gem through the capability options.",
+              "Copy rules decide how an included child is copied. Register one with RecordingStudioDuplicatable.register_copy_rule, or pass copy_rules: for a single duplication."
             ]
           }
         }

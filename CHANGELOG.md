@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-17
+
+### Added
+- `RecordingStudioDuplicatable.register_copy_rule(type, rule)` stores `:copy`, `:skip`, or a callable for a recordable type. Other gems register rules. This gem does not reference them.
+- `copy_rules:` on `Duplicatable.to`, `duplicate_in_place!`, and `DuplicationService.call`. A per-call entry wins over the type option, which wins over the registry.
+- Callables receive `source_recordable:`, `source_recording:`, `copy:`, and `context:` (`actor`, `root_recording`, `parent_recording`). They can change the copy before `save!`, or persist it themselves.
+- Child class names `Access`, `AccessBoundary`, `AccessConstraint`, `AccessRequest`, `AccessRule`, and `Grant` are never copied. Class names ending in `Token` or `Secret` are never copied. A filter or a rule cannot turn those children on.
+
+### Changed
+- Version `1.0.0` to `1.1.0`.
+- Each copied recordable still goes through Recording Studio `duplicate_recordable`, then the rename, then the copy rule, then `save!`.
+- Copy rules also run for the recording you asked to duplicate. `:skip` on that top-level type is ignored. A callable on that type still runs.
+- Children stay uncopied unless `include_children` or `exclude_children` is set. `:edit` is still required on the source, its parent, and each copied child.
+
+### Upgrade notes
+- Bump `recording_studio_duplicatable` to `1.1.0`. This gem has no migration.
+- Register child copy behavior with `register_copy_rule` or pass `copy_rules:` on the duplication call. Do not teach this gem about another gem's recordables.
+- Access grants, access requests, audience rules, tokens, and secrets are not copied as children. Copy those with their own write path when a product needs a new grant.
+
 ## [1.0.0] - 2026-11-15
 
 ### Removed
@@ -197,7 +216,8 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.8.0...v1.0.0
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.6.2...v0.7.0

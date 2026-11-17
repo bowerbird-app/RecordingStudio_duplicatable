@@ -15,6 +15,7 @@ end
 require "recording_studio_duplicatable/version"
 require "recording_studio_duplicatable/engine"
 require "recording_studio_duplicatable/configuration"
+require "recording_studio_duplicatable/copy_rules"
 require "recording_studio_duplicatable/capabilities/duplicatable"
 require "recording_studio_duplicatable/services/duplication_service"
 
@@ -47,6 +48,21 @@ module RecordingStudioDuplicatable
 
     def configure
       yield(configuration) if block_given?
+    end
+
+    # Register how a recordable type is copied. +rule+ is :copy, :skip, or a
+    # callable. A later registration for the same type replaces the earlier one.
+    # Per-call and per-type copy_rules: hashes win over this registry.
+    def register_copy_rule(type, rule)
+      CopyRules.register(type, rule)
+    end
+
+    def copy_rule_for(type)
+      CopyRules.for(type)
+    end
+
+    def clear_copy_rules!
+      CopyRules.clear!
     end
 
     private

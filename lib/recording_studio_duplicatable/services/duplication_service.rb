@@ -39,12 +39,14 @@ module RecordingStudioDuplicatable
       # @param suffix [String, nil, :default] Suffix for the duplicate's name/title
       # @param include_children [:default, Array, nil] Child types to copy
       # @param exclude_children [:default, Array, nil] Child types to skip
+      # @param copy_rules [:default, Hash, nil] Per-call rules that win over the registry
       # @param impersonator [Object, nil] Impersonating actor, if any
       # @param metadata [Hash] Metadata stored on the recording event
       # @param after_duplicate [Proc, nil] Optional callback called with the new recording
       def initialize(recording:, actor:,
                      prefix: :default, suffix: :default,
                      include_children: :default, exclude_children: :default,
+                     copy_rules: :default,
                      impersonator: nil, metadata: {},
                      after_duplicate: nil)
         @recording        = recording
@@ -53,6 +55,7 @@ module RecordingStudioDuplicatable
         @suffix           = suffix
         @include_children = include_children
         @exclude_children = exclude_children
+        @copy_rules       = copy_rules
         @impersonator     = impersonator
         @metadata         = metadata
         @after_duplicate  = after_duplicate
@@ -69,6 +72,7 @@ module RecordingStudioDuplicatable
           suffix: @suffix,
           include_children: @include_children,
           exclude_children: @exclude_children,
+          copy_rules: @copy_rules,
           &@after_duplicate
         )
         success(new_recording)

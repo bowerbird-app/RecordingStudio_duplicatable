@@ -130,6 +130,13 @@ module RecordingStudioDuplicatable
         assert_equal ["Section"], @recording.last_call_args[:include_children]
       end
 
+      def test_passes_copy_rules_to_duplicate_in_place
+        rules = { "Section" => :skip }
+        DuplicationService.call(recording: @recording, actor: @actor, copy_rules: rules)
+
+        assert_equal rules, @recording.last_call_args[:copy_rules]
+      end
+
       def test_passes_exclude_children_to_duplicate_in_place
         DuplicationService.call(recording: @recording, actor: @actor, exclude_children: ["Tag"])
 
