@@ -1,5 +1,17 @@
 # Migration Notes
 
+## 1.1.0 copy rules
+
+`RecordingStudioDuplicatable.register_copy_rule(type, rule)` takes `:copy`, `:skip`, or a callable. `copy_rules:` on `Duplicatable.to`, `duplicate_in_place!`, and `DuplicationService.call` overrides the registry for that duplication. Per-call entries win over the type option, which wins over the registry.
+
+A callable is `->(source_recordable:, source_recording:, copy:, context:) { copy }`. `context` has `actor`, `root_recording`, and `parent_recording`. Return `nil` or the copy and Duplicatable calls `save!`. Return an already persisted recordable when the rule saves it.
+
+Children stay uncopied unless `include_children` or `exclude_children` is set. Child class names `Access`, `AccessBoundary`, `AccessConstraint`, `AccessRequest`, `AccessRule`, `Grant`, and names ending in `Token` or `Secret` are never copied. `:edit` authorization is unchanged for every recording that is copied.
+
+`:skip` does not cancel the recording you passed to `duplicate_in_place!`. A callable for that type still runs. The copy still uses Recording Studio `duplicate_recordable`.
+
+There is no database migration.
+
 ## 1.0.0 service base and hooks
 
 `DuplicationService` inherits `RecordingStudio::Services::BaseService`. `.call` still returns `success?`, `failure?`, `value`, `error`, `errors`, `on_success`, `on_failure`, and `value!`.

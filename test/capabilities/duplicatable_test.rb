@@ -240,6 +240,20 @@ UnnamedRecordable = Struct.new(:id, keyword_init: true) do
   def save! = true
 end
 
+StatusRecordable = Struct.new(:id, :name, :status, :saves, :persisted_copy, keyword_init: true) do
+  def save!(validate: true)
+    raise ArgumentError, "validations skipped" unless validate
+
+    self.saves = saves.to_i + 1
+    self.persisted_copy = true
+    true
+  end
+
+  def persisted?
+    persisted_copy == true
+  end
+end
+
 FakeBelongsToReflection = Struct.new(:name, :polymorphic, :association_class, keyword_init: true) do
   def polymorphic?
     polymorphic
@@ -270,9 +284,11 @@ module RecordingStudioDuplicatable
         RecordingStudioDuplicatable.configuration.duplication_suffix           = " (Copy)"
         RecordingStudioDuplicatable.configuration.duplication_rename_attribute = nil
         RecordingStudioAccessible.define_singleton_method(:authorized?) { |**| true }
+        RecordingStudioDuplicatable.clear_copy_rules!
       end
 
       def teardown
+        RecordingStudioDuplicatable.clear_copy_rules!
         original = ACCESSIBLE_AUTHORIZED
         RecordingStudioAccessible.define_singleton_method(:authorized?) do |**kwargs|
           original.call(**kwargs)
@@ -1114,6 +1130,300 @@ module RecordingStudioDuplicatable
         assert_equal [nil, created, created_child], parent_recordings
       end
 
+      def test_to_stores_copy_rules
+        RecordingStudio.reset!
+        rule = ->(**) {}
+
+        Class.new do
+          def self.name = "RuledPage"
+
+          include RecordingStudio::Capabilities::Duplicatable.to(copy_rules: { "Comment" => rule })
+        end
+
+        opts = RecordingStudio.capability_options(:duplicatable, for_type: "RuledPage")
+        assert_equal rule, opts[:copy_rules]["Comment"]
+      end
+
+      def test_to_rejects_a_copy_rule_that_is_not_copy_skip_or_callable
+        error = assert_raises(ArgumentError) do
+          Duplicatable.to(copy_rules: { "Comment" => :clone })
+        end
+
+        assert_match(/copy rule must be :copy, :skip, or a callable/, error.message)
+      end
+
+      def test_registry_skip_omits_an_included_child
+        RecordingStudioDuplicatable.register_copy_rule("NamedRecordable", :skip)
+        child = child_recording("NamedRecordable", "Child")
+        source = parent_recording(child)
+
+        assert_equal ["Parent (Copy)"], duplicated_names(source, include_children: ["NamedRecordable"])
+      end
+
+      def test_registry_copy_does_not_turn_children_on
+        RecordingStudioDuplicatable.register_copy_rule("NamedRecordable", :copy)
+        child = child_recording("NamedRecordable", "Child")
+        source = parent_recording(child)
+
+        assert_equal ["Parent (Copy)"], duplicated_names(source)
+      end
+
+      def test_per_call_copy_rule_wins_over_the_registry
+        RecordingStudioDuplicatable.register_copy_rule("NamedRecordable", :skip)
+        child = child_recording("NamedRecordable", "Child")
+        source = parent_recording(child)
+
+        names = duplicated_names(
+          source,
+          include_children: ["NamedRecordable"],
+          copy_rules: { "NamedRecordable" => :copy }
+        )
+
+        assert_equal ["Parent (Copy)", "Child (Copy)"], names
+      end
+
+      def test_per_call_copy_rule_wins_over_the_type_option
+        RecordingStudio.set_capability_options(
+          :duplicatable,
+          on: "NamedRecordable",
+          include_children: ["TitledRecordable"],
+          copy_rules: { "TitledRecordable" => :skip }
+        )
+        child = FakeRecording.new(
+          id: 11,
+          recordable: TitledRecordable.new(id: 11, title: "Child"),
+          recordable_type: "TitledRecordable"
+        )
+        source = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          recordable_type: "NamedRecordable",
+          child_recordings: [child]
+        )
+
+        names = duplicated_names(source, copy_rules: { "TitledRecordable" => :copy })
+
+        assert_equal ["Parent (Copy)", "Child (Copy)"], names
+      end
+
+      def test_type_copy_rule_wins_over_the_registry
+        RecordingStudioDuplicatable.register_copy_rule("TitledRecordable", :copy)
+        RecordingStudio.set_capability_options(
+          :duplicatable,
+          on: "NamedRecordable",
+          include_children: ["TitledRecordable"],
+          copy_rules: { "TitledRecordable" => :skip }
+        )
+        child = FakeRecording.new(
+          id: 11,
+          recordable: TitledRecordable.new(id: 11, title: "Child"),
+          recordable_type: "TitledRecordable"
+        )
+        source = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          recordable_type: "NamedRecordable",
+          child_recordings: [child]
+        )
+
+        assert_equal ["Parent (Copy)"], duplicated_names(source)
+      end
+
+      def test_callable_copy_rule_resets_an_attribute_and_still_uses_duplicate_recordable
+        dup_calls = []
+        child_recordable = StatusRecordable.new(id: 10, name: "Child", status: "published", saves: 0)
+        child = FakeRecording.new(id: 10, recordable: child_recordable, recordable_type: "StatusRecordable")
+        child.define_singleton_method(:duplicate_recordable) do |recordable|
+          dup_calls << recordable
+          recordable.dup
+        end
+        seen = nil
+        rule = lambda { |source_recordable:, copy:, context:, **|
+          seen = [
+            source_recordable,
+            copy.name,
+            context.actor,
+            context.parent_recording,
+            context.root_recording
+          ]
+          copy.status = "draft"
+          copy
+        }
+        RecordingStudioDuplicatable.register_copy_rule("StatusRecordable", rule)
+        root = FakeRecording.new(id: 7)
+        source = FakeRecording.new(
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          root_recording: root,
+          child_recordings: [child]
+        )
+        created_parent = FakeRecording.new(
+          id: 88,
+          recordable: NamedRecordable.new(id: 2, name: "Parent (Copy)"),
+          root_recording: root
+        )
+
+        copies = []
+        RecordingStudio.stub(:record!, lambda { |**kwargs|
+          copies << kwargs[:recordable]
+          recording = copies.size == 1 ? created_parent : FakeRecording.new(id: 89, root_recording: root)
+          FakeEvent.new(recording: recording)
+        }) do
+          source.duplicate_in_place!(actor: :editor, include_children: ["StatusRecordable"])
+        end
+
+        assert_equal [child_recordable], dup_calls
+        assert_equal "draft", copies.last.status
+        assert_equal [child_recordable, "Child (Copy)", :editor, created_parent, root], seen
+        assert_equal 1, copies.last.saves
+      end
+
+      def test_callable_that_saves_is_not_saved_again
+        child_recordable = StatusRecordable.new(id: 10, name: "Child", status: "published", saves: 0)
+        child = FakeRecording.new(id: 10, recordable: child_recordable, recordable_type: "StatusRecordable")
+        RecordingStudioDuplicatable.register_copy_rule("StatusRecordable", lambda { |copy:, **|
+          copy.status = "draft"
+          copy.save!
+          copy
+        })
+        source = parent_recording(child)
+
+        copies = []
+        RecordingStudio.stub(:record!, lambda { |**kwargs|
+          copies << kwargs[:recordable]
+          FakeEvent.new(recording: FakeRecording.new)
+        }) do
+          source.duplicate_in_place!(actor: :user, include_children: ["StatusRecordable"])
+        end
+
+        assert_equal 1, copies.last.saves
+        assert_equal "draft", copies.last.status
+      end
+
+      def test_skip_on_the_duplicated_recording_still_copies_it
+        RecordingStudioDuplicatable.register_copy_rule("NamedRecordable", :skip)
+        source = FakeRecording.new(recordable: NamedRecordable.new(id: 1, name: "Parent"))
+
+        new_recording = source.duplicate_in_place!(actor: :user)
+
+        assert_equal "Parent (Copy)", new_recording.recordable.name
+      end
+
+      def test_callable_on_the_duplicated_recording_runs
+        source_recordable = StatusRecordable.new(id: 1, name: "Parent", status: "published", saves: 0)
+        source = FakeRecording.new(recordable: source_recordable, recordable_type: "StatusRecordable")
+        RecordingStudioDuplicatable.register_copy_rule("StatusRecordable", lambda { |copy:, **|
+          copy.status = "draft"
+          copy
+        })
+
+        new_recording = source.duplicate_in_place!(actor: :user)
+
+        assert_equal "draft", new_recording.recordable.status
+        assert_equal "Parent (Copy)", new_recording.recordable.name
+        assert_equal 1, new_recording.recordable.saves
+      end
+
+      def test_hard_excluded_access_children_are_skipped_when_a_rule_says_copy
+        rule = :copy
+        access_types = [
+          "RecordingStudio::Access",
+          "RecordingStudio::AccessRequest",
+          "RecordingStudio::AccessRule",
+          "RecordingStudio::Grant",
+          "Host::ApiToken",
+          "Host::SigningSecret"
+        ]
+        access_types.each { |type| RecordingStudioDuplicatable.register_copy_rule(type, rule) }
+        children = access_types.map.with_index do |type, index|
+          child_recording(type, "Secret #{index}")
+        end
+        kept = child_recording("NamedRecordable", "Kept")
+        source = parent_recording(kept, *children)
+        overrides = access_types.to_h { |type| [type, :copy] }
+
+        names = duplicated_names(
+          source,
+          include_children: ["NamedRecordable", *access_types],
+          copy_rules: overrides
+        )
+
+        assert_equal ["Parent (Copy)", "Kept (Copy)"], names
+      end
+
+      def test_hard_excluded_child_is_skipped_when_exclude_children_would_copy_it
+        access = child_recording("RecordingStudio::Access", "Grant")
+        kept = FakeRecording.new(
+          id: 11,
+          recordable: TitledRecordable.new(id: 11, title: "Kept"),
+          recordable_type: "TitledRecordable"
+        )
+        source = parent_recording(access, kept)
+
+        labels = []
+        RecordingStudio.stub(:record!, lambda { |**kwargs|
+          recordable = kwargs[:recordable]
+          labels << (recordable.respond_to?(:name) ? recordable.name : recordable.title)
+          FakeEvent.new(recording: FakeRecording.new)
+        }) do
+          source.duplicate_in_place!(
+            actor: :user,
+            exclude_children: ["NamedRecordable"],
+            copy_rules: { "RecordingStudio::Access" => :copy }
+          )
+        end
+
+        assert_equal ["Parent (Copy)", "Kept (Copy)"], labels
+      end
+
+      def test_skipped_child_does_not_copy_its_descendants
+        grandchild = FakeRecording.new(
+          id: 12,
+          recordable: TitledRecordable.new(id: 12, title: "Grandchild"),
+          recordable_type: "TitledRecordable"
+        )
+        child = child_recording("NamedRecordable", "Child", children: [grandchild])
+        source = parent_recording(child)
+        RecordingStudioDuplicatable.register_copy_rule("NamedRecordable", :skip)
+
+        names = duplicated_names(
+          source,
+          include_children: %w[NamedRecordable TitledRecordable]
+        )
+
+        assert_equal ["Parent (Copy)"], names
+      end
+
+      def test_copy_rule_does_not_skip_edit_authorization
+        child = child_recording("NamedRecordable", "Child")
+        child.parent_recording = FakeRecording.new(id: 9)
+        source = parent_recording(child)
+        RecordingStudioDuplicatable.register_copy_rule("NamedRecordable", :copy)
+
+        RecordingStudioDuplicatable.stub(:authorized?, lambda { |recording:, **|
+          recording != child
+        }) do
+          assert_raises(RecordingStudioDuplicatable::AccessDenied) do
+            source.duplicate_in_place!(actor: :user, include_children: ["NamedRecordable"])
+          end
+        end
+      end
+
+      def test_hard_excluded_child_is_not_an_authorization_target
+        access = child_recording("RecordingStudio::Access", "Grant")
+        kept = child_recording("NamedRecordable", "Kept")
+        source = parent_recording(access, kept)
+        checked = []
+
+        RecordingStudioDuplicatable.stub(:authorized?, lambda { |recording:, **|
+          checked << recording
+          recording != access
+        }) do
+          names = duplicated_names(source, include_children: ["RecordingStudio::Access", "NamedRecordable"])
+          assert_equal ["Parent (Copy)", "Kept (Copy)"], names
+        end
+
+        refute_includes checked, access
+        assert_includes checked, kept
+      end
+
       def test_after_duplicate_callback_runs_after_transaction
         recording = FakeRecording.new(recordable: NamedRecordable.new(id: 1, name: "Original"))
         order = []
@@ -1133,6 +1443,39 @@ module RecordingStudioDuplicatable
         end
 
         assert_equal %i[transaction_started recording_created transaction_committed callback_ran], order
+      end
+
+      private
+
+      def child_recording(type, name, children: [])
+        id = (name.hash.abs % 10_000) + 10
+        FakeRecording.new(
+          id: id,
+          recordable: NamedRecordable.new(id: id, name: name),
+          recordable_type: type,
+          child_recordings: children
+        )
+      end
+
+      def parent_recording(*children)
+        FakeRecording.new(
+          id: 1,
+          recordable: NamedRecordable.new(id: 1, name: "Parent"),
+          recordable_type: "NamedRecordable",
+          child_recordings: children
+        )
+      end
+
+      def duplicated_names(source, **kwargs)
+        labels = []
+        RecordingStudio.stub(:record!, lambda { |**record_kwargs|
+          recordable = record_kwargs[:recordable]
+          labels << (recordable.respond_to?(:name) ? recordable.name : recordable.title)
+          FakeEvent.new(recording: FakeRecording.new)
+        }) do
+          source.duplicate_in_place!(actor: :user, **kwargs)
+        end
+        labels
       end
     end
   end

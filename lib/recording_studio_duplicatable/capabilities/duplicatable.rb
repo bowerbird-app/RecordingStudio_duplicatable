@@ -49,7 +49,8 @@ module RecordingStudio
     #       prefix: nil,
     #       suffix: " (Copy)",
     #       include_children: ["Comment"],
-    #       exclude_children: nil
+    #       exclude_children: nil,
+    #       copy_rules: { "Comment" => :copy }
     #     )
     #   end
     #
@@ -58,7 +59,7 @@ module RecordingStudio
     module Duplicatable
       extend ActiveSupport::Concern
 
-      ALLOWED_OPTIONS = %i[prefix suffix include_children exclude_children].freeze
+      ALLOWED_OPTIONS = %i[prefix suffix include_children exclude_children copy_rules].freeze
 
       included do
         include ::RecordingStudio::Capabilities::Duplicatable.to
@@ -74,9 +75,11 @@ module RecordingStudio
         # @param suffix [String, nil] String appended to the duplicate's name/title
         # @param include_children [Array<String,Class>, nil] Only duplicate these child types
         # @param exclude_children [Array<String,Class>, nil] Duplicate all children EXCEPT these types
+        # @param copy_rules [Hash, nil] Per-type rules that win over the registry
         # @return [Module]
         def to(**options)
           validate_options!(options)
+          RecordingStudioDuplicatable::CopyRules.normalize_overrides(options[:copy_rules]) if options.key?(:copy_rules)
           RecordingStudio::Capabilities.include_for(:duplicatable, **options)
         end
 
@@ -88,7 +91,7 @@ module RecordingStudio
 
           raise ArgumentError,
                 "unknown Duplicatable option(s): #{unknown.map { |key| "#{key}:" }.join(', ')}. " \
-                "Use prefix:, suffix:, include_children:, or exclude_children:."
+                "Use prefix:, suffix:, include_children:, exclude_children:, or copy_rules:."
         end
         private :validate_options!
       end
@@ -122,6 +125,9 @@ module RecordingStudio
         #   :default resolves to the per-type option (nil = no children).
         # @param exclude_children [:default, Array<String,Class>, nil] Child types to skip.
         #   :default resolves to the per-type option (nil = no exclusions).
+        # @param copy_rules [:default, Hash, nil] Rules for this call, keyed by child type.
+        #   A present key wins over Duplicatable.to(copy_rules:) and the registry.
+        #   :default uses the per-type option only.
         # @yield [new_recording] Optional block called with the new Recording after creation
         # @return [RecordingStudio::Recording] The newly created recording
         # @raise [RecordingStudio::CapabilityDisabled] if :duplicatable is not enabled for this type
@@ -129,6 +135,7 @@ module RecordingStudio
         def duplicate_in_place!(actor:, impersonator: nil, metadata: {},
                                 prefix: :default, suffix: :default,
                                 include_children: :default, exclude_children: :default,
+                                copy_rules: :default,
                                 &after_duplicate)
           RecordingStudioDuplicatable.ensure_current_impersonator_attribute!
           new_recording = nil
@@ -149,10 +156,21 @@ module RecordingStudio
             resolved_suffix  = suffix  == :default ? type_opts.fetch(:suffix,  config.duplication_suffix)  : suffix
             resolved_include = include_children == :default ? type_opts[:include_children] : include_children
             resolved_exclude = exclude_children == :default ? type_opts[:exclude_children] : exclude_children
+            resolved_rules   = resolved_copy_rules(type_opts[:copy_rules], copy_rules)
 
-            dup_recordable = locked.send(:duplicate_recordable, locked.recordable)
-            apply_duplication_rename(dup_recordable, prefix: resolved_prefix, suffix: resolved_suffix)
-            dup_recordable.save!
+            # :skip drops children. The recording this call names is still copied.
+            rule = RecordingStudioDuplicatable::CopyRules.resolve(type_name, resolved_rules)
+            rule = RecordingStudioDuplicatable::CopyRules::COPY if rule == RecordingStudioDuplicatable::CopyRules::SKIP
+
+            dup_recordable = prepare_duplicate_recordable(
+              locked,
+              rule: rule,
+              prefix: resolved_prefix,
+              suffix: resolved_suffix,
+              actor: actor,
+              root_recording: locked.root_recording,
+              parent_recording: locked.parent_recording
+            )
 
             new_recording = RecordingStudio.record!(
               action: "duplicated",
@@ -168,7 +186,8 @@ module RecordingStudio
               locked, new_recording,
               actor: actor, impersonator: impersonator, metadata: metadata,
               prefix: resolved_prefix, suffix: resolved_suffix,
-              include_children: resolved_include, exclude_children: resolved_exclude
+              include_children: resolved_include, exclude_children: resolved_exclude,
+              copy_rules: resolved_rules
             )
           end
 
@@ -216,7 +235,8 @@ module RecordingStudio
         def duplicate_child_recordings(source_recording, new_parent_recording,
                                        actor:, impersonator:, metadata:,
                                        prefix:, suffix:,
-                                       include_children:, exclude_children:)
+                                       include_children:, exclude_children:,
+                                       copy_rules:)
           return if include_children.nil? && exclude_children.nil?
 
           child_root = new_parent_recording.root_recording || new_parent_recording
@@ -224,15 +244,21 @@ module RecordingStudio
           filtered_child_recordings(source_recording.child_recordings,
                                     include_children: include_children,
                                     exclude_children: exclude_children).each do |child|
+            rule = RecordingStudioDuplicatable::CopyRules.resolve(child.recordable_type, copy_rules)
+            next if rule == RecordingStudioDuplicatable::CopyRules::SKIP
+
             assert_duplication_authorized!(actor: actor, source_recording: child)
-            dup_child = child.send(:duplicate_recordable, child.recordable)
-            reparent_duplicate_recordable!(
-              dup_child,
-              source_parent_recording: source_recording,
-              new_parent_recording: new_parent_recording
+            dup_child = prepare_duplicate_recordable(
+              child,
+              rule: rule,
+              prefix: prefix,
+              suffix: suffix,
+              actor: actor,
+              root_recording: child_root,
+              parent_recording: new_parent_recording,
+              reparent_from: source_recording,
+              reparent_to: new_parent_recording
             )
-            apply_duplication_rename(dup_child, prefix: prefix, suffix: suffix)
-            dup_child.save!
 
             new_child_recording = RecordingStudio.record!(
               action: "duplicated",
@@ -253,9 +279,66 @@ module RecordingStudio
               prefix: prefix,
               suffix: suffix,
               include_children: include_children,
-              exclude_children: exclude_children
+              exclude_children: exclude_children,
+              copy_rules: copy_rules
             )
           end
+        end
+
+        def resolved_copy_rules(type_rules, call_rules)
+          resolved = RecordingStudioDuplicatable::CopyRules.normalize_overrides(type_rules)
+          return resolved if call_rules == :default
+
+          resolved.merge(RecordingStudioDuplicatable::CopyRules.normalize_overrides(call_rules))
+        end
+
+        # Core duplicate_recordable, then reparent, rename, the copy rule, and save!.
+        # A callable may save the copy itself. When that recordable is already
+        # persisted, Duplicatable leaves it. Its own save! runs validations.
+        def prepare_duplicate_recordable(source_recording, rule:, prefix:, suffix:,
+                                         actor:, root_recording:, parent_recording:,
+                                         reparent_from: nil, reparent_to: nil)
+          copy = source_recording.send(:duplicate_recordable, source_recording.recordable)
+          if reparent_to
+            reparent_duplicate_recordable!(
+              copy,
+              source_parent_recording: reparent_from,
+              new_parent_recording: reparent_to
+            )
+          end
+          apply_duplication_rename(copy, prefix: prefix, suffix: suffix)
+          copy = transform_with_copy_rule(
+            rule,
+            source_recording: source_recording,
+            copy: copy,
+            actor: actor,
+            root_recording: root_recording,
+            parent_recording: parent_recording
+          )
+          save_duplicate_recordable!(copy)
+        end
+
+        def transform_with_copy_rule(rule, source_recording:, copy:, actor:, root_recording:, parent_recording:)
+          return copy if rule.nil? || rule == RecordingStudioDuplicatable::CopyRules::COPY
+
+          result = rule.call(
+            source_recordable: source_recording.recordable,
+            source_recording: source_recording,
+            copy: copy,
+            context: RecordingStudioDuplicatable::CopyRules::Context.new(
+              actor: actor,
+              root_recording: root_recording,
+              parent_recording: parent_recording
+            )
+          )
+          result.nil? ? copy : result
+        end
+
+        def save_duplicate_recordable!(recordable)
+          return recordable if recordable.respond_to?(:persisted?) && recordable.persisted?
+
+          recordable.save!
+          recordable
         end
 
         def filtered_child_recordings(children, include_children:, exclude_children:)

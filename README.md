@@ -103,6 +103,7 @@ Available options:
 | `layout` | Layout for this gem's controllers. `nil` uses `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` renders with no layout. A String is a layout name. A callable must be `->(controller:) { ... }` and return a String, `nil`, or `false`. |
 | `include_children` | Only duplicate descendants of these recordable types |
 | `exclude_children` | Duplicate descendants except these recordable types |
+| `copy_rules` | Per-type rules for this duplication. Wins over the registry. See Copy rules. |
 
 `RecordingStudioDuplicatable::ApplicationController` calls `recording_studio_layout { RecordingStudioDuplicatable.configuration.layout }`. `DuplicationsController` inherits that call. The engine ships no views and no home route. The dummy app renders the overview at `/engine_status`. Do not set `layout "recording_studio/default_layout"` on the engine controller. Invalid `config.layout` values raise `ArgumentError` when assigned.
 
@@ -175,6 +176,65 @@ The lower-level recording and service APIs remain available for apps that want c
 - The capability must be enabled for the recordable type
 - Child-copy filters apply recursively through the descendant tree
 - The per-call `after_duplicate:` proc and the `:after_duplicate` hook run after the transaction completes. Register that hook with `RecordingStudio.configuration.hooks.on(:after_duplicate)`.
+
+## What a copy includes
+
+`duplicate_in_place!` copies the recording you pass, in place, under the same parent.
+
+For that recording, and for each child the filters select:
+
+1. Recording Studio's `duplicate_recordable` runs, so the core dup strategy still applies.
+2. The configured prefix and suffix are applied to the name or title.
+3. A callable copy rule runs, when one resolves for that type.
+4. `save!` runs with validations. When the callable already persisted the copy, Duplicatable leaves that recordable in place.
+5. `RecordingStudio.record!` writes a new recording with action `"duplicated"`.
+
+Children stay uncopied until `include_children` or `exclude_children` is set on the call or on `Duplicatable.to`. A registered `:copy` rule does not turn children on. `include_children` selects those types. `exclude_children`, with no include list, selects every other child type. The same filters apply to descendants. A skipped child takes its descendants with it.
+
+These child class names are left out even when a filter or a rule says to copy them: `Access`, `AccessBoundary`, `AccessConstraint`, `AccessRequest`, `AccessRule`, and `Grant`. A class name that ends in `Token` or `Secret` is left out too. That set is the grant, access-request, audience, token, and secret recordables from Recording Studio and Recording Studio Accessible. The recording you passed to `duplicate_in_place!` is still copied when its class is on that list. `:skip` on that top-level type is ignored for the same reason. A callable for that top-level type still runs.
+
+`:edit` is required on the source recording, on its parent when it has one, and on each child that is copied. The built-in controller also requires `:view` before it will find the recording. A skipped child is not authorized. A denied `:edit` on a copied child raises `RecordingStudioDuplicatable::AccessDenied` and rolls the transaction back.
+
+## Copy rules
+
+Any gem can register a rule for a recordable type. Duplicatable stores the rule and runs it. It does not reference the gem that registered it.
+
+```ruby
+RecordingStudioDuplicatable.register_copy_rule("Comment", :copy)
+RecordingStudioDuplicatable.register_copy_rule("Draft", :skip)
+RecordingStudioDuplicatable.register_copy_rule("Page", lambda { |source_recordable:, source_recording:, copy:, context:|
+  copy.status = "draft"
+  copy
+})
+```
+
+`:copy` is the path above. `:skip` leaves that child, and its descendants, out of the copy. A callable receives the source recordable, the source recording, the unsaved copy, and a context. `context.actor`, `context.root_recording`, and `context.parent_recording` are the actor and the place the copy is being recorded. For a child, the parent is the new parent recording. Return the copy, or `nil`, and Duplicatable calls `save!`. Return a recordable that is already persisted when the rule saves it itself.
+
+`RecordingStudioDuplicatable.copy_rule_for("Page")` returns the registered rule, or `nil` when nothing is registered. `clear_copy_rules!` removes every registered rule. Registering the same type again replaces the previous rule.
+
+A host can choose a rule for each type on one duplication. Keys are type names or classes. A per-call `copy_rules:` entry wins over `Duplicatable.to(copy_rules:)`, which wins over the registry. Hard-excluded child types stay excluded.
+
+```ruby
+include RecordingStudio::Capabilities::Duplicatable.to(
+  include_children: ["Comment", "Section"],
+  copy_rules: { "Section" => :skip }
+)
+
+recording.duplicate_in_place!(
+  actor: current_user,
+  include_children: ["Comment", "Section"],
+  copy_rules: {
+    "Comment" => lambda { |copy:, **|
+      copy.body = ""
+      copy
+    }
+  }
+)
+```
+
+`DuplicationService.call` takes the same `copy_rules:` keyword. Rules on `Duplicatable.to` belong to the recordable type you duplicate. They apply to that recording and to the descendants selected for that call.
+
+Copy rules run for the recording you duplicate and for each selected child. `:skip` applies to children. On the recording named by `duplicate_in_place!`, `:skip` is ignored and that recording is still copied. A callable on that type still runs, after `duplicate_recordable` and the rename, before `save!`.
 
 ## Internationalization
 
