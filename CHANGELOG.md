@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-18
+
+### Changed
+- Development and dummy Gemfiles pin Recording Studio `v7.7.1`, Accessible `v0.54.1`, Trashable `v1.2.1`, Metrics `v0.9.2`, and FlatPack `v0.1.378`.
+
+### Upgrade notes
+- Bump `recording_studio_duplicatable` to `1.1.1`. This gem has no migration.
+- Hosts MUST run the Recording Studio 7.4, 7.5, and 7.7 migrations (`add_recording_studio_recordings_root_type_creation_index`, `enforce_recording_studio_recording_root_invariant`, and `replace_recording_studio_recordings_root_index`) before writing with Recording Studio 7.7. The dummy app does not copy those migrations.
+
 ## [1.1.0] - 2026-11-17
 
 ### Added
@@ -216,7 +225,8 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.8.0...v1.0.0
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.7.0...v0.8.0
