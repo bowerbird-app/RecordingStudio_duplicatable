@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-19
+
+### Changed
+- Development and dummy Gemfiles pin Recording Studio `v7.8.0` (`~> 7.8`), Accessible `v0.56.0` (`~> 0.56`), Trashable `v1.2.3` (`~> 1.2`), Metrics `v0.10.0` (`~> 0.10`), and FlatPack `v0.2.0` (`~> 0.2`).
+
+### Upgrade notes
+- Bump `recording_studio_duplicatable` to `1.2.0`. This gem has no migration.
+- Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+- flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+- Gemspec floors stay `recording_studio` `>= 7.0`, `< 8.0` and `recording_studio_accessible` `>= 0.44.0`, `< 1.0`. Hosts on FlatPack 0.1.x still resolve.
+
 ## [1.1.1] - 2026-11-18
 
 ### Changed
@@ -225,7 +236,8 @@ tracked. A warm snapshot skips provision and still fetches skills.
 - Comprehensive README and documentation
 - Basic test suite with Minitest
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/bowerbird-app/RecordingStudio_duplicatable/compare/v0.8.0...v1.0.0
